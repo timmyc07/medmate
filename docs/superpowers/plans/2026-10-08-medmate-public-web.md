@@ -2,7 +2,7 @@
 
 > **已由後續決策取代（2026-10-08）：** 資料庫改用 Neon PostgreSQL、網站部署於 Render。三份官方 CSV 已核對並先匯入 Neon 測試 branch；現行實作/發布紀錄見 `docs/data-sources.md` 與 `docs/operations.md`。以下保留原計劃作歷史紀錄，不再作為當前部署指令。
 
-> **狀態（2026-10-08）：** 手機優先網站、搜尋 API 邊界、Render Free Blueprint 與官方來源文件已完成；無資料預覽已部署並確認 Live：https://medmate-53s1.onrender.com（commit `4fb0e064dbf822c7a2f96bd2ef1f35b2be29fb4c`）。首頁與健康檢查回 HTTP 200；搜尋 API 在尚未連接資料庫時回 HTTP 503，前端搜尋停用。官方頁面已確認三個資料集的來源/開放授權，但附件版本核對、有效狀態規則、Parallels SQL schema/驗證模式及雲端資料庫尚未完成，不能展示真實資料。
+> **狀態（2026-10-08）：** 手機優先網站、搜尋 API、Neon production schema/import 與 Render 部署已完成；Render live commit 為 `a0fdf8033ad9d4db1691b0b30ce96b5965441c66`。`/api/health` 與 `/api/ready` 均回 HTTP 200；藥局與藥品查詢已用正式資料 smoke test 驗證。其餘新增資料集仍需各自擴充 schema/API 後才能納入。
 >
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
