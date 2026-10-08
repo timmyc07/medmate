@@ -39,4 +39,14 @@ describe("Neon 公開資料查詢", () => {
     expect(query.mock.calls[0][0]).toContain("acos");
     expect(query.mock.calls[0][1]).toEqual(["臺北市%", "%中正區%", 25.04, 121.52, 10]);
   });
+  it("定位查詢未指定半徑時仍依距離排序且不套用距離上限", async () => {
+    query.mockResolvedValueOnce({ rows: [{ total: "1" }] }).mockResolvedValueOnce({ rows: [{ institution_code: "5902", institution_name: "遠方藥局", address: "高雄市", phone: "07", city: "高雄市", termination_date: null, source_updated_at: "2026-10-08", latitude: "22.63", longitude: "120.30", distance_km: "300" }] });
+    const result = await searchPharmacies({ keyword: "", latitude: 25.04, longitude: 121.52, page: 1, pageSize: 20 });
+
+    expect(result.items[0]).toMatchObject({ id: "5902", distanceKm: 300 });
+    expect(query.mock.calls[0][0]).not.toContain("<=");
+    expect(query.mock.calls[0][1]).toEqual([25.04, 121.52]);
+    expect(query.mock.calls[1][0]).toContain("ORDER BY distance_km");
+    expect(query.mock.calls[1][1]).toEqual([25.04, 121.52, 20, 0]);
+  });
 });

@@ -82,9 +82,9 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .state-message { margin: 7px 0 16px; padding: 14px 15px; border-left: 3px solid #b5c6bc; color: #586861; background: #edf1eb; font-size: 0.82rem; line-height: 1.7; }
 .state-error { border-color: #d49e58; color: #775d36; background: #f6f0e4; }
 .result-summary { margin: 1px 0 8px; color: var(--muted); font-size: 0.73rem; }
-.results-list { border-top: 1px solid var(--line); }
-.result-row { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 17px 2px; border-bottom: 1px solid var(--line); background: rgba(15,23,42,.32); }
-.pharmacy-card { align-items: stretch; padding: 20px 0; }
+.results-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.result-row { display: flex; justify-content: space-between; align-items: center; gap: 16px; min-width: 0; padding: 17px; border: 1px solid var(--line); border-radius: 10px; background: rgba(15,23,42,.32); }
+.pharmacy-card { align-items: stretch; padding: 16px; }
 .pharmacy-card-image { display: grid; width: 92px; min-width: 92px; min-height: 92px; place-items: center; border: 1px solid rgba(103,232,249,.28); border-radius: 10px; color: var(--brand); background: linear-gradient(145deg, rgba(34,211,238,.16), rgba(15,23,42,.82)); font-size: 2rem; }
 .card-meta { display: flex; flex-wrap: wrap; gap: 8px 14px; margin-top: 10px; color: var(--muted); font-size: .72rem; }
 .card-meta span + span { color: #b6c6bc; }
@@ -120,6 +120,6 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 }
 
 @media (max-width: 719px) { .hero-side { padding: 20px 0 0; border-top: 1px solid var(--line); border-left: 0; } .hero-stat strong { font-size: 2.4rem; } }
-@media (max-width: 719px) { .home-guidance { grid-template-columns: 1fr; gap: 8px; } .pharmacy-card { display: grid; grid-template-columns: 72px minmax(0, 1fr); } .pharmacy-card-image { width: 72px; min-width: 72px; min-height: 72px; } .pharmacy-card .call-link { grid-column: 2; justify-self: start; } }
+@media (max-width: 719px) { .home-guidance { grid-template-columns: 1fr; gap: 8px; } .results-list { grid-template-columns: 1fr; } .pharmacy-card { display: grid; grid-template-columns: 72px minmax(0, 1fr); } .pharmacy-card-image { width: 72px; min-width: 72px; min-height: 72px; } .pharmacy-card .call-link { grid-column: 2; justify-self: start; } }
 
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { transition-duration: 0.01ms !important; } }

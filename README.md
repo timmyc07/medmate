@@ -7,7 +7,7 @@ MediMate 是以手機瀏覽為優先的繁體中文藥局與藥品公開查詢�
 - 網站使用手機優先的 Next.js App Router 與 TypeScript，包含藥局/藥品搜尋介面、分頁與同源 API 路由。
 - 藥局支援全台縣市及相依行政區下拉篩選與使用者主動授權的瀏覽器定位；地圖只呈現資料庫已有座標的藥局，沒有座標的資料仍可用清單查詢。行政區清單依內政部戶政司 114 年開放資料核對（22 縣市、368 鄉鎮市區）。
 - Render 部署設定位於 `render.yaml`，使用 Free Node Web Service。Free 方案閒置 15 分鐘會休眠，下一次請求約一分鐘喚醒；此方案是網站預覽，不是即時可用承諾。
-- 首頁只提供兩個入口：`/pharmacies` 藥局位置與營業資訊、`/medicines` 藥品公開資料。藥局查詢在結果卡先呈現地址、電話、資料狀態與距離，再顯示可定位資料的地圖；沒有座標的資料仍保留在卡片清單。
+- 首頁只提供兩個入口：`/pharmacies` 藥局位置與營業資訊、`/medicines` 藥品公開資料。藥局查詢在結果卡先呈現地址、電話、資料狀態與距離，再顯示可定位資料的地圖；沒有座標的資料仍保留在卡片清單。使用定位時依距離排序且不設固定半徑，確保最近資料即使相距很遠也會顯示。
 - 線上查詢由 Next.js server route 連接 Neon PostgreSQL；Render runtime 使用 `DATABASE_URL` pooled URL，資料庫 URL 不會送到瀏覽器。`/api/ready` 檢查資料庫連線，`/api/health` 保持程序存活檢查。
 - 三份政府 CSV 已由官方資源重新下載、核對 SHA-256，匯入 Neon。藥局使用健保特約來源；藥品只顯示有效日期未過且註銷狀態空白的資料。細節與更新方式見[資料來源文件](docs/data-sources.md)及[維運文件](docs/operations.md)。
 - Parallels SQL Server 不會公開到網際網路，這次遷移來源是官方 CSV，並非從本機 SQL Server dump。

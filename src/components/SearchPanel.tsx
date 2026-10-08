@@ -30,7 +30,6 @@ export default function SearchPanel({ kind, enabled = true }: { kind: Kind; enab
     if (kind === "pharmacies" && locationOverride) {
       query.set("lat", String(locationOverride.latitude));
       query.set("lng", String(locationOverride.longitude));
-      query.set("radiusKm", "10");
     }
     try {
       const response = await fetch(`/api/${kind}?${query.toString()}`, { headers: { Accept: "application/json" } });

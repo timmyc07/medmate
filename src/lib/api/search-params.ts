@@ -25,7 +25,7 @@ export function parseSearchParams(params: URLSearchParams, allowCity = false, al
   const radiusValue = params.get("radiusKm");
   const latitude = latitudeValue === null ? undefined : Number(latitudeValue);
   const longitude = longitudeValue === null ? undefined : Number(longitudeValue);
-  const radiusKm = radiusValue === null ? 10 : Number(radiusValue);
+  const radiusKm = radiusValue === null ? undefined : Number(radiusValue);
   const page = Number(params.get("page") ?? "1");
   const pageSize = Number(params.get("pageSize") ?? "20");
   const hasArea = city.length > 0 || district.length > 0;
@@ -36,7 +36,7 @@ export function parseSearchParams(params: URLSearchParams, allowCity = false, al
     (keyword.length === 0 && (!allowLocation || (!hasArea && !validCoordinates))) || keyword.length > 100 ||
     (!allowCity && (city.length > 0 || district.length > 0)) ||
     (allowCity && (city.length > 50 || district.length > 50)) ||
-    (allowLocation && ((hasCoordinates && !validCoordinates) || (validCoordinates && (!Number.isFinite(radiusKm) || radiusKm < 0.5 || radiusKm > 50)))) ||
+    (allowLocation && ((hasCoordinates && !validCoordinates) || (validCoordinates && radiusKm !== undefined && (!Number.isFinite(radiusKm) || radiusKm < 0.5 || radiusKm > 50)))) ||
     !Number.isSafeInteger(page) || page < 1 ||
     !Number.isSafeInteger(pageSize) || pageSize < 1 || pageSize > 50
   ) {

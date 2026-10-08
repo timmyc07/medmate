@@ -30,8 +30,13 @@ export async function searchPharmacies(params: SearchParams): Promise<Page<Pharm
     ? `(6371 * acos(least(1, cos(radians($${values.length + 1})) * cos(radians(latitude)) * cos(radians(longitude) - radians($${values.length + 2})) + sin(radians($${values.length + 1})) * sin(radians(latitude)))))`
     : null;
   if (hasCoordinates) {
-    values.push(latitude, longitude, params.radiusKm ?? 10);
-    clauses.push(`latitude IS NOT NULL AND longitude IS NOT NULL AND ${distanceExpression} <= $${values.length}`);
+    clauses.push("latitude IS NOT NULL AND longitude IS NOT NULL");
+    if (params.radiusKm !== undefined) {
+      values.push(latitude, longitude, params.radiusKm);
+      clauses.push(`${distanceExpression} <= $${values.length}`);
+    } else {
+      values.push(latitude, longitude);
+    }
   }
   const filter = clauses.map((clause) => `(${clause})`).join(" AND ");
   const count = await pool.query<{ total: string }>(`SELECT COUNT(*)::text AS total FROM pharmacy_contracts WHERE ${filter}`, values);
