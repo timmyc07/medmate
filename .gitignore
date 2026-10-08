@@ -1,0 +1,28 @@
+# Node.js 與 Next.js 產物
+node_modules/
+.next/
+out/
+coverage/
+*.tsbuildinfo
+
+# 本機設定與秘密（範例檔可追蹤）
+.env*
+!.env.example
+!.env.*.example
+
+# 使用者提供或匯出的資料與資料庫檔案
+*.csv
+*.bak
+*.dump
+*.bacpac
+*.mdf
+*.ldf
+*.sql.gz
+*.sql.zip
+
+# 常見本機產物
+.DS_Store
+Thumbs.db
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
