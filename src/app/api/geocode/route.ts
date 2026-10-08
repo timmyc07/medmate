@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 type GeocodeResult = { address: string; latitude: number | null; longitude: number | null; formattedAddress: string | null; status: string };
 
 export async function POST(request: Request): Promise<Response> {
-  const key = process.env.GOOGLE_MAP_API_KEY;
+  const key = process.env.GOOGLE_GEOCODING_API_KEY ?? process.env.GOOGLE_MAP_API_KEY;
   if (!key) return NextResponse.json({ error: { code: "GEOCODER_NOT_CONFIGURED", message: "地址定位服務尚未設定。" } }, { status: 503 });
   let body: unknown;
   try { body = await request.json(); } catch { return NextResponse.json({ error: { code: "INVALID_JSON", message: "請提供有效的 JSON。" } }, { status: 400 }); }
