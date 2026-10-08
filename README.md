@@ -2,14 +2,14 @@
 
 MediMate 是以手機瀏覽為優先的繁體中文藥局與藥品公開查詢網站。首版採用 Next.js App Router 與 TypeScript，網頁透過伺服器端 API 查詢資料；瀏覽器不會直接連接 SQL Server。
 
-## 目前範圍
+## 現行實作與資料狀態
 
-- 首版規劃提供藥局與藥品公開查詢，不提供診斷或治療建議。
-- 開發階段只使用 Parallels 虛擬機內的本機 SQL Server；不將該伺服器暴露到公開網路。
-- Azure SQL Database 與 Azure App Service 是後續線上部署方向。GitHub 用於版本控制與部署流程，不是資料庫主機；建立雲端資源前須先確認資料來源授權、資料時效、Azure 訂閱與成本。
-- 首版不包含帳號、個人藥箱或個人查詢歷史。
-- 使用者提供的 CSV、資料庫匯出/備份、`.env`、密碼、金鑰及其他秘密資訊不得提交到 GitHub。
-- 來源與授權尚未核實前，不複製資料到雲端，也不宣稱查詢結果為最新。來源資料沒有副作用欄位，因此網站不得補寫或暗示副作用資訊。
+- 網站使用手機優先的 Next.js App Router 與 TypeScript，包含藥局/藥品搜尋介面、分頁與同源 API 路由。
+- Render 部署設定位於 `render.yaml`，使用 Free Node Web Service。Free 方案閒置 15 分鐘會休眠，下一次請求約一分鐘喚醒；此方案是網站預覽，不是即時可用承諾。
+- 目前未連接資料庫，API 會安全回覆服務暫時無法使用。Parallels SQL Server 不會公開到網際網路。
+- 官方資料集與開放授權已完成初步核實；附件是否為現行官方版本，以及藥局/藥品有效狀態規則仍待比對確認。沒有上傳或公開附件 CSV，啟用查詢前必須依[來源查證文件](docs/data-sources.md)重新取得官方資料並完成狀態驗證。
+- 網站不提供診斷或治療建議，也不含帳號、個人藥箱或個人查詢歷史。來源資料沒有副作用欄位，網站不會補寫副作用內容。
+- CSV、資料庫匯出/備份、`.env`、密碼、API key 及其他秘密資訊不得提交 GitHub。Render 管理用 API key 只用於管理平台，不能加入網站執行環境。
 
 ## 文件
 
@@ -19,4 +19,4 @@ MediMate 是以手機瀏覽為優先的繁體中文藥局與藥品公開查詢�
 
 ## 開發狀態
 
-目前專案處於實作階段；本 README 所述為核准範圍與安全界線，不代表網站、資料庫連線或雲端部署已完成。程式 lint 使用 Biome；Next.js production build、TypeScript 型別檢查與測試分別驗證框架相容性、型別及功能。Biome 不包含 Next.js 專屬 ESLint 規則。
+啟動與部署細節見[維運文件](docs/operations.md)。程式 lint 使用 Biome；production build、TypeScript 型別檢查與測試分別驗證框架相容性、型別及功能。Biome 不包含 Next.js 專屬 ESLint 規則。

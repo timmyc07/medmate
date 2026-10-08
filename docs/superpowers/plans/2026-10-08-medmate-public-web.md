@@ -1,10 +1,12 @@
 # MediMate 公開查詢網頁實作計劃
 
+> **狀態（2026-10-08）：** 手機優先網站、搜尋 API 邊界、Render Free Blueprint 與官方來源文件已完成；即將部署的是無資料預覽。官方頁面已確認三個資料集的來源/開放授權，但附件版本核對、有效狀態規則、Parallels SQL schema/驗證模式及雲端資料庫尚未完成，不能展示真實資料。Render 服務建立待本輪程式碼推送後重試。
+>
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** 建立可在手機與桌面使用的繁體中文 MediMate 網頁，透過伺服器端唯讀 API 搜尋本機開發 SQL Server 中的藥局與藥品資料。
+**Goal:** 建立可在手機與桌面使用的繁體中文 MediMate 網頁，包含具界線的藥局/藥品搜尋 API，並以 Render Free 提供無資料預覽；附件版本、狀態規則和託管資料庫完成驗證前不公開資料列。
 
-**Architecture:** 使用 Next.js App Router、TypeScript 與 server-only `mssql` repository，瀏覽器只呼叫有輸入限制及分頁的 Route Handlers。首階段只接本機 Parallels SQL Server；Azure SQL 與 GitHub Actions 部署設定保留清楚邊界，等資料來源授權/時效和雲端訂閱確認後再上線。
+**Architecture:** 使用 Next.js App Router、TypeScript 與有界的 Route Handlers；瀏覽器只呼叫同源 API。Render Free 提供網站預覽，不會連至本機 Parallels SQL Server。只有在資料來源發布資格、雲端 SQL Server 和唯讀身分都確認後，才可啟用 server-only `mssql` repository；Azure SQL 可作為未來雲端資料庫選項。
 
 **Tech Stack:** Node.js 24 LTS；Next.js 16.4.0；React/React DOM 19.3.0；TypeScript 5.9.x（固定 patch 版本並提交 lockfile，暫不採用尚未確認與 Next.js 建置相容性的 TypeScript 7）；`mssql` 12.7.4；Vitest 與 React Testing Library（以建立當日官方文件確認版本）。
 
@@ -17,7 +19,7 @@
 - 前端不得直接連 SQL Server；只允許 server-side、參數化、唯讀查詢。
 - API 搜尋字串長度最多 100 字元，每頁最多 50 筆；錯誤回應不回傳資料庫細節，應用日誌不得記錄藥品搜尋原字串。
 - 不納入負責人姓名/性別欄位、不建立帳號/藥箱/個人查詢歷史、不提供診斷或治療建議。
-- 來源授權、官方資料集網址、更新頻率、日期語意和有效狀態規則未獲官方證據前，不複製附件 CSV 到雲端、不把資料標示為最新或供公開網際網路查詢。
+- 官方頁已查證的資料集網址、授權與更新頻率列於 `docs/data-sources.md`；附件版本及狀態規則未驗證前，不複製附件 CSV 到雲端、不把資料標示為最新或供公開網際網路查詢。
 - 本機 SQL Server 若僅有 Windows/Trusted Connection，`mssql`/Tedious 不支援該驗證方式；需先確認現有連線模式。只在已有 SQL Authentication 且可建立唯讀專用帳號時使用環境變數連線；不得為了通過測試而開啟 VM 對外連線或變更伺服器驗證模式。
 - Azure 資源建立、付費資料庫建立及正式公開部署不在此本機實作計劃內；待 Azure 訂閱/成本界線與資料發布資格確認後另案執行。
 - 每次變更前讀取對應程式與文件並核對官方文件；實作前/PR 前/推送前完成三輪獨立審查。依 AGENTS.md 於完成後 commit/push；敏感資料不得進入公開 GitHub。

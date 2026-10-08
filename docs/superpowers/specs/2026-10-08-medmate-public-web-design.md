@@ -1,5 +1,7 @@
 # MediMate public web app design
 
+> **使用者部署指示修訂（2026-10-08）：** 首版網站託管改採 Render Node Web Service（Free 預覽），覆蓋原定 Azure App Service 部署目標；Azure SQL 保留為未來選項。Render 網站不連接本機 Parallels SQL Server。官方資料集與開放授權已查證，但附件版本及資料狀態語意仍待核驗，因此預覽站不公開任何資料列。Free 方案會休眠，僅供預覽，不承諾即時可用性。
+
 ## Goal and first release
 
 MediMate will provide a mobile-first Traditional Chinese website for public lookups of pharmacies and medicine records. The first release will not create accounts, save a user's medicine box, or keep individual search history. Those features would handle personal information and need a separate authentication and privacy design.
