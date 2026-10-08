@@ -45,7 +45,7 @@ describe("Neon 公開資料查詢", () => {
 
     expect(result.items[0]).toMatchObject({ id: "5902", distanceKm: 300 });
     expect(query.mock.calls[0][0]).not.toContain("<=");
-    expect(query.mock.calls[0][1]).toEqual([25.04, 121.52]);
+    expect(query.mock.calls[0][1]).toEqual([]);
     expect(query.mock.calls[1][0]).toContain("ORDER BY distance_km");
     expect(query.mock.calls[1][1]).toEqual([25.04, 121.52, 20, 0]);
   });

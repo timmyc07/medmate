@@ -26,6 +26,7 @@ export async function searchPharmacies(params: SearchParams): Promise<Page<Pharm
   const latitude = params.latitude;
   const longitude = params.longitude;
   const hasCoordinates = latitude !== undefined && longitude !== undefined;
+  let countValues: (string | number)[];
   const distanceExpression = hasCoordinates
     ? `(6371 * acos(least(1, cos(radians($${values.length + 1})) * cos(radians(latitude)) * cos(radians(longitude) - radians($${values.length + 2})) + sin(radians($${values.length + 1})) * sin(radians(latitude)))))`
     : null;
@@ -34,12 +35,16 @@ export async function searchPharmacies(params: SearchParams): Promise<Page<Pharm
     if (params.radiusKm !== undefined) {
       values.push(latitude, longitude, params.radiusKm);
       clauses.push(`${distanceExpression} <= $${values.length}`);
+      countValues = [...values];
     } else {
       values.push(latitude, longitude);
+      countValues = values.slice(0, -2);
     }
+  } else {
+    countValues = [...values];
   }
   const filter = clauses.map((clause) => `(${clause})`).join(" AND ");
-  const count = await pool.query<{ total: string }>(`SELECT COUNT(*)::text AS total FROM pharmacy_contracts WHERE ${filter}`, values);
+  const count = await pool.query<{ total: string }>(`SELECT COUNT(*)::text AS total FROM pharmacy_contracts WHERE ${filter}`, countValues);
   const offset = (params.page - 1) * params.pageSize;
   const rows = await pool.query<{
     institution_code: string; institution_name: string; address: string; phone: string;
