@@ -15,4 +15,16 @@ describe("搜尋參數", () => {
       expect(() => parseSearchParams(new URLSearchParams(query))).toThrow();
     }
   });
+
+  it("藥局位置查詢可只使用縣市與區域，並驗證座標範圍", () => {
+    expect(parseSearchParams(new URLSearchParams("city=臺北市&district=中正區"), true, true)).toEqual({
+      keyword: "",
+      city: "臺北市",
+      district: "中正區",
+      page: 1,
+      pageSize: 20,
+    });
+    expect(() => parseSearchParams(new URLSearchParams("lat=91&lng=121"), true, true)).toThrow();
+    expect(() => parseSearchParams(new URLSearchParams("city=&district="), true, true)).toThrow();
+  });
 });

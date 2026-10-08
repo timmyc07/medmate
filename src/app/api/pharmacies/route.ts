@@ -4,7 +4,7 @@ import { searchPharmacies } from "../../../lib/db/pharmacies";
 export async function GET(request: Request): Promise<Response> {
   let params: SearchParams;
   try {
-    params = parseSearchParams(new URL(request.url).searchParams, true);
+    params = parseSearchParams(new URL(request.url).searchParams, true, true);
   } catch (error) {
     if (error instanceof InvalidSearchParamsError) {
       return Response.json({ error: { code: "INVALID_QUERY", message: error.message } }, { status: 400 });

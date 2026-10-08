@@ -33,3 +33,9 @@ Render 必須設定 `DATABASE_URL` 為 Neon pooled URL。direct `DATABASE_URL_UN
 Render API key 僅是平台管理憑證，不要加入 Render 網站的 runtime env、Render Blueprint 或 Git。若需在本機供 Render CLI/管理腳本使用，可存於被 `.gitignore` 忽略的 `.env.local`，使用 `RENDER_API_KEY` 名稱；此檔只存在本機，不要複製到 Render 網站環境。此專案目前沒有程式會讀取該變數，也不會把它傳給瀏覽器。已在對話中提供的 key 應儘速輪替。
 
 Render 只連 Neon，不直接連私人 Parallels VM。資料匯入來源為官方 CSV，發布條件與欄位白名單見資料來源文件。
+
+## 位置與地圖查詢
+
+藥局查詢提供兩種流程：使用者可在 HTTPS 網站按下「使用目前位置找附近藥局」，瀏覽器才會請求 Geolocation 權限；或填寫縣市與區域查詢。精確座標只在當次瀏覽器狀態中使用，不送入資料庫、不寫應用程式日誌。API 以 `lat`、`lng`、`radiusKm` 查詢 Neon 中已有座標的紀錄並以距離排序，半徑限制為 0.5 至 50 公里。
+
+目前匯入的健保藥局 CSV 只有地址文字，未包含經緯度，因此現階段縣市/區域清單可用，地圖會在沒有座標時顯示查詢範圍與資料狀態，不會自行猜測座標。請勿把全量地址批次送到 Nominatim 公共服務；其政策禁止系統化查詢與完整 POI 下載。未來若接入政府或商用合法座標來源，應透過 `geocode_provider`、`geocoded_at` 欄位記錄來源與時間，先在測試 branch 驗證後再更新 production。

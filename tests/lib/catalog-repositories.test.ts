@@ -29,4 +29,14 @@ describe("Neon 公開資料查詢", () => {
     expect(query.mock.calls[0][1]).toEqual(["%安心%", "臺北市%"]);
     expect(query.mock.calls[1][1]).toEqual(["%安心%", "臺北市%", 20, 0]);
   });
+
+  it("位置查詢只回傳有座標的藥局並以距離排序", async () => {
+    query.mockResolvedValueOnce({ rows: [{ total: "1" }] }).mockResolvedValueOnce({ rows: [{ institution_code: "5901", institution_name: "安心藥局", address: "臺北市中正區", phone: "02", city: "臺北市", termination_date: null, source_updated_at: "2026-10-08", latitude: "25.04", longitude: "121.52", distance_km: "0.42" }] });
+    const result = await searchPharmacies({ keyword: "", city: "臺北市", district: "中正區", latitude: 25.04, longitude: 121.52, radiusKm: 10, page: 1, pageSize: 20 });
+
+    expect(result.items[0]).toMatchObject({ latitude: 25.04, longitude: 121.52, distanceKm: 0.42 });
+    expect(query.mock.calls[0][0]).toContain("latitude IS NOT NULL");
+    expect(query.mock.calls[0][0]).toContain("acos");
+    expect(query.mock.calls[0][1]).toEqual(["臺北市%", "%中正區%", 25.04, 121.52, 10]);
+  });
 });

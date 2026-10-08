@@ -7,6 +7,7 @@ export function PharmacyResult({ item }: { item: Pharmacy }) {
         <h3>{item.name}</h3>
         <p>{item.address || "地址資料未提供"}</p>
         {item.city && <span className="result-meta">{item.city}</span>}
+        {item.distanceKm != null && <span className="result-meta">距離約 {item.distanceKm.toFixed(1)} 公里</span>}
       </div>
       {item.phone && <a className="call-link" href={`tel:${item.phone}`} aria-label={`撥打 ${item.name}`}>撥打電話</a>}
     </article>

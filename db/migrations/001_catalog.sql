@@ -30,11 +30,20 @@ CREATE TABLE IF NOT EXISTS pharmacy_contracts (
   services text NOT NULL DEFAULT '',
   termination_date date,
   contract_start_date date,
-  source_updated_at timestamptz NOT NULL
+  source_updated_at timestamptz NOT NULL,
+  latitude double precision CHECK (latitude IS NULL OR latitude BETWEEN -90 AND 90),
+  longitude double precision CHECK (longitude IS NULL OR longitude BETWEEN -180 AND 180),
+  geocoded_at timestamptz,
+  geocode_provider text
 );
 CREATE INDEX IF NOT EXISTS pharmacy_contracts_name_idx ON pharmacy_contracts (institution_name);
 CREATE INDEX IF NOT EXISTS pharmacy_contracts_address_idx ON pharmacy_contracts (address);
 CREATE INDEX IF NOT EXISTS pharmacy_contracts_termination_idx ON pharmacy_contracts (termination_date);
+ALTER TABLE pharmacy_contracts ADD COLUMN IF NOT EXISTS latitude double precision CHECK (latitude IS NULL OR latitude BETWEEN -90 AND 90);
+ALTER TABLE pharmacy_contracts ADD COLUMN IF NOT EXISTS longitude double precision CHECK (longitude IS NULL OR longitude BETWEEN -180 AND 180);
+ALTER TABLE pharmacy_contracts ADD COLUMN IF NOT EXISTS geocoded_at timestamptz;
+ALTER TABLE pharmacy_contracts ADD COLUMN IF NOT EXISTS geocode_provider text;
+CREATE INDEX IF NOT EXISTS pharmacy_contracts_coordinates_idx ON pharmacy_contracts (latitude, longitude) WHERE latitude IS NOT NULL AND longitude IS NOT NULL;
 
 CREATE TABLE IF NOT EXISTS medicines (
   license_number text PRIMARY KEY,

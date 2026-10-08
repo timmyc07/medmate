@@ -7,6 +7,9 @@ export interface Pharmacy {
   city: string | null;
   status: string | null;
   sourceUpdatedAt: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  distanceKm?: number | null;
 }
 
 /** 藥品公開資料的前端/API 共用 DTO。 */

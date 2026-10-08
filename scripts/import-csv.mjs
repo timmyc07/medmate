@@ -186,6 +186,7 @@ export async function importCsvFiles({
   const results = {};
   try {
     await client.query("BEGIN");
+    await client.query("CREATE TEMP TABLE pharmacy_contract_coordinates ON COMMIT DROP AS SELECT institution_code, latitude, longitude, geocoded_at, geocode_provider FROM pharmacy_contracts WHERE latitude IS NOT NULL AND longitude IS NOT NULL");
     for (const [key, source] of Object.entries(SOURCES)) {
       await client.query(`DELETE FROM ${source.table}`);
       const filepath = `${inputDirectory}/${source.file}`;
@@ -199,6 +200,9 @@ export async function importCsvFiles({
         "INSERT INTO source_imports(dataset_key,source_url,retrieved_at,source_sha256,row_count,batch_id) VALUES ($1,$2,$3,$4,$5,$6) ON CONFLICT (dataset_key) DO UPDATE SET source_url=excluded.source_url,retrieved_at=excluded.retrieved_at,source_sha256=excluded.source_sha256,row_count=excluded.row_count,batch_id=excluded.batch_id",
         [key, source.url, retrievedAt, sha256, rowCount, batchId],
       );
+      if (key === "nhi_pharmacies") {
+        await client.query("UPDATE pharmacy_contracts AS current SET latitude = saved.latitude, longitude = saved.longitude, geocoded_at = saved.geocoded_at, geocode_provider = saved.geocode_provider FROM pharmacy_contract_coordinates AS saved WHERE current.institution_code = saved.institution_code");
+      }
       results[key] = { rowCount, sha256 };
     }
     await client.query("COMMIT");
