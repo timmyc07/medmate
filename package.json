@@ -14,6 +14,8 @@
   "type": "module",
   "private": true,
   "dependencies": {
+    "@neon/config": "^1.8.4",
+    "@neon/env": "^1.5.1",
     "next": "16.4.0",
     "react": "19.3.0",
     "react-dom": "19.3.0",

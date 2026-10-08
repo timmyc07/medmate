@@ -14,6 +14,12 @@
 
 `.env.example` 列出未來連線變數名稱。真正密碼只能放在本機被忽略的 `.env.local` 或託管平台的秘密變數，不能放 GitHub；本輪 Render 服務不需要或設定任何 SQL 憑證。
 
+## Neon PostgreSQL
+
+Neon CLI 8.0.12 已登入本機帳號，專案 `lingering-sun-32547332` 已連結 `production` branch。`neon.ts` 使用官方 `@neon/config` 的空 policy，`@neon/config` 與 `@neon/env` 已加入 npm dependencies。`.neon` 連結資料與 `.env.local` 連線變數均由 Git 忽略；不要提交 API key、資料庫 URL 或其他秘密。Codex 專案 MCP 設定在 `.codex/config.toml`，採 OAuth、只限定該 Neon project 並限制唯讀；Neon agent skills 安裝於 `.agents/skills/`。
+
+執行 `neon config plan --project-id lingering-sun-32547332 --branch production` 確認 policy 無變更後，`neon deploy` 已套用設定。此步驟只確認 Neon branch policy，不會建立 MediMate schema、匯入 CSV 或接通網站查詢；Render 服務也尚未設定 `DATABASE_URL`。新增 schema/repository 與驗證資料後，才可啟用線上查詢。
+
 ## Render
 
 `render.yaml` 定義 Node Web Service，使用 `npm ci && npm run build` 建置、`npm start` 啟動，健康路徑為 `/api/health`，計算方案為 Free。Node 版本固定為 `.node-version` 的 24.21.0。Free Web Service 閒置 15 分鐘會休眠，收到下一個請求後約一分鐘重新喚醒；檔案系統為暫存性質，不應將本機檔案當持久資料保存。這適合預覽，不保證可用性或隨時即時回應；升級為付費方案前應先確認費用。
