@@ -36,6 +36,12 @@ Render 只連 Neon，不直接連私人 Parallels VM。資料匯入來源為官�
 
 ## 位置與地圖查詢
 
+### Google Maps 與地址定位
+
+網站地圖目前使用 Google Maps JavaScript API。Render 或本機執行環境需要設定 `GOOGLE_MAP_API_KEY`，並在 Google Cloud 專案啟用 Maps JavaScript API 與 Geocoding API；Google 官方服務仍受帳務、配額、API key referrer/IP 限制與服務條款約束，不能以程式繞過計費。前端只呼叫同源 `/api/maps-config` 載入地圖，地址定位由 `/api/geocode` 伺服器端代理，單次最多處理 20 個地址且只保留在當次查詢結果。
+
+地址轉換依附件官方範例採用 `geocode({ address })` 的概念，改用 Geocoding Web Service 以避免暴露伺服器 key。無法定位的地址仍顯示於文字清單，不以行政區中心點代替。若未設定 key 或 Google 回傳錯誤，地圖會顯示服務狀態而不影響藥局文字搜尋。
+
 藥局查詢提供兩種流程：使用者可在 HTTPS 網站按下「使用目前位置找附近藥局」，瀏覽器才會請求 Geolocation 權限；或填寫縣市與區域查詢。精確座標只在當次瀏覽器狀態中使用，不送入資料庫、不寫應用程式日誌。API 以 `lat`、`lng`、`radiusKm` 查詢 Neon 中已有座標的紀錄並以距離排序，半徑限制為 0.5 至 50 公里。
 
 縣市與鄉鎮市區選單涵蓋全台 22 縣市、368 鄉鎮市區；清單核對來源為[內政部戶政司人口統計資料開放平台](https://www.ris.gov.tw/rs-opendata/api/v1/datastore/ODRP019/114) 114 年村里戶數、單一年齡人口資料的行政區欄位。選定縣市後區域選單只顯示該縣市行政區，改選縣市會清除已選區域。

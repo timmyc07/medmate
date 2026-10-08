@@ -97,7 +97,6 @@ export default function SearchPanel({ kind, enabled = true }: { kind: Kind; enab
       {error && <p className="state-message state-error" role="alert">{error}</p>}
       {kind === "pharmacies" && result && <>
         <PharmacyMap pharmacies={result.items as Pharmacy[]} userLocation={location} />
-        {(result.items as Pharmacy[]).some((item) => item.latitude === null || item.longitude === null) && <p className="state-message" role="status">地圖標示 {(result.items as Pharmacy[]).filter((item) => item.latitude !== null && item.longitude !== null).length} 家有座標藥局；另有 {(result.items as Pharmacy[]).filter((item) => item.latitude === null || item.longitude === null).length} 家尚無座標，仍列於下方清單。</p>}
       </>}
       {result && result.items.length === 0 && <p className="state-message" role="status">沒有符合條件的{label}資料。</p>}
       {result && result.items.length > 0 && <>
