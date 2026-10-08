@@ -1,0 +1,31 @@
+{
+  "name": "medmate",
+  "version": "0.1.0",
+  "description": "MediMate 是以手機瀏覽為優先的繁體中文藥局與藥品公開查詢網站。首版採用 Next.js App Router 與 TypeScript，網頁透過伺服器端 API 查詢資料；瀏覽器不會直接連接 SQL Server。",
+  "scripts": {
+    "test": "vitest",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "build": "next build"
+  },
+  "license": "UNLICENSED",
+  "type": "module",
+  "private": "true",
+  "dependencies": {
+    "next": "16.4.0",
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "24.19.0",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "5.2.0",
+    "eslint": "9.39.5",
+    "eslint-config-next": "16.4.0",
+    "typescript": "5.9.3",
+    "vite": "8.3.3",
+    "vitest": "5.0.3"
+  },
+  "overrides": {}
+}
