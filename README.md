@@ -19,4 +19,4 @@ MediMate 是以手機瀏覽為優先的繁體中文藥局與藥品公開查詢�
 
 ## 開發狀態
 
-目前專案處於實作階段；本 README 所述為核准範圍與安全界線，不代表網站、資料庫連線或雲端部署已完成。
+目前專案處於實作階段；本 README 所述為核准範圍與安全界線，不代表網站、資料庫連線或雲端部署已完成。程式 lint 使用 Biome；Next.js production build、TypeScript 型別檢查與測試分別驗證框架相容性、型別及功能。Biome 不包含 Next.js 專屬 ESLint 規則。
