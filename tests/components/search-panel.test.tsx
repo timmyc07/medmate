@@ -1,6 +1,7 @@
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import SearchPanel from "../../src/components/SearchPanel";
+import { TAIWAN_ADMINISTRATIVE_AREAS, TAIWAN_CITIES } from "../../src/lib/taiwan-administrative-areas";
 
 describe("搜尋面板", () => {
   beforeEach(() => vi.restoreAllMocks());
@@ -22,14 +23,38 @@ describe("搜尋面板", () => {
     expect(screen.getByRole("button", { name: "搜尋" })).toBeEnabled();
   });
 
+  it("包含全台 22 個縣市與 368 個鄉鎮市區", () => {
+    expect(TAIWAN_CITIES).toHaveLength(22);
+    expect(Object.values(TAIWAN_ADMINISTRATIVE_AREAS).reduce((total, districts) => total + districts.length, 0)).toBe(368);
+  });
+
   it("藥局可用縣市與區域查詢，不必輸入關鍵字", async () => {
     vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response(JSON.stringify({ items: [], page: 1, pageSize: 20, total: 0 }), { status: 200 }));
     render(<SearchPanel kind="pharmacies" enabled />);
-    fireEvent.change(screen.getByPlaceholderText("縣市，例如臺北市"), { target: { value: "臺北市" } });
-    fireEvent.change(screen.getByPlaceholderText("區域，例如中正區"), { target: { value: "中正區" } });
+    fireEvent.change(screen.getByRole("combobox", { name: "縣市" }), { target: { value: "臺北市" } });
+    fireEvent.change(screen.getByRole("combobox", { name: "區域" }), { target: { value: "中正區" } });
     fireEvent.click(screen.getByRole("button", { name: "搜尋" }));
 
     await waitFor(() => expect(globalThis.fetch).toHaveBeenCalledWith(expect.stringContaining("city=%E8%87%BA%E5%8C%97%E5%B8%82"), expect.anything()));
     expect(globalThis.fetch).toHaveBeenCalledWith(expect.stringContaining("district=%E4%B8%AD%E6%AD%A3%E5%8D%80"), expect.anything());
+  });
+
+  it("選擇縣市後只顯示對應行政區，換縣市會清除區域", () => {
+    render(<SearchPanel kind="pharmacies" enabled />);
+    const city = screen.getByRole("combobox", { name: "縣市" });
+    const district = screen.getByRole("combobox", { name: "區域" });
+
+    expect(district).toBeDisabled();
+    expect(screen.getAllByRole("option").some((option) => option.textContent === "臺北市")).toBe(true);
+
+    fireEvent.change(city, { target: { value: "臺北市" } });
+    expect(district).toBeEnabled();
+    expect(screen.getByRole("option", { name: "中正區" })).toBeInTheDocument();
+    expect(screen.queryByRole("option", { name: "板橋區" })).not.toBeInTheDocument();
+    fireEvent.change(district, { target: { value: "中正區" } });
+    fireEvent.change(city, { target: { value: "新北市" } });
+    expect(district).toHaveValue("");
+    expect(screen.getByRole("option", { name: "板橋區" })).toBeInTheDocument();
+    expect(screen.queryByRole("option", { name: "中正區" })).not.toBeInTheDocument();
   });
 });

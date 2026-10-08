@@ -19,7 +19,7 @@ html { min-width: 320px; scroll-behavior: smooth; background: var(--canvas); }
 body { margin: 0; color: var(--ink); background: var(--canvas); font-family: "DM Sans", "Noto Sans TC", system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
 a { color: inherit; text-decoration: none; }
 button, input { font: inherit; }
-button:focus-visible, a:focus-visible, input:focus-visible { outline: 3px solid #62ad9e; outline-offset: 3px; }
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid #62ad9e; outline-offset: 3px; }
 .page-shell { width: min(100% - 40px, 1120px); min-height: 100svh; margin-inline: auto; padding: 24px 0 34px; }
 .site-header { display: flex; align-items: center; justify-content: space-between; padding-bottom: 18px; border-bottom: 1px solid var(--line); }
 .brand { display: inline-flex; align-items: center; gap: 10px; font-size: 1.04rem; font-weight: 700; letter-spacing: -0.04em; }
@@ -55,8 +55,9 @@ button:focus-visible, a:focus-visible, input:focus-visible { outline: 3px solid 
 .section-caption { color: #89938e; font-family: var(--mono); font-size: 0.62rem; }
 .search-form { display: grid; grid-template-columns: 1fr auto; gap: 9px; padding: 15px 0; }
 .search-field { min-width: 0; }
-.search-field input, .city-field input { width: 100%; min-width: 0; min-height: 48px; padding: 0 14px; border: 1px solid var(--line); border-radius: 6px; color: var(--ink); background: var(--paper); font-size: 0.88rem; }
-.search-field input::placeholder, .city-field input::placeholder { color: #9aa49f; }
+.search-field input, .city-field select, .district-field select { width: 100%; min-width: 0; min-height: 48px; padding: 0 14px; border: 1px solid var(--line); border-radius: 6px; color: var(--ink); background: var(--paper); font-size: 0.88rem; }
+.search-field input::placeholder { color: #9aa49f; }
+.city-field select:disabled, .district-field select:disabled { color: #9aa49f; background: #f0f2ed; cursor: not-allowed; }
 .city-field { grid-column: 1 / 2; }
 .district-field { grid-column: 1 / 2; }
 .search-button { grid-column: 2; grid-row: 1; min-width: 82px; padding: 0 19px; border: 0; border-radius: 6px; color: white; background: var(--brand); font-size: 0.86rem; font-weight: 600; cursor: pointer; }

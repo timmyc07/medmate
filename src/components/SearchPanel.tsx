@@ -4,6 +4,7 @@ import { useState, type FormEvent } from "react";
 import type { Medicine, Page, Pharmacy } from "../types/catalog";
 import { MedicineResult, PharmacyResult } from "./ResultCard";
 import PharmacyMap from "./PharmacyMap";
+import { TAIWAN_ADMINISTRATIVE_AREAS, TAIWAN_CITIES } from "../lib/taiwan-administrative-areas";
 
 type Kind = "pharmacies" | "medicines";
 
@@ -79,8 +80,14 @@ export default function SearchPanel({ kind, enabled = true }: { kind: Kind; enab
       <form className="search-form" onSubmit={(event) => void search(event)}>
         <label className="search-field"><span className="sr-only">搜尋{label}名稱或相關文字</span><input type="search" value={keyword} onChange={(event) => setKeyword(event.target.value)} placeholder={kind === "pharmacies" ? "藥局名稱或地址（可留空）" : "輸入藥品名稱或許可證字號"} maxLength={100} required={kind === "medicines"} disabled={!enabled} /></label>
         {kind === "pharmacies" && <>
-          <label className="city-field"><span className="sr-only">縣市</span><input value={city} onChange={(event) => { setCity(event.target.value); setLocation(null); }} placeholder="縣市，例如臺北市" maxLength={50} disabled={!enabled} /></label>
-          <label className="district-field"><span className="sr-only">區域</span><input value={district} onChange={(event) => { setDistrict(event.target.value); setLocation(null); }} placeholder="區域，例如中正區" maxLength={50} disabled={!enabled} /></label>
+          <label className="city-field"><span className="sr-only">縣市</span><select value={city} onChange={(event) => { setCity(event.target.value); setDistrict(""); setLocation(null); }} disabled={!enabled}>
+            <option value="">選擇縣市</option>
+            {TAIWAN_CITIES.map((name) => <option key={name} value={name}>{name}</option>)}
+          </select></label>
+          <label className="district-field"><span className="sr-only">區域</span><select value={district} onChange={(event) => { setDistrict(event.target.value); setLocation(null); }} disabled={!enabled || !city}>
+            <option value="">全部區域</option>
+            {(TAIWAN_ADMINISTRATIVE_AREAS[city] ?? []).map((name) => <option key={name} value={name}>{name}</option>)}
+          </select></label>
         </>}
         <button className="search-button" type="submit" disabled={!enabled || loading}>{!enabled ? "資料尚未開放" : loading ? "查詢中…" : "搜尋"}</button>
       </form>
@@ -88,9 +95,9 @@ export default function SearchPanel({ kind, enabled = true }: { kind: Kind; enab
       {!enabled && <p className="state-message" role="status">資料查詢目前暫停，請稍後再試。</p>}
       {loading && <p className="state-message" role="status">正在查詢{label}資料…</p>}
       {error && <p className="state-message state-error" role="alert">{error}</p>}
-      {kind === "pharmacies" && result && (location || (result.items as Pharmacy[]).some((item) => item.latitude !== null && item.longitude !== null)) && <>
+      {kind === "pharmacies" && result && <>
         <PharmacyMap pharmacies={result.items as Pharmacy[]} userLocation={location} />
-        {(result.items as Pharmacy[]).every((item) => item.latitude === null || item.longitude === null) && <p className="state-message" role="status">目前資料尚未提供藥局座標，地圖先顯示位置範圍；清單仍可正常使用。待合法座標來源完成核對後會補上標記。</p>}
+        {(result.items as Pharmacy[]).some((item) => item.latitude === null || item.longitude === null) && <p className="state-message" role="status">地圖標示 {(result.items as Pharmacy[]).filter((item) => item.latitude !== null && item.longitude !== null).length} 家有座標藥局；另有 {(result.items as Pharmacy[]).filter((item) => item.latitude === null || item.longitude === null).length} 家尚無座標，仍列於下方清單。</p>}
       </>}
       {result && result.items.length === 0 && <p className="state-message" role="status">沒有符合條件的{label}資料。</p>}
       {result && result.items.length > 0 && <>
