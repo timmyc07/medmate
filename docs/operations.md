@@ -18,6 +18,8 @@
 
 `render.yaml` 定義 Node Web Service，使用 `npm ci && npm run build` 建置、`npm start` 啟動，健康路徑為 `/api/health`，計算方案為 Free。Node 版本固定為 `.node-version` 的 24.21.0。Free Web Service 閒置 15 分鐘會休眠，收到下一個請求後約一分鐘重新喚醒；檔案系統為暫存性質，不應將本機檔案當持久資料保存。這適合預覽，不保證可用性或隨時即時回應；升級為付費方案前應先確認費用。
 
+目前公開預覽網址：[https://medmate-53s1.onrender.com](https://medmate-53s1.onrender.com)。2026-10-08 已確認 Render deploy `dep-db3jc5navr4c73a24dfg` 狀態為 Live（commit `4fb0e064dbf822c7a2f96bd2ef1f35b2be29fb4c`）；首頁與 `/api/health` 回應 HTTP 200。藥局/藥品搜尋因尚未連接託管資料庫而回 HTTP 503，前端搜尋控制項保持停用。Render Free 閒置時休眠，恢復服務可能延遲 50 秒以上。
+
 Render API key 僅是平台管理憑證，絕不可放入網站 runtime env、`.env`、Render Blueprint 或 Git。完成部署後應依使用者原意輪替該 key。
 
 本部署只提供網站預覽。由於託管網站不能直接連到私人 Parallels VM，且資料發布資格未核實，藥局/藥品搜尋不會展示真實資料。

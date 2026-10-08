@@ -1,6 +1,6 @@
 # MediMate 公開查詢網頁實作計劃
 
-> **狀態（2026-10-08）：** 手機優先網站、搜尋 API 邊界、Render Free Blueprint 與官方來源文件已完成；即將部署的是無資料預覽。官方頁面已確認三個資料集的來源/開放授權，但附件版本核對、有效狀態規則、Parallels SQL schema/驗證模式及雲端資料庫尚未完成，不能展示真實資料。Render 服務建立待本輪程式碼推送後重試。
+> **狀態（2026-10-08）：** 手機優先網站、搜尋 API 邊界、Render Free Blueprint 與官方來源文件已完成；無資料預覽已部署並確認 Live：https://medmate-53s1.onrender.com（commit `4fb0e064dbf822c7a2f96bd2ef1f35b2be29fb4c`）。首頁與健康檢查回 HTTP 200；搜尋 API 在尚未連接資料庫時回 HTTP 503，前端搜尋停用。官方頁面已確認三個資料集的來源/開放授權，但附件版本核對、有效狀態規則、Parallels SQL schema/驗證模式及雲端資料庫尚未完成，不能展示真實資料。
 >
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
