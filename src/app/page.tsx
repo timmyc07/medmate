@@ -31,9 +31,9 @@ export default function HomePage() {
       </nav>
 
       <section className="data-status" aria-label="資料狀態">
-        <span className="status-label"><span className="status-dot status-dot--muted" />資料連線</span>
-        <p>公開來源與授權仍在核實，線上資料查詢尚未啟用。</p>
-        <span className="status-code">DATA SOURCE PENDING</span>
+        <span className="status-label"><span className="status-dot" />資料連線</span>
+        <p>藥局與藥品資料來自政府公開資料；查詢結果會標示資料更新日期。</p>
+        <span className="status-code">PUBLIC DATA · NEON</span>
       </section>
 
       <div className="lookup-stack">

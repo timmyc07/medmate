@@ -6,7 +6,7 @@ import { MedicineResult, PharmacyResult } from "./ResultCard";
 
 type Kind = "pharmacies" | "medicines";
 
-export default function SearchPanel({ kind, enabled = false }: { kind: Kind; enabled?: boolean }) {
+export default function SearchPanel({ kind, enabled = true }: { kind: Kind; enabled?: boolean }) {
   const [keyword, setKeyword] = useState("");
   const [city, setCity] = useState("");
   const [page, setPage] = useState(1);
@@ -50,7 +50,7 @@ export default function SearchPanel({ kind, enabled = false }: { kind: Kind; ena
         {kind === "pharmacies" && <label className="city-field"><span className="sr-only">縣市</span><input value={city} onChange={(event) => setCity(event.target.value)} placeholder="縣市（選填）" maxLength={50} disabled={!enabled} /></label>}
         <button className="search-button" type="submit" disabled={!enabled || loading}>{!enabled ? "資料尚未開放" : loading ? "查詢中…" : "搜尋"}</button>
       </form>
-      {!enabled && <p className="state-message" role="status">資料來源核實完成後開放搜尋。</p>}
+      {!enabled && <p className="state-message" role="status">資料查詢目前暫停，請稍後再試。</p>}
       {loading && <p className="state-message" role="status">正在查詢{label}資料…</p>}
       {error && <p className="state-message state-error" role="alert">{error}</p>}
       {result && result.items.length === 0 && <p className="state-message" role="status">沒有符合條件的{label}資料。</p>}

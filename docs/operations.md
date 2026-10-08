@@ -18,14 +18,18 @@
 
 Neon CLI 8.0.12 已登入本機帳號，專案 `lingering-sun-32547332` 已連結 `production` branch。`neon.ts` 使用官方 `@neon/config` 的空 policy，`@neon/config` 與 `@neon/env` 已加入 npm dependencies。`.neon` 連結資料與 `.env.local` 連線變數均由 Git 忽略；不要提交 API key、資料庫 URL 或其他秘密。Codex 專案 MCP 設定在 `.codex/config.toml`，採 OAuth、只限定該 Neon project 並限制唯讀；Neon agent skills 安裝於 `.agents/skills/`。
 
-執行 `neon config plan --project-id lingering-sun-32547332 --branch production` 確認 policy 無變更後，`neon deploy` 已套用設定。此步驟只確認 Neon branch policy，不會建立 MediMate schema、匯入 CSV 或接通網站查詢；Render 服務也尚未設定 `DATABASE_URL`。新增 schema/repository 與驗證資料後，才可啟用線上查詢。
+執行 `neon config plan --project-id lingering-sun-32547332 --branch production` 確認 policy 無變更後，`neon deploy` 已套用設定。資料表由 `db/migrations/001_catalog.sql` 管理，查詢 repository 位於 `src/lib/db/`。Neon 官方建議 Render 等長駐 Node 服務使用 `pg`，web query 使用 pooled connection；migration/import 使用 direct connection。官方參考：[連線方式](https://neon.com/docs/connect/choose-connection.md)、[連線池](https://neon.com/docs/connect/connection-pooling.md)、[branching](https://neon.com/docs/introduction/branching.md)。
+
+Render 必須設定 `DATABASE_URL` 為 Neon pooled URL。direct `DATABASE_URL_UNPOOLED` 僅供本機人工執行 `npm run db:migrate` / `npm run db:import`，不可加入 Render runtime。不要列印連線 URL、寫進 Git 或前端。Pool 上限每個服務程序 5 條連線；查詢錯誤不寫入日誌。`/api/ready` 檢查資料庫是否可查詢，`/api/health` 只用於程序存活。
+
+首次 schema/import 驗證使用有到期時間的 Neon branch `medmate-import-test-20261008`。2026-10-08 已在驗證 branch 測試後，將 `001_catalog.sql` 套用 production 並從 `/Users/reikous/Downloads/藥品資料庫` 匯入三個受支援 CSV：FDA 藥局 9,155 原始列（去重後 9,153）、健保特約藥局 10,187 列、FDA 藥品許可證 72,074 原始列（去重後 66,510）；每個來源 SHA-256 與筆數寫入 `source_imports`。其餘新增 CSV/B5 檔案尚未納入產品功能。正式查詢與匯入帳號應分開管理並授予最小權限；Neon 預設 app connection 若仍使用 owner role，應另建唯讀角色。CSV 匯入命令和白名單/來源更新策略見[資料來源文件](data-sources.md)。原始 CSV 不應提交到 GitHub。
 
 ## Render
 
 `render.yaml` 定義 Node Web Service，使用 `npm ci && npm run build` 建置、`npm start` 啟動，健康路徑為 `/api/health`，計算方案為 Free。Node 版本固定為 `.node-version` 的 24.21.0。Free Web Service 閒置 15 分鐘會休眠，收到下一個請求後約一分鐘重新喚醒；檔案系統為暫存性質，不應將本機檔案當持久資料保存。這適合預覽，不保證可用性或隨時即時回應；升級為付費方案前應先確認費用。
 
-目前公開預覽網址：[https://medmate-53s1.onrender.com](https://medmate-53s1.onrender.com)。2026-10-08 已確認 Render deploy `dep-db3jc5navr4c73a24dfg` 狀態為 Live（commit `4fb0e064dbf822c7a2f96bd2ef1f35b2be29fb4c`）；首頁與 `/api/health` 回應 HTTP 200。藥局/藥品搜尋因尚未連接託管資料庫而回 HTTP 503，前端搜尋控制項保持停用。Render Free 閒置時休眠，恢復服務可能延遲 50 秒以上。
+公開網站：[https://medmate-53s1.onrender.com](https://medmate-53s1.onrender.com)。Render Web Service `medmate` 使用 GitHub `main` 自動部署。2026-10-08 已透過 Render API 設定 `DATABASE_URL` 為 Neon pooled URL，並已觸發部署；部署完成後需以首頁、`/api/ready`、兩個搜尋 API 驗證。Render Free 閒置時休眠，恢復服務可能延遲 50 秒以上，故不代表隨時即時可用性。
 
 Render API key 僅是平台管理憑證，不要加入 Render 網站的 runtime env、Render Blueprint 或 Git。若需在本機供 Render CLI/管理腳本使用，可存於被 `.gitignore` 忽略的 `.env.local`，使用 `RENDER_API_KEY` 名稱；此檔只存在本機，不要複製到 Render 網站環境。此專案目前沒有程式會讀取該變數，也不會把它傳給瀏覽器。已在對話中提供的 key 應儘速輪替。
 
-本部署只提供網站預覽。由於託管網站不能直接連到私人 Parallels VM，且資料發布資格未核實，藥局/藥品搜尋不會展示真實資料。
+Render 只連 Neon，不直接連私人 Parallels VM。資料匯入來源為官方 CSV，發布條件與欄位白名單見資料來源文件。

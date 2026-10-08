@@ -1,16 +1,17 @@
 # MediMate
 
-MediMate 是以手機瀏覽為優先的繁體中文藥局與藥品公開查詢網站。首版採用 Next.js App Router 與 TypeScript，網頁透過伺服器端 API 查詢資料；瀏覽器不會直接連接 SQL Server。
+MediMate 是以手機瀏覽為優先的繁體中文藥局與藥品公開查詢網站。採用 Next.js App Router、TypeScript 與 Neon PostgreSQL，網頁透過伺服器端 API 查詢資料。
 
 ## 現行實作與資料狀態
 
 - 網站使用手機優先的 Next.js App Router 與 TypeScript，包含藥局/藥品搜尋介面、分頁與同源 API 路由。
 - Render 部署設定位於 `render.yaml`，使用 Free Node Web Service。Free 方案閒置 15 分鐘會休眠，下一次請求約一分鐘喚醒；此方案是網站預覽，不是即時可用承諾。
-- Neon 專案已連結至 `production` branch，並加入最小 `neon.ts` 設定；目前尚未建立 MediMate 資料表或將網站 repository 接到 Neon，因此資料查詢功能仍未啟用。設定方式見[維運文件](docs/operations.md)。
-- 目前未連接資料庫，API 會安全回覆服務暫時無法使用。Parallels SQL Server 不會公開到網際網路。
-- 官方資料集與開放授權已完成初步核實；附件是否為現行官方版本，以及藥局/藥品有效狀態規則仍待比對確認。沒有上傳或公開附件 CSV，啟用查詢前必須依[來源查證文件](docs/data-sources.md)重新取得官方資料並完成狀態驗證。
+- 線上查詢由 Next.js server route 連接 Neon PostgreSQL；Render runtime 使用 `DATABASE_URL` pooled URL，資料庫 URL 不會送到瀏覽器。`/api/ready` 檢查資料庫連線，`/api/health` 保持程序存活檢查。
+- 三份政府 CSV 已由官方資源重新下載、核對 SHA-256，匯入 Neon。藥局使用健保特約來源；藥品只顯示有效日期未過且註銷狀態空白的資料。細節與更新方式見[資料來源文件](docs/data-sources.md)及[維運文件](docs/operations.md)。
+- Parallels SQL Server 不會公開到網際網路，這次遷移來源是官方 CSV，並非從本機 SQL Server dump。
 - 網站不提供診斷或治療建議，也不含帳號、個人藥箱或個人查詢歷史。來源資料沒有副作用欄位，網站不會補寫副作用內容。
 - CSV、資料庫匯出/備份、`.env`、密碼、API key 及其他秘密資訊不得提交 GitHub。Render 管理用 API key 只用於管理平台，不能加入網站執行環境。
+- 2026-10-08 已將使用者下載資料夾內與現有功能相符的三份 CSV 核對 hash 後匯入 Neon production。該資料夾的另外幾份醫材、外觀與健保藥價資料尚未納入現有搜尋模型，請先擴充 schema 與 UI/API 再匯入，避免將不同識別碼混合。
 
 ## 文件
 

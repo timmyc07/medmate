@@ -1,6 +1,6 @@
 # MediMate public web app design
 
-> **使用者部署指示修訂（2026-10-08）：** 首版網站託管改採 Render Node Web Service（Free 預覽），覆蓋原定 Azure App Service 部署目標；Azure SQL 保留為未來選項。Render 網站不連接本機 Parallels SQL Server。官方資料集與開放授權已查證，但附件版本及資料狀態語意仍待核驗，因此預覽站不公開任何資料列。Free 方案會休眠，僅供預覽，不承諾即時可用性。
+> **部署方向修訂（2026-10-08）：** 首版使用 Render Node Web Service 與 Neon PostgreSQL，覆蓋原定 Azure 架構。Parallels SQL Server 不對外開放；線上資料來自核對過的政府 CSV，保留來源、批次日期與有效資料篩選。Render Free 會休眠，不承諾即時可用性。
 
 ## Goal and first release
 
@@ -11,12 +11,12 @@ The user-approved direction is Next.js with TypeScript for both the web interfac
 ## Architecture
 
 - **Web and API:** Next.js App Router, with server-side Route Handlers for pharmacy and medicine search. The browser calls the app API and never connects to SQL Server directly.
-- **Hosting:** Azure App Service, deployed from the public GitHub repository with GitHub Actions.
-- **Database:** Azure SQL Database for online queries. The Parallels SQL Server remains a local development/source database; it will not be exposed to the public internet or queried directly by the deployed website.
-- **Database access:** server-only SQL Server driver and parameterized, read-only query paths for public endpoints. Production credentials should use the App Service managed identity where supported; local development uses ignored environment configuration.
+- **Hosting:** Render Node Web Service，從 GitHub 部署。
+- **Database:** Neon PostgreSQL for online queries. The Parallels SQL Server remains private and is not queried by the deployed website; validated government CSV resources supply catalog data.
+- **Database access:** server-only `pg` pool and parameterized query paths. Render uses a pooled `DATABASE_URL`; migrations and imports use an ignored local direct URL.
 - **Repository:** `https://github.com/timmyc07/medmate` is public. It contains source, schema/migration scripts, non-sensitive documentation, and deployment workflow. It must exclude CSV source files, database exports/backups, secrets, `.env` files, and user records.
 
-GitHub is the source-control and deployment trigger; it is not a database host. The online dataset is a separately managed Azure SQL copy populated from validated source data.
+GitHub is the source-control and deployment trigger; it is not a database host. The online dataset is a Neon copy populated from validated government CSV sources.
 
 ## User-facing behavior
 
@@ -28,9 +28,9 @@ GitHub is the source-control and deployment trigger; it is not a database host. 
 
 ## Data and ingestion
 
-The current local `PharmacyDB` contains data imported from user-supplied CSV files. The source headers show that pharmacy records include institution status and contact/address fields; pharmacy contract data includes termination/closure fields; medicine records include cancellation status, cancellation/effective dates, and indications, but not side effects.
+The prior local `PharmacyDB` contains imported user CSVs. The public Neon catalog is populated from re-downloaded government sources. Pharmacy contract records include termination dates; medicine records include cancellation status, valid-until dates, and indications, but not side effects.
 
-Before data is copied to Azure SQL or shown as current, ingestion must verify each source against its official publisher, confirm reuse terms, record source URL and retrieval date, normalize identifiers and encoding, deduplicate records, and define explicit active/current filters from the publisher's status/date fields. Cancelled/expired medicines and closed/terminated pharmacies must not appear as current results. Records with ambiguous status should be labeled or excluded until resolved. Each imported dataset must retain source/provenance metadata and an update timestamp.
+Ingestion verifies official publishers and reuse terms, records source URLs and retrieval time, normalizes identifiers and encoding, deduplicates records, and applies explicit status/date filters. Cancelled/expired medicines and terminated pharmacies are excluded. Each imported dataset retains source metadata and an update timestamp.
 
 The CSVs and database contents remain local and untracked. The app repository contains only schema and repeatable import tooling that reads a local or secret-provided input path.
 
@@ -38,17 +38,17 @@ The CSVs and database contents remain local and untracked. The app repository co
 
 - Only server-side code can read database configuration; browser bundles contain no connection string or SQL credential.
 - Public query endpoints use read-only permissions, parameterized queries, input limits, pagination, and generic error responses.
-- Production database access is restricted to the app identity/network path where Azure supports it. The local Parallels instance is not port-forwarded for public use.
+- Production database access is server-side only. The local Parallels instance is not port-forwarded for public use.
 - GitHub Actions receives deployment credentials through workload identity/OIDC or protected repository secrets; no credentials are committed.
 - Do not collect accounts, health histories, or search histories in the first release.
-- Deployment configuration and code can be prepared in GitHub. Creating or enabling paid Azure resources requires an available Azure subscription and must be reviewed for cost before provisioning.
+- Render and Neon costs depend on selected plans; Render Free may sleep.
 
 ## Validation and acceptance
 
 - Official dataset sources, reuse terms, retrieval dates, and active-status rules are documented before loading the online dataset.
 - Tests cover search input validation, pagination bounds, SQL parameterization paths, inactive-record filtering, and empty/error results.
-- The mobile UI can search pharmacies and medicines against a local SQL Server development database without exposing credentials to the client.
-- A production configuration can target Azure SQL and deploy through GitHub Actions without storing secrets in the repository.
+- The mobile UI can search pharmacies and medicines through server-side Neon queries without exposing credentials to the client.
+- A production configuration can target Neon and deploy from GitHub without storing secrets in the repository.
 - Repository history and current contents contain no supplied CSVs, database dumps, or credentials.
 - The public site labels source freshness and does not claim side-effect or personalized medical advice unsupported by the source data.
 
