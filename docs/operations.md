@@ -20,6 +20,6 @@
 
 目前公開預覽網址：[https://medmate-53s1.onrender.com](https://medmate-53s1.onrender.com)。2026-10-08 已確認 Render deploy `dep-db3jc5navr4c73a24dfg` 狀態為 Live（commit `4fb0e064dbf822c7a2f96bd2ef1f35b2be29fb4c`）；首頁與 `/api/health` 回應 HTTP 200。藥局/藥品搜尋因尚未連接託管資料庫而回 HTTP 503，前端搜尋控制項保持停用。Render Free 閒置時休眠，恢復服務可能延遲 50 秒以上。
 
-Render API key 僅是平台管理憑證，絕不可放入網站 runtime env、`.env`、Render Blueprint 或 Git。完成部署後應依使用者原意輪替該 key。
+Render API key 僅是平台管理憑證，不要加入 Render 網站的 runtime env、Render Blueprint 或 Git。若需在本機供 Render CLI/管理腳本使用，可存於被 `.gitignore` 忽略的 `.env.local`，使用 `RENDER_API_KEY` 名稱；此檔只存在本機，不要複製到 Render 網站環境。此專案目前沒有程式會讀取該變數，也不會把它傳給瀏覽器。已在對話中提供的 key 應儘速輪替。
 
 本部署只提供網站預覽。由於託管網站不能直接連到私人 Parallels VM，且資料發布資格未核實，藥局/藥品搜尋不會展示真實資料。
