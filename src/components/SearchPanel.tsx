@@ -96,14 +96,13 @@ export default function SearchPanel({ kind, enabled = true }: { kind: Kind; enab
       {loading && <p className="state-message" role="status">正在查詢{label}資料…</p>}
       {error && <p className="state-message state-error" role="alert">{error}</p>}
       {kind === "pharmacies" && result && <>
+        <div className="result-summary">找到 {result.total.toLocaleString()} 筆，第 {result.page} 頁</div>
+        <div className="results-list">{(result.items as Pharmacy[]).map((item) => <PharmacyResult key={item.id} item={item} />)}</div>
         <PharmacyMap pharmacies={result.items as Pharmacy[]} userLocation={location} />
       </>}
       {result && result.items.length === 0 && <p className="state-message" role="status">沒有符合條件的{label}資料。</p>}
       {result && result.items.length > 0 && <>
-        <div className="result-summary">找到 {result.total.toLocaleString()} 筆，第 {result.page} 頁</div>
-        <div className="results-list">{result.items.map((item) => kind === "pharmacies"
-          ? <PharmacyResult key={item.id} item={item as Pharmacy} />
-          : <MedicineResult key={item.id} item={item as Medicine} />)}</div>
+        {kind === "medicines" && <><div className="result-summary">找到 {result.total.toLocaleString()} 筆，第 {result.page} 頁</div><div className="results-list">{result.items.map((item) => <MedicineResult key={item.id} item={item as Medicine} />)}</div></>}
         <nav className="pagination" aria-label={`${label}結果分頁`}>
           <button type="button" onClick={() => void search(undefined, page - 1)} disabled={page <= 1 || loading}>上一頁</button>
           <span>第 {page} 頁</span>

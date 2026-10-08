@@ -30,6 +30,8 @@ Render 必須設定 `DATABASE_URL` 為 Neon pooled URL。direct `DATABASE_URL_UN
 
 公開網站：[https://medmate-53s1.onrender.com](https://medmate-53s1.onrender.com)。Render Web Service `medmate` 使用 GitHub `main` 自動部署。2026-10-08 已透過 Render API 設定 `DATABASE_URL` 為 Neon pooled URL，並已觸發部署；部署完成後需以首頁、`/api/ready`、兩個搜尋 API 驗證。Render Free 閒置時休眠，恢復服務可能延遲 50 秒以上，故不代表隨時即時可用性。
 
+網站路由：`/pharmacies` 專注藥局位置與資料卡，`/medicines` 專注藥品公開資料；首頁不直接載入查詢結果。藥局資料來源目前只有地址、電話、合約/資料狀態與部分座標，沒有可信的即時營業時間或官方圖片欄位，因此介面會標示「營業狀況待查」或資料狀態，不將合約狀態冒充即時營業中。若日後啟用 Google Places，須確認 API、帳務與儲存政策後才可補充營業時間或照片。
+
 Render API key 僅是平台管理憑證，不要加入 Render 網站的 runtime env、Render Blueprint 或 Git。若需在本機供 Render CLI/管理腳本使用，可存於被 `.gitignore` 忽略的 `.env.local`，使用 `RENDER_API_KEY` 名稱；此檔只存在本機，不要複製到 Render 網站環境。此專案目前沒有程式會讀取該變數，也不會把它傳給瀏覽器。已在對話中提供的 key 應儘速輪替。
 
 Render 只連 Neon，不直接連私人 Parallels VM。資料匯入來源為官方 CSV，發布條件與欄位白名單見資料來源文件。
