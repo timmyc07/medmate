@@ -10,7 +10,7 @@
 
 ## SQL Server 連線狀態
 
-目前尚未確認 Parallels SQL Server 的實際 schema、連線驗證模式及唯讀帳號，所以沒有啟用資料庫 repository。不得將本機 SQL Server 對外 port-forward，也不得為通過測試改變 VM 網路或 SQL 驗證設定。Tedious 不支援 Windows/Trusted Connection；只有已存在 SQL Authentication 和唯讀專用帳號時，才可評估部署端可安全連線的託管 SQL Server。
+目前尚未確認 Parallels SQL Server 的實際 schema、連線驗證模式及唯讀帳號，所以沒有啟用資料庫 repository。2026-10-08 唯讀檢查確認 Windows VM 位址為私有 NAT `10.211.55.3`，SQL Server 服務正在執行，但 TCP 僅在 loopback `127.0.0.1:1434` 接聽，沒有可供 Render 連線的 VM 網路介面 listener。Render 因而無法直接連線。不得將本機 SQL Server 對外 port-forward，也不得為通過測試改變 VM 網路或 SQL 驗證設定。Tedious 不支援 Windows/Trusted Connection；若要讓雲端直連，需先評估受控 VPN/隧道、現有 SQL Authentication 與唯讀專用帳號，不能將 SQL 埠公開至網際網路。
 
 `.env.example` 列出未來連線變數名稱。真正密碼只能放在本機被忽略的 `.env.local` 或託管平台的秘密變數，不能放 GitHub；本輪 Render 服務不需要或設定任何 SQL 憑證。
 
