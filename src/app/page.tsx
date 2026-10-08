@@ -22,7 +22,7 @@ export default function HomePage() {
         <p className="hero-copy">查找藥局資訊與藥品公開資料，方便你快速找到需要的資訊。</p>
       </section>
 
-      <section className="search-grid" aria-label="選擇查詢類型">
+      <section className="search-grid" aria-label="選擇查詢類型" id="search">
         {searchOptions.map((option, index) => (
           <a className="search-card" href={`#${option.id}`} key={option.id}>
             <span className="card-icon" aria-hidden="true">{index === 0 ? "⌖" : "✚"}</span>
@@ -33,6 +33,11 @@ export default function HomePage() {
             <span className="card-arrow" aria-hidden="true">→</span>
           </a>
         ))}
+      </section>
+
+      <section className="search-destinations" aria-label="查詢入口">
+        <div id="pharmacies"><h2>藥局查詢</h2><p>藥局搜尋功能即將提供。</p></div>
+        <div id="medicines"><h2>藥品查詢</h2><p>藥品搜尋功能即將提供。</p></div>
       </section>
 
       <p className="notice">查詢資料僅供參考；如有用藥疑問，請向藥師或醫療專業人員確認。</p>

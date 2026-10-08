@@ -52,6 +52,10 @@ a { color: inherit; text-decoration: none; }
 .card-description { color: var(--muted); font-size: 0.82rem; line-height: 1.5; }
 .card-arrow { margin-left: auto; color: var(--brand); font-size: 1.25rem; }
 .notice { max-width: 580px; margin: 26px auto 0; color: var(--muted); font-size: 0.76rem; line-height: 1.7; text-align: center; }
+.search-destinations { display: grid; gap: 14px; max-width: 720px; margin: 42px auto 0; }
+.search-destinations > div { scroll-margin-top: 24px; padding-top: 12px; border-top: 1px solid var(--line); }
+.search-destinations h2 { margin: 0; font-size: 1rem; }
+.search-destinations p { margin: 6px 0 0; color: var(--muted); font-size: 0.82rem; }
 
 @media (min-width: 640px) {
   .page-shell { width: min(100% - 48px, 920px); padding-top: 30px; }
