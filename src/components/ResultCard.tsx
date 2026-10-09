@@ -1,37 +1,12 @@
-import { useState } from "react";
 import type { Medicine, Pharmacy } from "../types/catalog";
 
 export function PharmacyResult({ item }: { item: Pharmacy }) {
-  const [imageFailed, setImageFailed] = useState(false);
   const mapUrl =
     item.latitude !== null && item.longitude !== null
       ? `https://www.google.com/maps/dir/?api=1&destination=${item.latitude},${item.longitude}`
       : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.address ?? item.name)}`;
   return (
     <article className="result-row pharmacy-card">
-      <div className="pharmacy-card-visual">
-        {item.streetViewImageUrl && !imageFailed ? (
-          <>
-            <img
-              className="pharmacy-card-image pharmacy-card-image--streetview"
-              src={item.streetViewImageUrl}
-              alt={`${item.name}附近街景`}
-              loading="lazy"
-              decoding="async"
-              onError={() => setImageFailed(true)}
-            />
-            <span className="streetview-attribution">
-              Google Maps
-              {item.streetViewDate ? ` · ${item.streetViewDate}` : ""}
-              {item.streetViewCopyright ? ` · ${item.streetViewCopyright}` : ""}
-            </span>
-          </>
-        ) : (
-          <div className="pharmacy-card-image" aria-hidden="true">
-            <span>＋</span>
-          </div>
-        )}
-      </div>
       <div className="result-main">
         <h3>{item.name}</h3>
         <p>{item.address || "地址資料未提供"}</p>

@@ -1,0 +1,36 @@
+import { render, screen } from "@testing-library/react";
+import { describe, expect, it } from "vitest";
+import { PharmacyResult } from "../../src/components/ResultCard";
+
+describe("藥局資訊卡", () => {
+  it("保留資料與操作連結，不渲染圖片區塊", () => {
+    const { container } = render(
+      <PharmacyResult
+        item={{
+          id: "P001",
+          name: "安心藥局",
+          address: "臺北市中正區忠孝東路 1 號",
+          phone: "02-12345678",
+          city: "臺北市",
+          status: "健保特約",
+          sourceUpdatedAt: null,
+          latitude: 25.04,
+          longitude: 121.53,
+        }}
+      />,
+    );
+
+    expect(screen.getByRole("heading", { name: "安心藥局" })).toBeInTheDocument();
+    expect(screen.getByText("臺北市中正區忠孝東路 1 號")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "導航至 安心藥局" })).toHaveAttribute(
+      "href",
+      "https://www.google.com/maps/dir/?api=1&destination=25.04,121.53",
+    );
+    expect(screen.getByRole("link", { name: "撥打 安心藥局" })).toHaveAttribute(
+      "href",
+      "tel:02-12345678",
+    );
+    expect(container.querySelector("img")).toBeNull();
+    expect(container.querySelector(".pharmacy-card-visual")).toBeNull();
+  });
+});

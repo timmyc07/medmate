@@ -68,69 +68,6 @@ export default function SearchPanel({
       if (requestId !== requestIdRef.current) return;
       setResult(pageResult);
       setLoading(false);
-      if (kind === "pharmacies") {
-        const pharmacies = pageResult.items as Pharmacy[];
-        const located = pharmacies.filter(
-          (item) => item.latitude !== null && item.longitude !== null,
-        );
-        if (located.length) {
-          void (async () => {
-            try {
-              const streetViewResponse = await fetch("/api/streetview", {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                  Accept: "application/json",
-                },
-                body: JSON.stringify({
-                  items: located.map(({ id, latitude, longitude }) => ({
-                    id,
-                    latitude,
-                    longitude,
-                  })),
-                }),
-              });
-              if (!streetViewResponse.ok || requestId !== requestIdRef.current)
-                return;
-              const streetViewBody = (await streetViewResponse.json()) as {
-                items?: Array<{
-                  id: string;
-                  imageUrl: string | null;
-                  date: string | null;
-                  copyright: string | null;
-                }>;
-              };
-              const streetViews = new Map(
-                (streetViewBody.items ?? []).map((item) => [item.id, item]),
-              );
-              setResult((current) => {
-                if (
-                  !current ||
-                  current.page !== pageResult.page ||
-                  requestId !== requestIdRef.current
-                )
-                  return current;
-                return {
-                  ...current,
-                  items: pharmacies.map((item) => {
-                    const streetView = streetViews.get(item.id);
-                    return streetView
-                      ? {
-                          ...item,
-                          streetViewImageUrl: streetView.imageUrl,
-                          streetViewDate: streetView.date,
-                          streetViewCopyright: streetView.copyright,
-                        }
-                      : item;
-                  }),
-                };
-              });
-            } catch {
-              /* 街景失敗時仍顯示藥局文字資料 */
-            }
-          })();
-        }
-      }
     } catch {
       setError("目前無法連線，請確認網路後再試。");
       setResult(null);
