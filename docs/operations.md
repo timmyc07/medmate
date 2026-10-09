@@ -36,7 +36,7 @@ Render 必須設定 `DATABASE_URL` 為 Neon pooled URL。direct `DATABASE_URL_UN
 
 `render.yaml` 定義 Node Web Service，使用 `npm ci && npm run build` 建置、`npm start` 啟動，健康路徑為 `/api/health`，計算方案為 Free。Node 版本固定為 `.node-version` 的 24.21.0。Free Web Service 閒置 15 分鐘會休眠，收到下一個請求後約一分鐘重新喚醒；檔案系統為暫存性質，不應將本機檔案當持久資料保存。這適合預覽，不保證可用性或隨時即時回應；升級為付費方案前應先確認費用。
 
-公開網站：[https://medmate-53s1.onrender.com](https://medmate-53s1.onrender.com)。Render Web Service `medmate` 使用 GitHub `main` 自動部署，`autoDeployTrigger` 固定為 `commit`。2026-10-09 曾發現 GitHub push 未進入部署佇列，已透過 Render API 重新寫入 `branch=main` 與 `autoDeployTrigger=commit`，並手動補部署最新 commit；若再次發生，應先在 Render Deploys 確認 commit 是否出現，再檢查 GitHub/Render webhook 連線，不要重複提交程式碼。部署完成後需以首頁、`/api/ready`、兩個搜尋 API 驗證。Render Free 閒置時休眠，恢復服務可能延遲 50 秒以上，故不代表隨時即時可用性。
+公開網站：[https://medmate-53s1.onrender.com](https://medmate-53s1.onrender.com)。Render Web Service `medmate` 使用 GitHub `main` 自動部署，`autoDeployTrigger` 固定為 `commit`。2026-10-09 曾發現 GitHub push 未進入部署佇列，已透過 Render API 重新寫入 `branch=main` 與 `autoDeployTrigger=commit`，重新註冊自動部署觸發並手動補部署最新 commit；若再次發生，應先在 Render Deploys 確認 commit 是否出現，再檢查 GitHub/Render webhook 連線，不要重複提交程式碼。部署完成後需以首頁、`/api/ready`、兩個搜尋 API 驗證。Render Free 閒置時休眠，恢復服務可能延遲 50 秒以上，故不代表隨時即時可用性。
 
 網站路由：`/pharmacies` 專注藥局位置與資料卡，`/medicines` 專注藥品公開資料；首頁不直接載入查詢結果。藥局資料來源目前只有地址、電話、合約/資料狀態與部分座標，沒有可信的即時營業時間或官方圖片欄位，因此介面會標示「營業狀況待查」或資料狀態，不將合約狀態冒充即時營業中。若日後啟用 Google Places，須確認 API、帳務與儲存政策後才可補充營業時間或照片。
 
