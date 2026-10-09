@@ -700,6 +700,12 @@ select:focus-visible {
   font-size: 0.72rem;
   font-weight: 600;
 }
+.pharmacy-card-actions {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  gap: 8px;
+}
 .pagination {
   display: flex;
   justify-content: center;
@@ -897,6 +903,10 @@ select:focus-visible {
   .pharmacy-card .call-link {
     grid-column: 2;
     justify-self: start;
+  }
+  .pharmacy-card-actions {
+    grid-column: 2;
+    align-items: flex-start;
   }
 }
 

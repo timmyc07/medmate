@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { POST } from "../../src/app/api/streetview/route";
+import { GET, POST } from "../../src/app/api/streetview/route";
 
 describe("街景 metadata API", () => {
   afterEach(() => {
@@ -9,7 +9,7 @@ describe("街景 metadata API", () => {
     delete process.env.GOOGLE_MAP_API_KEY;
   });
 
-  it("以座標查詢 metadata 並回傳官方街景圖片網址", async () => {
+  it("以座標查詢 metadata 並回傳同源街景圖片網址", async () => {
     process.env.GOOGLE_STREETVIEW_API_KEY = "street-key";
     process.env.GOOGLE_STREETVIEW_BROWSER_KEY = "street-browser-key";
     vi.spyOn(globalThis, "fetch").mockResolvedValue(
@@ -40,13 +40,13 @@ describe("街景 metadata API", () => {
       items: [
         {
           id: "P001",
-          imageUrl: expect.stringContaining("street-browser-key"),
+          imageUrl: "https://example.test/api/streetview?lat=25.04&lng=121.53",
           date: "2025-04",
           copyright: "© Google Maps",
         },
       ],
     });
-    expect(payload.items[0].imageUrl).toContain("pano=temporary-pano");
+    expect(payload.items[0].imageUrl).toContain("/api/streetview?");
     expect(String(vi.mocked(fetch).mock.calls[0][0])).toContain(
       "metadata?location=25.04%2C121.53",
     );
@@ -94,7 +94,34 @@ describe("街景 metadata API", () => {
     );
 
     const payload = await response.json();
-    expect(payload.items[0].imageUrl).toContain("key=shared-map-key");
+    expect(payload.items[0].imageUrl).toBe(
+      "https://example.test/api/streetview?lat=25&lng=121",
+    );
+  });
+
+  it("同源圖片端點使用伺服器金鑰回傳 JPEG", async () => {
+    process.env.GOOGLE_MAP_API_KEY = "shared-map-key";
+    vi.spyOn(globalThis, "fetch")
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({ status: "OK", pano_id: "temporary-pano" }),
+          { status: 200 },
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response("jpeg", {
+          status: 200,
+          headers: { "Content-Type": "image/jpeg" },
+        }),
+      );
+
+    const response = await GET(
+      new Request("https://example.test/api/streetview?lat=25&lng=121"),
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("content-type")).toBe("image/jpeg");
+    expect(Buffer.from(await response.arrayBuffer()).toString()).toBe("jpeg");
   });
 
   it("限制每次最多查詢 20 個座標", async () => {
