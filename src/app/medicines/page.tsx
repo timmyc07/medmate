@@ -1,6 +1,7 @@
 import Link from "next/link";
 import MedicineUsageCatalog from "../../components/MedicineUsageCatalog";
 import SearchPanel from "../../components/SearchPanel";
+import ThemeToggle from "../../components/ThemeToggle";
 
 export default function MedicinesPage() {
   return (
@@ -15,6 +16,7 @@ export default function MedicinesPage() {
         <Link className="header-link" href="/pharmacies">
           找藥局 ↗
         </Link>
+        <ThemeToggle />
       </header>
       <section className="inner-hero">
         <p className="eyebrow">

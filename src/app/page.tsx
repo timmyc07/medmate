@@ -1,4 +1,5 @@
 import Link from "next/link";
+import ThemeToggle from "../components/ThemeToggle";
 
 export default function HomePage() {
   return (
@@ -9,6 +10,7 @@ export default function HomePage() {
           <span>MediMate</span>
         </Link>
         <a className="header-link" href="/pharmacies">開始查詢 · 藥局地圖 <span aria-hidden="true">↗</span></a>
+        <ThemeToggle />
       </header>
 
       <section className="hero" aria-labelledby="welcome-title">

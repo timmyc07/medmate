@@ -1,15 +1,30 @@
 @import url("https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;600;700&display=swap");
 :root {
-  color-scheme: dark;
-  --ink: #f8fafc;
-  --muted: #a7b0c0;
-  --brand: #67e8f9;
-  --brand-deep: #22d3ee;
-  --paper: rgba(15, 23, 42, 0.72);
-  --canvas: #020617;
-  --line: rgba(148, 163, 184, 0.2);
-  --soft: rgba(30, 41, 59, 0.7);
+  color-scheme: light;
+  --ink: #17324d;
+  --muted: #536777;
+  --brand: #0055a4;
+  --brand-deep: #00a651;
+  --paper: #ffffff;
+  --canvas: #f3f7f8;
+  --line: #d3e0e5;
+  --soft: #eaf2f3;
+  --green-glow: rgba(0, 166, 81, 0.08);
+  --card-surface: #ffffff;
   --mono: "DM Mono", ui-monospace, monospace;
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --ink: #edf6fa;
+  --muted: #b3c5d0;
+  --brand: #65b6ff;
+  --brand-deep: #38c879;
+  --paper: #142632;
+  --canvas: #0b1922;
+  --line: #2c414d;
+  --soft: #1c303c;
+  --green-glow: rgba(56, 200, 121, 0.12);
+  --card-surface: #142632;
 }
 
 * {
@@ -23,14 +38,7 @@ html {
 body {
   margin: 0;
   color: var(--ink);
-  background:
-    radial-gradient(circle at 20% 0%, rgba(8, 47, 73, 0.65), transparent 32rem),
-    radial-gradient(
-      circle at 90% 15%,
-      rgba(49, 46, 129, 0.5),
-      transparent 28rem
-    ),
-    var(--canvas);
+  background: var(--canvas);
   font-family: "DM Sans", "Noto Sans TC", system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
@@ -46,7 +54,7 @@ button:focus-visible,
 a:focus-visible,
 input:focus-visible,
 select:focus-visible {
-  outline: 3px solid #62ad9e;
+  outline: 3px solid var(--brand-deep);
   outline-offset: 3px;
 }
 .page-shell {
@@ -60,10 +68,30 @@ select:focus-visible {
 }
 .site-header {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
+  gap: 10px;
   padding-bottom: 18px;
   border-bottom: 1px solid var(--line);
+}
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 38px;
+  padding: 0 11px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--ink);
+  background: var(--paper);
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.theme-toggle span:first-child {
+  color: var(--brand);
+  font-size: 1rem;
 }
 .brand {
   display: inline-flex;
@@ -79,11 +107,11 @@ select:focus-visible {
   aspect-ratio: 1;
   place-items: center;
   border-radius: 9px;
-  color: #082f49;
+  color: #ffffff;
   background: var(--brand);
   font-size: 1.3rem;
   line-height: 1;
-  box-shadow: 0 0 24px rgba(103, 232, 249, 0.45);
+  box-shadow: 0 2px 8px var(--green-glow);
 }
 .header-link {
   color: var(--brand);
@@ -120,7 +148,7 @@ select:focus-visible {
   height: 7px;
   flex: 0 0 7px;
   border-radius: 50%;
-  background: #3a9c7f;
+  background: var(--brand-deep);
 }
 .hero h1 {
   margin: 0;
@@ -131,7 +159,7 @@ select:focus-visible {
 }
 .hero-title-accent {
   color: var(--brand);
-  text-shadow: 0 0 32px rgba(103, 232, 249, 0.35);
+  text-shadow: 0 2px 14px color-mix(in srgb, var(--brand) 16%, transparent);
 }
 .hero-copy {
   margin: 21px 0 0;
@@ -179,17 +207,17 @@ select:focus-visible {
   font-weight: 700;
 }
 .hero-primary {
-  color: #042f3d;
-  background: linear-gradient(110deg, #67e8f9, #a5f3fc);
-  box-shadow: 0 0 30px rgba(103, 232, 249, 0.26);
+  color: white;
+  background: var(--brand);
+  box-shadow: 0 3px 10px var(--green-glow);
 }
 .hero-primary-icon {
   margin-left: 8px;
 }
 .hero-secondary {
-  border: 1px solid rgba(148, 163, 184, 0.3);
+  border: 1px solid var(--line);
   color: var(--ink);
-  background: rgba(15, 23, 42, 0.4);
+  background: var(--paper);
 }
 .hero-side {
   display: grid;
@@ -232,7 +260,7 @@ select:focus-visible {
 }
 .hero-side .hero-side-note {
   margin: 0;
-  color: #8798aa;
+  color: var(--muted);
   font-size: 0.74rem;
 }
 .quick-nav {
@@ -275,12 +303,12 @@ select:focus-visible {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  color: #57645f;
+  color: var(--muted);
   font-size: 0.76rem;
   font-weight: 600;
 }
 .status-dot--muted {
-  background: #d39c55;
+  background: #c77b19;
 }
 .data-status p {
   margin: 0;
@@ -289,7 +317,7 @@ select:focus-visible {
   line-height: 1.6;
 }
 .status-code {
-  color: #9aa29d;
+  color: var(--muted);
   font-family: var(--mono);
   font-size: 0.59rem;
   letter-spacing: 0.04em;
@@ -322,7 +350,7 @@ select:focus-visible {
   letter-spacing: -0.04em;
 }
 .section-caption {
-  color: #89938e;
+  color: var(--muted);
   font-family: var(--mono);
   font-size: 0.62rem;
 }
@@ -349,12 +377,12 @@ select:focus-visible {
   font-size: 0.88rem;
 }
 .search-field input::placeholder {
-  color: #9aa49f;
+  color: var(--muted);
 }
 .city-field select:disabled,
 .district-field select:disabled {
-  color: #9aa49f;
-  background: #f0f2ed;
+  color: var(--muted);
+  background: var(--soft);
   cursor: not-allowed;
 }
 .city-field {
@@ -386,7 +414,7 @@ select:focus-visible {
 .location-button {
   margin: 0 0 12px;
   padding: 9px 12px;
-  border: 1px solid #c4d5ca;
+  border: 1px solid var(--line);
   border-radius: 5px;
   color: var(--brand);
   background: transparent;
@@ -405,11 +433,10 @@ select:focus-visible {
 .pharmacy-map {
   width: 100%;
   height: clamp(300px, 48vw, 560px);
-  border: 1px solid rgba(103, 232, 249, 0.32);
+  border: 1px solid var(--line);
   border-radius: 14px;
   overflow: hidden;
-  background: #0f172a;
-  box-shadow: 0 0 40px rgba(34, 211, 238, 0.12);
+  background: var(--soft);
 }
 .map-status {
   margin: 8px 0 0;
@@ -421,16 +448,16 @@ select:focus-visible {
 .state-message {
   margin: 7px 0 16px;
   padding: 14px 15px;
-  border-left: 3px solid #b5c6bc;
-  color: #586861;
-  background: #edf1eb;
+  border-left: 3px solid var(--brand-deep);
+  color: var(--ink);
+  background: var(--soft);
   font-size: 0.82rem;
   line-height: 1.7;
 }
 .state-error {
-  border-color: #d49e58;
-  color: #775d36;
-  background: #f6f0e4;
+  border-color: #c77b19;
+  color: var(--ink);
+  background: color-mix(in srgb, #f2b65d 22%, var(--paper));
 }
 .result-summary {
   margin: 1px 0 8px;
@@ -461,7 +488,7 @@ select:focus-visible {
   overflow: hidden;
   border: 1px solid var(--line);
   border-radius: 14px;
-  background: rgba(15, 23, 42, 0.46);
+  background: var(--paper);
   content-visibility: auto;
   contain-intrinsic-size: auto 480px;
 }
@@ -470,11 +497,7 @@ select:focus-visible {
   display: grid;
   min-height: 188px;
   place-items: center;
-  background: linear-gradient(
-    145deg,
-    rgba(34, 211, 238, 0.12),
-    rgba(15, 23, 42, 0.8)
-  );
+  background: color-mix(in srgb, var(--brand-deep) 10%, var(--soft));
 }
 .medicine-usage-image img {
   width: 100%;
@@ -499,7 +522,7 @@ select:focus-visible {
   left: 12px;
   padding: 5px 8px;
   border-radius: 999px;
-  color: #082f49;
+  color: white;
   background: var(--brand);
   font-family: var(--mono);
   font-size: 0.61rem;
@@ -521,7 +544,7 @@ select:focus-visible {
   overflow-wrap: anywhere;
 }
 .medicine-english-name {
-  color: #b7c9d0 !important;
+  color: var(--muted) !important;
 }
 .medicine-usage-quantity {
   display: flex;
@@ -561,7 +584,7 @@ select:focus-visible {
   cursor: pointer;
 }
 .numbered-pagination button[aria-current="page"] {
-  color: #082f49;
+  color: white;
   background: var(--brand);
   border-color: var(--brand);
 }
@@ -578,7 +601,7 @@ select:focus-visible {
   padding: 17px;
   border: 1px solid var(--line);
   border-radius: 10px;
-  background: rgba(15, 23, 42, 0.32);
+  background: var(--paper);
 }
 .pharmacy-card {
   align-items: stretch;
@@ -590,14 +613,10 @@ select:focus-visible {
   min-width: 92px;
   min-height: 92px;
   place-items: center;
-  border: 1px solid rgba(103, 232, 249, 0.28);
+  border: 1px solid var(--line);
   border-radius: 10px;
   color: var(--brand);
-  background: linear-gradient(
-    145deg,
-    rgba(34, 211, 238, 0.16),
-    rgba(15, 23, 42, 0.82)
-  );
+  background: color-mix(in srgb, var(--brand-deep) 10%, var(--soft));
   font-size: 2rem;
 }
 .card-meta {
@@ -609,7 +628,7 @@ select:focus-visible {
   font-size: 0.72rem;
 }
 .card-meta span + span {
-  color: #b6c6bc;
+  color: var(--muted);
 }
 .home-guidance {
   display: grid;
@@ -644,18 +663,18 @@ select:focus-visible {
 }
 .result-row .indications {
   margin-top: 10px;
-  color: #43524b;
+  color: var(--ink);
 }
 .result-meta {
   display: inline-block;
   margin-top: 5px;
-  color: #89938e;
+  color: var(--muted);
   font-size: 0.68rem;
 }
 .call-link {
   flex: 0 0 auto;
   padding: 8px 10px;
-  border: 1px solid #c4d5ca;
+  border: 1px solid var(--line);
   border-radius: 5px;
   color: var(--brand);
   font-size: 0.72rem;
@@ -680,7 +699,7 @@ select:focus-visible {
   cursor: pointer;
 }
 .pagination button:disabled {
-  color: #a6afaa;
+  color: var(--muted);
   cursor: not-allowed;
 }
 .site-footer {
@@ -699,7 +718,7 @@ select:focus-visible {
   line-height: 1.7;
 }
 .footer-credit {
-  color: #99a29d;
+  color: var(--muted);
   font-family: var(--mono);
   font-size: 0.57rem;
   letter-spacing: 0.04em;
@@ -726,7 +745,7 @@ select:focus-visible {
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(103, 232, 249, 0.35),
+    color-mix(in srgb, var(--brand-deep) 35%, transparent),
     transparent
   );
   content: "";
