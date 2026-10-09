@@ -24,7 +24,7 @@ export function PharmacyResult({ item }: { item: Pharmacy }) {
           {weeklySchedule.length ? (
             <details>
               <summary>查看一週看診時間</summary>
-              <div className="pharmacy-calendar-scroll" role="region" aria-label="一週看診時間表" tabIndex={0}>
+              <section className="pharmacy-calendar-scroll" aria-label="一週看診時間表">
                 <table className="pharmacy-calendar">
                   <thead><tr><th scope="col">時段</th>{weeklySchedule.map(({ day }) => <th scope="col" key={day}>週{day}</th>)}</tr></thead>
                   <tbody>
@@ -39,7 +39,7 @@ export function PharmacyResult({ item }: { item: Pharmacy }) {
                     ))}
                   </tbody>
                 </table>
-              </div>
+              </section>
             </details>
           ) : (
             <p>政府資料未提供固定看診時段</p>

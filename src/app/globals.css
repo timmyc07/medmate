@@ -1,30 +1,29 @@
-@import url("https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;600;700&display=swap");
 :root {
   color-scheme: light;
-  --ink: #17324d;
-  --muted: #536777;
-  --brand: #0055a4;
-  --brand-deep: #00a651;
+  --ink: #12352b;
+  --muted: #5d756d;
+  --brand: #138a5b;
+  --brand-deep: #0b6846;
   --paper: #ffffff;
-  --canvas: #f3f7f8;
-  --line: #d3e0e5;
-  --soft: #eaf2f3;
-  --green-glow: rgba(0, 166, 81, 0.08);
-  --card-surface: #ffffff;
-  --mono: "DM Mono", ui-monospace, monospace;
+  --canvas: #f3f8f4;
+  --line: #d0e2d7;
+  --soft: #e7f2ea;
+  --green-glow: rgba(19, 138, 91, 0.18);
+  --card-surface: #f8fcf9;
+  --mono: "SF Mono", "DM Mono", ui-monospace, monospace;
 }
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --ink: #edf6fa;
-  --muted: #b3c5d0;
-  --brand: #65b6ff;
-  --brand-deep: #38c879;
-  --paper: #142632;
-  --canvas: #0b1922;
-  --line: #2c414d;
-  --soft: #1c303c;
-  --green-glow: rgba(56, 200, 121, 0.12);
-  --card-surface: #142632;
+  --ink: #e8f7ed;
+  --muted: #a5c2b1;
+  --brand: #58d99a;
+  --brand-deep: #2ab879;
+  --paper: #10251e;
+  --canvas: #071510;
+  --line: #27463a;
+  --soft: #163328;
+  --green-glow: rgba(42, 184, 121, 0.2);
+  --card-surface: #10251e;
 }
 
 * {
@@ -39,7 +38,7 @@ body {
   margin: 0;
   color: var(--ink);
   background: var(--canvas);
-  font-family: "DM Sans", "Noto Sans TC", system-ui, sans-serif;
+  font-family: "Avenir Next", "Noto Sans TC", system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 a {
@@ -121,15 +120,18 @@ select:focus-visible {
 .header-link span {
   margin-left: 5px;
 }
+.landing-nav { display: flex; align-items: center; gap: clamp(14px, 3vw, 34px); margin-left: auto; margin-right: clamp(4px, 2vw, 28px); color: var(--muted); font-size: .78rem; font-weight: 600; }
+.landing-nav a:hover { color: var(--brand); }
 .hero {
   display: grid;
   grid-template-columns: 1fr;
   align-items: end;
   gap: 32px;
-  padding: clamp(58px, 10vw, 104px) 0 44px;
+  min-height: min(720px, 72svh);
+  padding: clamp(76px, 11vw, 140px) 0 64px;
 }
 .hero-copy-block {
-  max-width: 720px;
+  max-width: 780px;
 }
 .eyebrow {
   display: flex;
@@ -152,18 +154,22 @@ select:focus-visible {
 }
 .hero h1 {
   margin: 0;
-  font-size: clamp(2.7rem, 10vw, 5.7rem);
+  font-size: clamp(3rem, 9vw, 7.2rem);
   font-weight: 600;
-  line-height: 1.12;
-  letter-spacing: -0.075em;
+  line-height: 1.04;
+  letter-spacing: -0.085em;
 }
 .hero-title-accent {
   color: var(--brand);
-  text-shadow: 0 2px 14px color-mix(in srgb, var(--brand) 16%, transparent);
+  background: linear-gradient(100deg, #42c984, #a0e6ad 55%, var(--brand));
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 2px 24px color-mix(in srgb, var(--brand) 28%, transparent);
 }
 .hero-copy {
   margin: 21px 0 0;
   color: var(--muted);
+  max-width: 640px;
   font-size: clamp(0.92rem, 3vw, 1.05rem);
   line-height: 1.8;
 }
@@ -226,6 +232,12 @@ select:focus-visible {
   padding: 28px 0 5px 26px;
   border-left: 1px solid var(--line);
 }
+.landing-hero-side { position: relative; min-height: 220px; align-content: end; overflow: hidden; border-left-color: color-mix(in srgb, var(--brand) 30%, transparent); }
+.hero-orbit { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(circle at 70% 35%, color-mix(in srgb, var(--brand) 22%, transparent), transparent 42%), radial-gradient(circle at 45% 80%, color-mix(in srgb, var(--brand-deep) 25%, transparent), transparent 52%); }
+.hero-orbit span { position: absolute; display: block; width: 9px; aspect-ratio: 1; border-radius: 50%; background: var(--brand); box-shadow: 0 0 22px var(--brand); }
+.hero-orbit span:nth-child(1) { top: 24%; right: 16%; }
+.hero-orbit span:nth-child(2) { top: 54%; right: 45%; width: 5px; }
+.hero-orbit span:nth-child(3) { bottom: 16%; right: 22%; width: 13px; background: var(--brand-deep); }
 .hero-stat {
   display: grid;
   grid-template-columns: auto 1fr;
@@ -598,6 +610,7 @@ select:focus-visible {
   align-items: center;
   gap: 16px;
   min-width: 0;
+  max-width: 100%;
   padding: 17px;
   border: 1px solid var(--line);
   border-radius: 10px;
@@ -606,6 +619,15 @@ select:focus-visible {
 .pharmacy-card {
   align-items: stretch;
   padding: 16px;
+}
+.result-main {
+  min-width: 0;
+}
+.pharmacy-card .result-main {
+  flex: 1 1 auto;
+  width: auto;
+  max-width: 100%;
+  overflow: hidden;
 }
 .card-meta {
   display: flex;
@@ -621,8 +643,16 @@ select:focus-visible {
 .pharmacy-hours {
   display: grid;
   gap: 9px;
+  min-width: 0;
+  max-width: 100%;
   margin-top: 14px;
 }
+.pharmacy-hours details,
+.pharmacy-hours details > summary {
+  min-width: 0;
+  max-width: 100%;
+}
+.pharmacy-hours details { overflow: hidden; }
 .pharmacy-hours > strong {
   font-size: 0.9rem;
   line-height: 1.5;
@@ -635,12 +665,15 @@ select:focus-visible {
   cursor: pointer;
 }
 .pharmacy-calendar-scroll {
+  width: 100%;
+  min-width: 0;
   max-width: 100%;
   overflow-x: auto;
   overscroll-behavior-inline: contain;
   border: 1px solid var(--line);
   border-radius: 8px;
 }
+.pharmacy-calendar-scroll:focus-within { outline: 2px solid var(--brand); outline-offset: 2px; }
 .pharmacy-calendar {
   width: 100%;
   min-width: 610px;
@@ -702,9 +735,6 @@ select:focus-visible {
   color: var(--muted);
   font-size: 0.82rem;
   line-height: 1.8;
-}
-.result-main {
-  min-width: 0;
 }
 .result-row h3 {
   margin: 0 0 5px;
@@ -901,6 +931,7 @@ select:focus-visible {
 }
 
 @media (max-width: 719px) {
+  .landing-nav { order: 3; width: 100%; justify-content: space-between; margin: 4px 0 0; padding-top: 12px; border-top: 1px solid var(--line); }
   .hero-side {
     padding: 20px 0 0;
     border-top: 1px solid var(--line);
@@ -922,7 +953,11 @@ select:focus-visible {
     justify-self: start;
   }
   .pharmacy-card-actions {
+    flex: 0 0 auto;
+    flex-direction: row;
+    flex-wrap: wrap;
     align-items: flex-start;
+    margin-top: 16px;
   }
 }
 
