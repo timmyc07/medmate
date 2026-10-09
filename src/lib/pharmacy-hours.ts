@@ -41,13 +41,28 @@ export function getCurrentPharmacyHoursStatus(
     : { status: "not-listed", label: `政府資料列示：${weekdayName}${period}未列看診安排`, period };
 }
 
-/** 將來源分隔字元正規化以利卡片換行顯示，保留來源時段文字。 */
+/** 依星期彙整相同看診狀態的時段，讓卡片更容易掃讀。 */
 export function formatPharmacyOpeningHours(openingHours: string | null): string | null {
   if (!openingHours?.trim()) return null;
-  return openingHours
-    .split(/[、,，]/)
-    .map((part) => part.trim())
-    .filter(Boolean)
-    .map((part) => part.replace(/^星期([一二三四五六日天])/, "週$1"))
-    .join("・");
+  const days = ["一", "二", "三", "四", "五", "六", "日", "天"];
+  const periods = ["上午", "下午", "晚上"] as const;
+  const schedule = new Map<string, { clinic: string[]; closed: string[] }>();
+
+  for (const day of days) {
+    const key = day === "天" ? "日" : day;
+    if (schedule.has(key)) continue;
+    const clinic: string[] = [];
+    const closed: string[] = [];
+    for (const period of periods) {
+      const match = openingHours.match(new RegExp(`星期${day}${period}(看診|休診)`));
+      if (match?.[1] === "看診") clinic.push(period === "上午" ? "上" : period === "下午" ? "下午" : "晚上");
+      if (match?.[1] === "休診") closed.push(period === "上午" ? "上" : period === "下午" ? "下午" : "晚上");
+    }
+    if (clinic.length || closed.length) schedule.set(key, { clinic, closed });
+  }
+
+  return [...schedule].map(([day, { clinic, closed }]) => {
+    const entries = [clinic.length ? `週${day}${clinic.join("/" )} 看診` : "", closed.length ? `週${day}${closed.join("/")}休診` : ""];
+    return entries.filter(Boolean).join("；");
+  }).join("・");
 }

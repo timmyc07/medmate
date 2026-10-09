@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getCurrentPharmacyHoursStatus } from "../../src/lib/pharmacy-hours";
+import { formatPharmacyOpeningHours, getCurrentPharmacyHoursStatus } from "../../src/lib/pharmacy-hours";
 
 describe("政府固定看診時段目前區段判斷", () => {
   const fullHours = ["星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"]
@@ -28,5 +28,12 @@ describe("政府固定看診時段目前區段判斷", () => {
       status: "unavailable",
       label: "看診時段資料未提供",
     });
+  });
+});
+
+describe("看診時段易讀格式", () => {
+  it("按星期合併看診時段並保留休診區段", () => {
+    expect(formatPharmacyOpeningHours("星期一上午看診、星期一下午看診、星期一晚上休診、星期二上午休診"))
+      .toBe("週一上/下午 看診；週一晚上休診・週二上休診");
   });
 });
