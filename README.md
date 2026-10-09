@@ -13,6 +13,7 @@ MediMate 是以手機瀏覽為優先的繁體中文藥局與藥品公開查詢�
 - Parallels SQL Server 不會公開到網際網路，這次遷移來源是官方 CSV，並非從本機 SQL Server dump。
 - 網站不提供診斷或治療建議，也不含帳號、個人藥箱或個人查詢歷史。來源資料沒有副作用欄位，網站不會補寫副作用內容。
 - `/medicines` 進入後顯示健保藥品使用量排行，每頁最多 50 項、桌面每列 3 張卡片並提供頁碼按鈕；資料期間與彙總申報量限制會清楚標示。外觀只在 FDA 完整許可證字號精確配對時顯示，否則使用占位圖；目前健保來源與外觀資料缺少已核實的直接識別碼對照。新增資料匯入與來源限制見[資料來源文件](docs/data-sources.md)。
+- 所有頁面透過根版型共用健保標誌及資料來源頁尾，列出藥局、藥品、藥品使用量、外觀資料與行政區參考資料來源；來源細節及待核實項目見[資料來源文件](docs/data-sources.md)。
 - 地圖使用 Google Maps JavaScript API；藥局地址會透過同源 `/api/geocode` 代理 Google Geocoding API 即時轉換為座標後顯示。API key 僅由伺服器設定 `GOOGLE_MAP_API_KEY` 讀取，未定位結果不寫回資料庫。
 - CSV、資料庫匯出/備份、`.env`、密碼、API key 及其他秘密資訊不得提交 GitHub。Render 管理用 API key 只用於管理平台，不能加入網站執行環境。
 - 藥品使用量排行 migration 與匯入器已新增；部署及資料庫匯入仍須先在隔離 Neon branch 驗證，不能直接對 production 執行。來源 CSV 保留在使用者下載資料夾，不提交 repo。

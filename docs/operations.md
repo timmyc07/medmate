@@ -1,5 +1,7 @@
 # 維運與部署
 
+全站頁面由根 layout 共用健保標誌及政府開放資料來源頁尾。若增加新的政府資料或參考來源，請同步更新 `src/components/SiteFooter.tsx` 與 `docs/data-sources.md`；目前 FDA 外觀資料的精確資料集頁及授權資訊尚待核實。
+
 ## 本機開發
 
 - 使用 Node.js 24.x 與 npm。

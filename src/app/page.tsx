@@ -42,10 +42,6 @@ export default function HomePage() {
         <p>先選擇要找的內容。藥局頁提供地區、定位、地址與聯絡資訊；藥品頁整理許可證與公開適應症資料。</p>
       </section>
 
-      <footer className="site-footer">
-        <p>資料僅供參考；用藥疑問請向藥師或醫療專業人員確認。</p>
-        <span className="footer-credit">MEDMATE · PUBLIC INFORMATION</span>
-      </footer>
     </main>
   );
 }

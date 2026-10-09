@@ -34,10 +34,6 @@ export default function MedicinesPage() {
       </section>
       <MedicineUsageCatalog />
       <SearchPanel kind="medicines" />
-      <footer className="site-footer">
-        <Link href="/">回到首頁</Link>
-        <span className="footer-credit">MEDMATE · PUBLIC INFORMATION</span>
-      </footer>
     </main>
   );
 }

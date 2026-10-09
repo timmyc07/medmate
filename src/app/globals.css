@@ -703,15 +703,55 @@ select:focus-visible {
   cursor: not-allowed;
 }
 .site-footer {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: 8px 18px;
+  display: grid;
+  gap: 18px;
   margin-top: 62px;
-  padding-top: 18px;
+  padding: 22px 0 8px;
   border-top: 1px solid var(--line);
 }
-.site-footer p {
+.site-footer-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 600;
+}
+.site-footer-brand img {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+}
+.footer-sources h2 {
+  margin: 0 0 10px;
+  font-size: 0.82rem;
+}
+.footer-sources ul {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 7px 20px;
+  margin: 0;
+  padding-left: 18px;
+  color: var(--muted);
+  font-size: 0.7rem;
+  line-height: 1.6;
+}
+.site-footer .footer-sources a {
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--brand) 40%, transparent);
+  text-underline-offset: 3px;
+}
+.footer-sources a:hover {
+  color: var(--brand);
+}
+.footer-sources > p,
+.site-footer .footer-disclaimer {
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 0.68rem;
+  line-height: 1.7;
+}
+.site-footer > p {
   margin: 0;
   color: var(--muted);
   font-size: 0.72rem;
@@ -722,6 +762,11 @@ select:focus-visible {
   font-family: var(--mono);
   font-size: 0.57rem;
   letter-spacing: 0.04em;
+}
+@media (min-width: 720px) {
+  .footer-sources ul {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 .sr-only {
   position: absolute;
