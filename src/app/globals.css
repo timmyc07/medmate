@@ -845,42 +845,13 @@ select:focus-visible {
   padding-left: 20px;
   border-left: 1px solid var(--line);
 }
-.pharmacy-hours details,
-.pharmacy-hours details > summary {
-  min-width: 0;
-  max-width: 100%;
-}
-.pharmacy-hours details { overflow: hidden; }
-.pharmacy-hours details::details-content {
-  display: block;
-  interpolate-size: allow-keywords;
-  block-size: 0;
-  overflow: clip;
-  opacity: 0;
-  transform: translateY(-5px);
-  transition: block-size 240ms ease, opacity 180ms ease, transform 240ms ease, content-visibility 240ms allow-discrete;
-  content-visibility: hidden;
-}
-.pharmacy-hours details[open]::details-content {
-  block-size: auto;
-  opacity: 1;
-  transform: translateY(0);
-  content-visibility: visible;
-}
 .pharmacy-hours-panel {
   min-width: 0;
-  padding-top: 8px;
+  padding-top: 4px;
 }
 .pharmacy-hours > strong {
   font-size: 0.9rem;
   line-height: 1.5;
-}
-.pharmacy-hours details > summary {
-  width: fit-content;
-  color: var(--brand);
-  font-size: 0.82rem;
-  font-weight: 600;
-  cursor: pointer;
 }
 .pharmacy-calendar-scroll {
   width: 100%;

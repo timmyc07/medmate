@@ -50,27 +50,24 @@ export function PharmacyResult({ item }: { item: Pharmacy }) {
         <section className="pharmacy-hours pharmacy-card-hours" aria-label="政府登記看診時段">
           <strong>{currentHours.label}</strong>
           {weeklySchedule.length ? (
-            <details>
-              <summary>查看一週看診時間</summary>
-              <div className="pharmacy-hours-panel">
-                <section className="pharmacy-calendar-scroll" aria-label="一週看診時間表">
-                  <table className="pharmacy-calendar">
-                    <thead><tr><th scope="col">時段</th>{weeklySchedule.map(({ day }) => <th scope="col" key={day}>週{day}</th>)}</tr></thead>
-                    <tbody>
-                      {(["上午", "下午", "晚上"] as const).map((period) => (
-                        <tr key={period}>
-                          <th scope="row">{period}</th>
-                          {weeklySchedule.map(({ day, periods }) => {
-                            const status = periods.find((entry) => entry.name === period)?.status ?? "未提供";
-                            return <td key={day} className={`pharmacy-calendar-${status}`} aria-label={`週${day}${period}${status}`}>{status === "看診" ? "看診" : status === "休診" ? "休診" : "—"}</td>;
-                          })}
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </section>
-              </div>
-            </details>
+            <div className="pharmacy-hours-panel">
+              <section className="pharmacy-calendar-scroll" aria-label="一週看診時間表">
+                <table className="pharmacy-calendar">
+                  <thead><tr><th scope="col">時段</th>{weeklySchedule.map(({ day }) => <th scope="col" key={day}>週{day}</th>)}</tr></thead>
+                  <tbody>
+                    {(["上午", "下午", "晚上"] as const).map((period) => (
+                      <tr key={period}>
+                        <th scope="row">{period}</th>
+                        {weeklySchedule.map(({ day, periods }) => {
+                          const status = periods.find((entry) => entry.name === period)?.status ?? "未提供";
+                          return <td key={day} className={`pharmacy-calendar-${status}`} aria-label={`週${day}${period}${status}`}>{status === "看診" ? "看診" : status === "休診" ? "休診" : "—"}</td>;
+                        })}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </section>
+            </div>
           ) : (
             <p>政府資料未提供固定看診時段</p>
           )}
