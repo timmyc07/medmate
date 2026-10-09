@@ -11,8 +11,8 @@ export default function HomePage() {
             <span>MediMate</span>
           </Link>
           <nav className="landing-nav" aria-label="主要導覽">
-            <a href="/pharmacies" aria-label="藥局地圖，藥局查詢">藥局地圖</a>
-            <a href="/medicines">藥品目錄</a>
+            <Link href="/pharmacies" aria-label="藥局地圖，藥局查詢">藥局地圖</Link>
+            <Link href="/medicines">藥品目錄</Link>
             <a href="#data-status">資料來源</a>
           </nav>
           <div className="landing-tools"><ThemeToggle /></div>
@@ -29,12 +29,12 @@ export default function HomePage() {
               從附近藥局到藥品公開資訊，讓可信賴的資料更容易找到。
             </p>
             <div className="landing-actions">
-              <a className="landing-button landing-button--primary" href="/pharmacies">
+              <Link className="landing-button landing-button--primary" href="/pharmacies">
                 探索藥局 <span aria-hidden="true">↗</span>
-              </a>
-              <a className="landing-button landing-button--secondary" href="/medicines">
+              </Link>
+              <Link className="landing-button landing-button--secondary" href="/medicines">
                 查詢藥品
-              </a>
+              </Link>
             </div>
           </div>
           <div className="landing-artwork" aria-hidden="true">
@@ -54,7 +54,7 @@ export default function HomePage() {
         </div>
         <div className="landing-information-content">
           <p>藥局與藥品資料整理自政府公開來源，查詢結果會標示資料更新日期。藥局頁提供地區、定位、地址與聯絡資訊；藥品頁整理許可證與公開適應症資料。</p>
-          <a href="/pharmacies">開始查詢 <span aria-hidden="true">↗</span></a>
+          <Link href="/pharmacies">開始查詢 <span aria-hidden="true">↗</span></Link>
         </div>
       </section>
     </main>

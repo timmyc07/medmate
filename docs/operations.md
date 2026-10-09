@@ -8,6 +8,8 @@
 
 藥局搜尋結果採單欄資訊卡；桌面版左側顯示藥局地址、電話、資料狀態及導航/撥號操作，右側常駐顯示看診時段與週曆。週曆直接呈現在卡片內，不需要額外點擊展開；窄螢幕改為上下排列，週曆可水平捲動。
 
+首頁、藥局與藥品頁的站內導覽使用 Next.js `Link` 進行 client-side navigation。共用 `src/app/template.tsx` 透過 React `ViewTransition` 讓路由內容淡入並輕微上移；瀏覽器不支援 View Transitions API 時仍有一般 CSS 入場效果，使用者啟用 `prefers-reduced-motion` 時會縮短動畫。
+
 ## 本機開發
 
 - 使用 Node.js 24.x 與 npm。

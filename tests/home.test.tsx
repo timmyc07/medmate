@@ -2,6 +2,7 @@ import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import RootLayout from "../src/app/layout";
 import HomePage from "../src/app/page";
+import Template from "../src/app/template";
 
 describe("首頁", () => {
   it("顯示繁體中文品牌及藥局、藥品兩種查詢入口", () => {
@@ -21,5 +22,11 @@ describe("首頁", () => {
     expect(screen.getByRole("img", { name: "全民健康保險標誌" })).toHaveAttribute("src", "/health-insurance-emblem.svg");
     expect(screen.getByRole("heading", { name: "資料來源與參考" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /健保特約醫事機構/ })).toHaveAttribute("href", "https://data.gov.tw/dataset/39284");
+  });
+
+  it("以共用頁面轉場容器包住路由內容", () => {
+    const { container } = render(<Template><HomePage /></Template>);
+
+    expect(container.querySelector(".page-transition")).toBeInTheDocument();
   });
 });
