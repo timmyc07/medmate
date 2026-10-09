@@ -88,6 +88,7 @@ export default function MedicineUsageCatalog() {
                         src={item.appearanceImageUrl}
                         alt={`${item.name}藥品外觀`}
                         loading="lazy"
+                        decoding="async"
                       />
                     ) : (
                       <div
