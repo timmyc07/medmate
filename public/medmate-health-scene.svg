@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1500 650" fill="none">
+  <title>MediMate 藥品與健康資料視覺</title>
+  <defs>
+    <linearGradient id="glass" x1="473" y1="230" x2="1065" y2="564" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0D563E"/>
+      <stop offset=".52" stop-color="#18A66D"/>
+      <stop offset="1" stop-color="#52E39A"/>
+    </linearGradient>
+    <linearGradient id="bottle" x1="690" y1="295" x2="820" y2="573" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#DBFFE9"/>
+      <stop offset="1" stop-color="#67D99B"/>
+    </linearGradient>
+    <linearGradient id="pill" x1="861" y1="370" x2="1006" y2="493" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#B8FFD1"/>
+      <stop offset="1" stop-color="#1BA36B"/>
+    </linearGradient>
+    <radialGradient id="halo" cx="0" cy="0" r="1" gradientTransform="matrix(0 314 -620 0 748 338)" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1CA76D" stop-opacity=".24"/>
+      <stop offset="1" stop-color="#071510" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="blur" x="156" y="59" width="1188" height="721" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse">
+      <feGaussianBlur stdDeviation="45"/>
+    </filter>
+    <filter id="shadow" x="415" y="120" width="689" height="550" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="18"/>
+      <feOffset dy="18"/>
+      <feComponentTransfer><feFuncA slope=".35" type="linear"/></feComponentTransfer>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <ellipse cx="750" cy="390" fill="#20BE7D" fill-opacity=".15" filter="url(#blur)" rx="505" ry="215"/>
+  <path fill="url(#halo)" d="M0 0h1500v650H0z"/>
+  <path d="M45 521c168-133 263-146 384-32 72 68 119 113 210 87 81-23 114-125 211-137 114-14 171 94 266 104 116 12 188-74 339-35v142H45V521Z" fill="#0A241A" stroke="#1C7B52" stroke-opacity=".55" stroke-width="2"/>
+  <path d="M0 580c178-72 264-38 378 7 114 44 199 36 289-26 117-79 173-64 280-9 143 74 273 72 553 1v97H0v-70Z" fill="#0B1C15" stroke="#1E8A5B" stroke-opacity=".48" stroke-width="2"/>
+  <g opacity=".74" stroke="#73E9A8" stroke-width="2">
+    <path d="M198 414v-45h43v-45h44"/><path d="M1300 426v-44h-42v-46h-45"/>
+    <path d="M322 482v-32h42v-38h34"/><path d="M1177 487v-37h-34v-35h-42"/>
+  </g>
+  <g fill="#A0F4BF">
+    <circle cx="198" cy="414" r="4"/><circle cx="285" cy="324" r="4"/><circle cx="1300" cy="426" r="4"/><circle cx="1213" cy="336" r="4"/>
+    <circle cx="322" cy="482" r="3"/><circle cx="1177" cy="487" r="3"/><circle cx="432" cy="375" r="3"/><circle cx="1070" cy="398" r="3"/>
+  </g>
+  <g filter="url(#shadow)">
+    <path d="M525 289c0-29 24-53 53-53h40v-37h102v37h39c29 0 53 24 53 53v234c0 28-23 51-51 51H576c-28 0-51-23-51-51V289Z" fill="url(#bottle)" stroke="#C9FFDA" stroke-width="5"/>
+    <path d="M618 199h102v48H618z" rx="10" fill="#239A65" stroke="#B4F7CA" stroke-width="5"/>
+    <path d="M593 335c0-14 11-25 25-25h146c14 0 25 11 25 25v112c0 14-11 25-25 25H618c-14 0-25-11-25-25V335Z" fill="#F0FFF4" fill-opacity=".94"/>
+    <path d="M667 354h48v34h34v48h-34v34h-48v-34h-34v-48h34v-34Z" fill="#159A62"/>
+    <path d="M572 276c18-16 33-22 52-22m153 0c19 0 34 6 51 22" stroke="#F2FFF5" stroke-opacity=".55" stroke-width="8" stroke-linecap="round"/>
+  </g>
+  <g filter="url(#shadow)" transform="rotate(-24 951 432)">
+    <rect x="864" y="374" width="184" height="112" rx="56" fill="url(#pill)" stroke="#B9FFD0" stroke-width="5"/>
+    <path d="M956 376v108" stroke="#E2FFEB" stroke-opacity=".78" stroke-width="5"/>
+    <path d="M891 421c11-16 26-24 44-25" stroke="#E9FFF0" stroke-opacity=".7" stroke-width="8" stroke-linecap="round"/>
+  </g>
+  <g fill="#77E7A7">
+    <circle cx="462" cy="511" r="10"/><circle cx="1066" cy="533" r="8"/><circle cx="390" cy="389" r="6"/><circle cx="1144" cy="373" r="7"/>
+  </g>
+  <g fill="#B5F6CA" fill-opacity=".86">
+    <path d="M751 102v24m-12-12h24" stroke="#B5F6CA" stroke-linecap="round" stroke-width="3"/>
+    <path d="M353 278v16m-8-8h16" stroke="#B5F6CA" stroke-linecap="round" stroke-width="2"/>
+    <path d="M1138 260v18m-9-9h18" stroke="#B5F6CA" stroke-linecap="round" stroke-width="2"/>
+  </g>
+</svg>

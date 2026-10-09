@@ -11,8 +11,8 @@ describe("首頁", () => {
     expect(screen.getByRole("link", { name: /藥局地圖/ })).toHaveAttribute("href", "/pharmacies");
     expect(screen.getByRole("link", { name: /探索藥局/ })).toHaveAttribute("href", "/pharmacies");
     expect(screen.getByRole("link", { name: /查詢藥品/ })).toHaveAttribute("href", "/medicines");
-    expect(screen.getByRole("link", { name: /找藥局/ })).toHaveAttribute("href", "/pharmacies");
-    expect(screen.getByRole("link", { name: /查藥品/ })).toHaveAttribute("href", "/medicines");
+    expect(screen.getByRole("link", { name: /藥品目錄/ })).toHaveAttribute("href", "/medicines");
+    expect(screen.getByRole("link", { name: /開始查詢/ })).toHaveAttribute("href", "/pharmacies");
   });
 
   it("在共用版型底部顯示健保標誌與政府資料來源", () => {
