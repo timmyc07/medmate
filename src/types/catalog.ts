@@ -23,6 +23,30 @@ export interface Medicine {
   sourceUpdatedAt: string | null;
 }
 
+export interface MedicineUsageItem {
+  rank: number;
+  drugCode: string;
+  name: string;
+  englishName: string;
+  ingredient: string;
+  dosageForm: string;
+  claimQuantity: number;
+  licenseNumber: string | null;
+  appearanceImageUrl: string | null;
+  appearanceShape: string | null;
+  appearanceColor: string | null;
+}
+
+export interface MedicineUsagePage {
+  items: MedicineUsageItem[];
+  page: number;
+  pageSize: number;
+  total: number;
+  feeYear: number | null;
+  periodStart: string | null;
+  periodEnd: string | null;
+}
+
 export interface Page<T> {
   items: T[];
   page: number;

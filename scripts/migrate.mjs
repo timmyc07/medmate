@@ -7,11 +7,20 @@ if (!connectionString) {
   process.exit(2);
 }
 
-const pool = new Pool({ connectionString, max: 1, connectionTimeoutMillis: 10_000 });
+const pool = new Pool({
+  connectionString,
+  max: 1,
+  connectionTimeoutMillis: 10_000,
+});
 try {
-  const sql = await readFile(new URL("../db/migrations/001_catalog.sql", import.meta.url), "utf8");
-  await pool.query(sql);
-  console.log("001_catalog.sql 已套用。");
+  for (const filename of ["001_catalog.sql", "002_medicine_usage.sql"]) {
+    const sql = await readFile(
+      new URL(`../db/migrations/${filename}`, import.meta.url),
+      "utf8",
+    );
+    await pool.query(sql);
+    console.log(`${filename} 已套用。`);
+  }
 } catch {
   console.error("Migration 失敗；未輸出資料庫錯誤或連線資訊。");
   process.exitCode = 1;

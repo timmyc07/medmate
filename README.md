@@ -12,9 +12,10 @@ MediMate 是以手機瀏覽為優先的繁體中文藥局與藥品公開查詢�
 - 三份政府 CSV 已由官方資源重新下載、核對 SHA-256，匯入 Neon。藥局使用健保特約來源；藥品只顯示有效日期未過且註銷狀態空白的資料。細節與更新方式見[資料來源文件](docs/data-sources.md)及[維運文件](docs/operations.md)。
 - Parallels SQL Server 不會公開到網際網路，這次遷移來源是官方 CSV，並非從本機 SQL Server dump。
 - 網站不提供診斷或治療建議，也不含帳號、個人藥箱或個人查詢歷史。來源資料沒有副作用欄位，網站不會補寫副作用內容。
+- `/medicines` 進入後顯示健保藥品使用量排行，每頁最多 50 項、桌面每列 3 張卡片並提供頁碼按鈕；資料期間與彙總申報量限制會清楚標示。外觀只在 FDA 完整許可證字號精確配對時顯示，否則使用占位圖；目前健保來源與外觀資料缺少已核實的直接識別碼對照。新增資料匯入與來源限制見[資料來源文件](docs/data-sources.md)。
 - 地圖使用 Google Maps JavaScript API；藥局地址會透過同源 `/api/geocode` 代理 Google Geocoding API 即時轉換為座標後顯示。API key 僅由伺服器設定 `GOOGLE_MAP_API_KEY` 讀取，未定位結果不寫回資料庫。
 - CSV、資料庫匯出/備份、`.env`、密碼、API key 及其他秘密資訊不得提交 GitHub。Render 管理用 API key 只用於管理平台，不能加入網站執行環境。
-- 2026-10-08 已將使用者下載資料夾內與現有功能相符的三份 CSV 核對 hash 後匯入 Neon production。該資料夾的另外幾份醫材、外觀與健保藥價資料尚未納入現有搜尋模型，請先擴充 schema 與 UI/API 再匯入，避免將不同識別碼混合。
+- 藥品使用量排行 migration 與匯入器已新增；部署及資料庫匯入仍須先在隔離 Neon branch 驗證，不能直接對 production 執行。來源 CSV 保留在使用者下載資料夾，不提交 repo。
 
 ## 文件
 
