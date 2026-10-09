@@ -1,9 +1,9 @@
 import type { Medicine, Pharmacy } from "../types/catalog";
-import { formatPharmacyOpeningHours, getCurrentPharmacyHoursStatus } from "../lib/pharmacy-hours";
+import { getCurrentPharmacyHoursStatus, parsePharmacyWeeklySchedule } from "../lib/pharmacy-hours";
 
 export function PharmacyResult({ item }: { item: Pharmacy }) {
   const currentHours = getCurrentPharmacyHoursStatus(item.openingHours);
-  const formattedHours = formatPharmacyOpeningHours(item.openingHours);
+  const weeklySchedule = parsePharmacyWeeklySchedule(item.openingHours);
   const mapUrl =
     item.latitude !== null && item.longitude !== null
       ? `https://www.google.com/maps/dir/?api=1&destination=${item.latitude},${item.longitude}`
@@ -21,10 +21,25 @@ export function PharmacyResult({ item }: { item: Pharmacy }) {
         </div>
         <section className="pharmacy-hours" aria-label="政府登記看診時段">
           <strong>{currentHours.label}</strong>
-          {formattedHours ? (
+          {weeklySchedule.length ? (
             <details>
-              <summary>查看完整看診時段</summary>
-              <p>{formattedHours}</p>
+              <summary>查看一週看診時間</summary>
+              <div className="pharmacy-calendar-scroll" role="region" aria-label="一週看診時間表" tabIndex={0}>
+                <table className="pharmacy-calendar">
+                  <thead><tr><th scope="col">時段</th>{weeklySchedule.map(({ day }) => <th scope="col" key={day}>週{day}</th>)}</tr></thead>
+                  <tbody>
+                    {(["上午", "下午", "晚上"] as const).map((period) => (
+                      <tr key={period}>
+                        <th scope="row">{period}</th>
+                        {weeklySchedule.map(({ day, periods }) => {
+                          const status = periods.find((entry) => entry.name === period)?.status ?? "未提供";
+                          return <td key={day} className={`pharmacy-calendar-${status}`} aria-label={`週${day}${period}${status}`}>{status === "看診" ? "看診" : status === "休診" ? "休診" : "—"}</td>;
+                        })}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </details>
           ) : (
             <p>政府資料未提供固定看診時段</p>

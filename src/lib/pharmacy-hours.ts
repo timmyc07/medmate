@@ -7,6 +7,23 @@ export type CurrentPharmacyHours = {
   period: Period | null;
 };
 
+export type PharmacyWeeklySchedule = Array<{
+  day: string;
+  periods: Array<{ name: Period; status: "看診" | "休診" | "未提供" }>;
+}>;
+
+/** 將健保署的原始字串轉成週曆使用的星期與時段資料。 */
+export function parsePharmacyWeeklySchedule(openingHours: string | null): PharmacyWeeklySchedule {
+  if (!openingHours?.trim()) return [];
+  return ["一", "二", "三", "四", "五", "六", "日"].map((day) => ({
+    day,
+    periods: (["上午", "下午", "晚上"] as const).map((name) => {
+      const match = openingHours.match(new RegExp(`星期${day}${name}(看診|休診)`));
+      return { name, status: match?.[1] as "看診" | "休診" | undefined ?? "未提供" };
+    }),
+  }));
+}
+
 /** 依政府固定看診時段原文，判讀台灣目前半日時段是否列有看診安排。 */
 export function getCurrentPharmacyHoursStatus(
   openingHours: string | null,
@@ -44,25 +61,9 @@ export function getCurrentPharmacyHoursStatus(
 /** 依星期彙整相同看診狀態的時段，讓卡片更容易掃讀。 */
 export function formatPharmacyOpeningHours(openingHours: string | null): string | null {
   if (!openingHours?.trim()) return null;
-  const days = ["一", "二", "三", "四", "五", "六", "日", "天"];
-  const periods = ["上午", "下午", "晚上"] as const;
-  const schedule = new Map<string, { clinic: string[]; closed: string[] }>();
-
-  for (const day of days) {
-    const key = day === "天" ? "日" : day;
-    if (schedule.has(key)) continue;
-    const clinic: string[] = [];
-    const closed: string[] = [];
-    for (const period of periods) {
-      const match = openingHours.match(new RegExp(`星期${day}${period}(看診|休診)`));
-      if (match?.[1] === "看診") clinic.push(period === "上午" ? "上" : period === "下午" ? "下午" : "晚上");
-      if (match?.[1] === "休診") closed.push(period === "上午" ? "上" : period === "下午" ? "下午" : "晚上");
-    }
-    if (clinic.length || closed.length) schedule.set(key, { clinic, closed });
-  }
-
-  return [...schedule].map(([day, { clinic, closed }]) => {
-    const entries = [clinic.length ? `週${day}${clinic.join("/" )} 看診` : "", closed.length ? `週${day}${closed.join("/")}休診` : ""];
-    return entries.filter(Boolean).join("；");
-  }).join("・");
+  return parsePharmacyWeeklySchedule(openingHours).map(({ day, periods }) => {
+    const clinic = periods.filter((period) => period.status === "看診").map((period) => period.name === "上午" ? "上" : period.name);
+    const closed = periods.filter((period) => period.status === "休診").map((period) => period.name === "上午" ? "上" : period.name);
+    return [clinic.length ? `週${day}${clinic.join("/")} 看診` : "", closed.length ? `週${day}${closed.join("/")}休診` : ""].filter(Boolean).join("；");
+  }).filter(Boolean).join("・") || null;
 }

@@ -24,7 +24,10 @@ describe("藥局資訊卡", () => {
     expect(screen.getByRole("heading", { name: "安心藥局" })).toBeInTheDocument();
     expect(screen.getByText("臺北市中正區忠孝東路 1 號")).toBeInTheDocument();
     expect(screen.getByText(/此為政府登記的看診安排/)).toBeInTheDocument();
-    expect(screen.getByText("查看完整看診時段")).toBeInTheDocument();
+    expect(screen.getByText("查看一週看診時間")).toBeInTheDocument();
+    expect(screen.getByRole("table")).toBeInTheDocument();
+    expect(screen.getByLabelText("週一上午看診")).toBeInTheDocument();
+    expect(screen.getByLabelText("週一下午休診")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "導航至 安心藥局" })).toHaveAttribute(
       "href",
       "https://www.google.com/maps/dir/?api=1&destination=25.04,121.53",
