@@ -28,6 +28,7 @@ CREATE TABLE IF NOT EXISTS pharmacy_contracts (
   service_area text NOT NULL DEFAULT '',
   contract_type text NOT NULL DEFAULT '',
   services text NOT NULL DEFAULT '',
+  opening_hours text,
   termination_date date,
   contract_start_date date,
   source_updated_at timestamptz NOT NULL,
@@ -43,6 +44,7 @@ ALTER TABLE pharmacy_contracts ADD COLUMN IF NOT EXISTS latitude double precisio
 ALTER TABLE pharmacy_contracts ADD COLUMN IF NOT EXISTS longitude double precision CHECK (longitude IS NULL OR longitude BETWEEN -180 AND 180);
 ALTER TABLE pharmacy_contracts ADD COLUMN IF NOT EXISTS geocoded_at timestamptz;
 ALTER TABLE pharmacy_contracts ADD COLUMN IF NOT EXISTS geocode_provider text;
+ALTER TABLE pharmacy_contracts ADD COLUMN IF NOT EXISTS opening_hours text;
 CREATE INDEX IF NOT EXISTS pharmacy_contracts_coordinates_idx ON pharmacy_contracts (latitude, longitude) WHERE latitude IS NOT NULL AND longitude IS NOT NULL;
 
 CREATE TABLE IF NOT EXISTS medicines (

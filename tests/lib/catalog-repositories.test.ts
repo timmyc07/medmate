@@ -122,6 +122,7 @@ describe("Neon 公開資料查詢", () => {
             phone: "02",
             city: "臺北市",
             status: "健保特約",
+            opening_hours: "星期一上午看診",
             source_updated_at: "2026-10-08",
           },
         ],
@@ -134,6 +135,7 @@ describe("Neon 公開資料查詢", () => {
     });
 
     expect(result.total).toBe(1);
+    expect(result.items[0].openingHours).toBe("星期一上午看診");
     expect(query.mock.calls[0][0]).toContain(
       "termination_date IS NULL OR termination_date >= (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Taipei')::date",
     );

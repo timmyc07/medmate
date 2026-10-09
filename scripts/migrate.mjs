@@ -13,7 +13,7 @@ const pool = new Pool({
   connectionTimeoutMillis: 10_000,
 });
 try {
-  for (const filename of ["001_catalog.sql", "002_medicine_usage.sql"]) {
+  for (const filename of ["001_catalog.sql", "002_medicine_usage.sql", "003_pharmacy_opening_hours.sql"]) {
     const sql = await readFile(
       new URL(`../db/migrations/${filename}`, import.meta.url),
       "utf8",

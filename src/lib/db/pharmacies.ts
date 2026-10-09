@@ -48,10 +48,10 @@ export async function searchPharmacies(params: SearchParams): Promise<Page<Pharm
   const offset = (params.page - 1) * params.pageSize;
   const rows = await pool.query<{
     institution_code: string; institution_name: string; address: string; phone: string;
-    city: string | null; termination_date: string | null; source_updated_at: string;
+    city: string | null; opening_hours: string | null; termination_date: string | null; source_updated_at: string;
     latitude: string | null; longitude: string | null; distance_km: string | null;
   }>(`SELECT institution_code, institution_name, address, NULLIF(phone, '') AS phone,
-      substring(address from '^.*?[縣市]') AS city, termination_date::text, source_updated_at::date::text AS source_updated_at,
+      substring(address from '^.*?[縣市]') AS city, opening_hours, termination_date::text, source_updated_at::date::text AS source_updated_at,
       latitude, longitude${distanceExpression ? `, ${distanceExpression} AS distance_km` : ", NULL::text AS distance_km"}
     FROM pharmacy_contracts WHERE ${filter}
     ORDER BY ${distanceExpression ? "distance_km, " : ""}institution_name, institution_code LIMIT $${values.length + 1} OFFSET $${values.length + 2}`,
@@ -65,6 +65,7 @@ export async function searchPharmacies(params: SearchParams): Promise<Page<Pharm
       phone: row.phone,
       city: row.city,
       status: row.termination_date ? "健保特約（有效至終止日）" : "健保特約",
+      openingHours: row.opening_hours ?? null,
       sourceUpdatedAt: row.source_updated_at,
       latitude: row.latitude == null ? null : Number(row.latitude),
       longitude: row.longitude == null ? null : Number(row.longitude),

@@ -1,6 +1,9 @@
 import type { Medicine, Pharmacy } from "../types/catalog";
+import { formatPharmacyOpeningHours, getCurrentPharmacyHoursStatus } from "../lib/pharmacy-hours";
 
 export function PharmacyResult({ item }: { item: Pharmacy }) {
+  const currentHours = getCurrentPharmacyHoursStatus(item.openingHours);
+  const formattedHours = formatPharmacyOpeningHours(item.openingHours);
   const mapUrl =
     item.latitude !== null && item.longitude !== null
       ? `https://www.google.com/maps/dir/?api=1&destination=${item.latitude},${item.longitude}`
@@ -16,6 +19,18 @@ export function PharmacyResult({ item }: { item: Pharmacy }) {
             {item.status ? `資料狀態 ${item.status}` : "營業狀況待查"}
           </span>
         </div>
+        <section className="pharmacy-hours" aria-label="政府登記看診時段">
+          <strong>{currentHours.label}</strong>
+          {formattedHours ? (
+            <details>
+              <summary>查看完整看診時段</summary>
+              <p>{formattedHours}</p>
+            </details>
+          ) : (
+            <p>政府資料未提供固定看診時段</p>
+          )}
+          <small>此為政府登記的看診安排，不代表即時營業狀態；出發前請先電話確認。</small>
+        </section>
         {item.city && <span className="result-meta">{item.city}</span>}
         {item.distanceKm != null && (
           <span className="result-meta">

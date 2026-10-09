@@ -6,6 +6,7 @@ export interface Pharmacy {
   phone: string | null;
   city: string | null;
   status: string | null;
+  openingHours: string | null;
   sourceUpdatedAt: string | null;
   latitude: number | null;
   longitude: number | null;
