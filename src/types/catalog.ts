@@ -9,6 +9,9 @@ export interface Pharmacy {
   sourceUpdatedAt: string | null;
   latitude: number | null;
   longitude: number | null;
+  streetViewImageUrl?: string | null;
+  streetViewDate?: string | null;
+  streetViewCopyright?: string | null;
   distanceKm?: number | null;
 }
 
