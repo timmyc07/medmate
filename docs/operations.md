@@ -2,7 +2,7 @@
 
 全站頁面由根 layout 共用健保標誌及政府開放資料來源頁尾。若增加新的政府資料或參考來源，請同步更新 `src/components/SiteFooter.tsx` 與 `docs/data-sources.md`；目前 FDA 外觀資料的精確資料集頁及授權資訊尚待核實。
 
-藥局卡片街景使用 Google Street View Static API。需在伺服器環境設定 `GOOGLE_STREETVIEW_API_KEY`（允許伺服器 IP 並啟用 Street View metadata API），並設定 `GOOGLE_STREETVIEW_BROWSER_KEY`（限制網站網域並啟用 Street View Static API）；metadata key 不會回傳給瀏覽器。未設定伺服器 key 時可回退使用 `GOOGLE_GEOCODING_API_KEY` 或 `GOOGLE_MAP_API_KEY`，未設定 browser key 則只顯示文字資料不產生圖片 URL。metadata 每次請求免費，但街景 Static API 圖片請求依 Google 定價計費。程式只查詢目前結果頁（最多 20 筆）的既有座標，不批次處理全量藥局；`pano_id` 只於單次 API 處理流程中使用，不寫入資料庫、應用日誌或瀏覽器儲存。街景日期及 metadata copyright 與圖片旁的「Google Maps」標示一同呈現。若未設定、查無街景或請求失敗，仍顯示藥局文字資訊及占位圖。
+藥局卡片街景使用 Google Street View Static API。可只設定共用的 `GOOGLE_MAP_API_KEY`，同時用於 metadata 與圖片；正式環境也可分別設定 `GOOGLE_STREETVIEW_API_KEY`（伺服器端）與 `GOOGLE_STREETVIEW_BROWSER_KEY`（網站網域限制），分離設定會優先使用。共用 key 必須啟用 Street View metadata 與 Static API，且其限制要同時允許伺服器請求及圖片請求；若使用 IP 或 HTTP referrer 限制，請依實際部署方式設定。metadata key 不會回傳給瀏覽器，但共用 key 會出現在圖片 URL。未設定圖片 key 時只顯示文字資料不產生圖片 URL。metadata 每次請求免費，但街景 Static API 圖片請求依 Google 定價計費。程式只查詢目前結果頁（最多 20 筆）的既有座標，不批次處理全量藥局；`pano_id` 只於單次 API 處理流程中使用，不寫入資料庫、應用日誌或瀏覽器儲存。街景日期及 metadata copyright 與圖片旁的「Google Maps」標示一同呈現。若未設定、查無街景或請求失敗，仍顯示藥局文字資訊及占位圖。
 
 官方政策指出 panorama ID 可能隨時間變更，metadata 文件建議不要持久保存；重新查詢時應以原始位置座標取得最新 panorama ID。參考：[Street View metadata](https://developers.google.com/maps/documentation/streetview/metadata?hl=zh-tw)、[Street View 政策與 attribution](https://developers.google.com/maps/documentation/streetview/policies)、[用量與計費](https://developers.google.com/maps/documentation/streetview/usage-and-billing)。
 
