@@ -219,7 +219,7 @@ export default function SearchPanel({
           <div className="result-summary">
             找到 {result.total.toLocaleString()} 筆，第 {result.page} 頁
           </div>
-          <div className="results-list">
+          <div className="results-list results-list--pharmacies">
             {(result.items as Pharmacy[]).map((item) => (
               <PharmacyResult key={item.id} item={item} />
             ))}

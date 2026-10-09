@@ -664,6 +664,9 @@ select:focus-visible {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 14px;
 }
+.results-list--pharmacies {
+  grid-template-columns: minmax(0, 1fr);
+}
 .usage-catalog {
   margin-bottom: 56px;
 }
@@ -800,17 +803,26 @@ select:focus-visible {
   background: var(--paper);
 }
 .pharmacy-card {
-  align-items: stretch;
-  padding: 16px;
+  display: block;
+  padding: 0;
+}
+.pharmacy-card-layout {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.72fr) minmax(0, 1.28fr);
+  gap: 22px;
+  align-items: start;
+  padding: 18px;
 }
 .result-main {
   min-width: 0;
 }
 .pharmacy-card .result-main {
-  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
   width: auto;
   max-width: 100%;
-  overflow: hidden;
+  overflow-wrap: anywhere;
 }
 .card-meta {
   display: flex;
@@ -829,7 +841,9 @@ select:focus-visible {
   gap: 9px;
   min-width: 0;
   max-width: 100%;
-  margin-top: 14px;
+  margin: 0;
+  padding-left: 20px;
+  border-left: 1px solid var(--line);
 }
 .pharmacy-hours details,
 .pharmacy-hours details > summary {
@@ -837,6 +851,26 @@ select:focus-visible {
   max-width: 100%;
 }
 .pharmacy-hours details { overflow: hidden; }
+.pharmacy-hours details::details-content {
+  display: block;
+  interpolate-size: allow-keywords;
+  block-size: 0;
+  overflow: clip;
+  opacity: 0;
+  transform: translateY(-5px);
+  transition: block-size 240ms ease, opacity 180ms ease, transform 240ms ease, content-visibility 240ms allow-discrete;
+  content-visibility: hidden;
+}
+.pharmacy-hours details[open]::details-content {
+  block-size: auto;
+  opacity: 1;
+  transform: translateY(0);
+  content-visibility: visible;
+}
+.pharmacy-hours-panel {
+  min-width: 0;
+  padding-top: 8px;
+}
 .pharmacy-hours > strong {
   font-size: 0.9rem;
   line-height: 1.5;
@@ -953,9 +987,9 @@ select:focus-visible {
 }
 .pharmacy-card-actions {
   display: flex;
-  flex: 0 0 auto;
-  flex-direction: column;
+  flex-wrap: wrap;
   gap: 8px;
+  margin-top: 14px;
 }
 .pagination {
   display: flex;
@@ -1175,6 +1209,19 @@ select:focus-visible {
   .results-list {
     grid-template-columns: 1fr;
   }
+  .pharmacy-card-layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+    padding: 15px;
+  }
+  .pharmacy-card .result-main {
+    padding-bottom: 15px;
+    border-bottom: 1px solid var(--line);
+  }
+  .pharmacy-card-hours {
+    padding-left: 0;
+    border-left: 0;
+  }
   .pharmacy-card .call-link {
     justify-self: start;
   }
@@ -1183,7 +1230,7 @@ select:focus-visible {
     flex-direction: row;
     flex-wrap: wrap;
     align-items: flex-start;
-    margin-top: 16px;
+    margin-top: 14px;
   }
 }
 

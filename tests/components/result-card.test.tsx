@@ -38,5 +38,9 @@ describe("藥局資訊卡", () => {
     );
     expect(container.querySelector("img")).toBeNull();
     expect(container.querySelector(".pharmacy-card-visual")).toBeNull();
+    expect(container.querySelector(".pharmacy-card-layout")).toBeInTheDocument();
+    expect(container.querySelector(".pharmacy-card-info")).toBeInTheDocument();
+    expect(container.querySelector(".pharmacy-card-hours")).toBeInTheDocument();
+    expect(container.querySelector(".pharmacy-hours details")).toBeInTheDocument();
   });
 });
