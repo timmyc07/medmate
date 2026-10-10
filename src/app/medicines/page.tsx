@@ -1,23 +1,11 @@
-import Link from "next/link";
 import MedicineUsageCatalog from "../../components/MedicineUsageCatalog";
+import PageHeader from "../../components/PageHeader";
 import SearchPanel from "../../components/SearchPanel";
-import ThemeToggle from "../../components/ThemeToggle";
 
 export default function MedicinesPage() {
   return (
     <main className="page-shell page-shell--inner">
-      <header className="site-header">
-        <Link className="brand" href="/">
-          <span className="brand-mark" aria-hidden="true">
-            ＋
-          </span>
-          <span>MediMate</span>
-        </Link>
-        <Link className="header-link" href="/pharmacies">
-          找藥局 ↗
-        </Link>
-        <ThemeToggle />
-      </header>
+      <PageHeader href="/pharmacies" label="找藥局" />
       <section className="inner-hero">
         <p className="eyebrow">
           <span className="status-dot" />

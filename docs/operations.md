@@ -10,6 +10,8 @@
 
 首頁、藥局與藥品頁的站內導覽使用 Next.js `Link` 進行 client-side navigation。共用 `src/app/template.tsx` 透過 React `ViewTransition` 讓路由內容淡入並輕微上移；瀏覽器不支援 View Transitions API 時仍有一般 CSS 入場效果，使用者啟用 `prefers-reduced-motion` 時會縮短動畫。
 
+藥局與藥品頁的 `PageHeader` 共用 landing page header 版型：左側品牌、中央跨頁查詢入口、右側主題切換；`page-header` 僅調整內容頁的主題色，保留相同間距、置中導覽與手機換行行為。
+
 ## 本機開發
 
 - 使用 Node.js 24.x 與 npm。

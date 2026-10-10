@@ -206,6 +206,30 @@ select:focus-visible {
   background: #101713;
 }
 .landing-tools .theme-toggle span:first-child { color: #8de5af; }
+.page-header {
+  width: 100%;
+  min-height: 88px;
+  border-bottom: 1px solid var(--line);
+}
+.page-header .landing-brand {
+  color: var(--ink);
+}
+.page-header .landing-brand .brand-mark {
+  color: #062015;
+  background: var(--brand);
+  box-shadow: 0 2px 8px var(--green-glow);
+}
+.page-header-nav {
+  color: var(--brand);
+}
+.page-header-nav a:hover { color: var(--brand-deep); }
+.page-header .landing-tools .theme-toggle {
+  border-color: var(--line);
+  color: var(--ink);
+  background: var(--paper);
+}
+.page-header .landing-tools .theme-toggle span:first-child { color: var(--brand); }
+.page-header-link span { margin-left: 4px; }
 .landing-hero {
   position: relative;
   display: flex;
@@ -1148,6 +1172,9 @@ select:focus-visible {
     min-height: 74px;
     flex-wrap: wrap;
     padding: 15px 0 10px;
+  }
+  .page-header {
+    min-height: 74px;
   }
   .landing-nav {
     position: static;

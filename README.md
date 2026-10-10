@@ -10,6 +10,7 @@ MediMate 是以手機瀏覽為優先的繁體中文藥局與藥品公開查詢�
 - 首頁只提供兩個入口：`/pharmacies` 藥局位置與營業資訊、`/medicines` 藥品公開資料。藥局查詢在結果卡先呈現地址、電話、資料狀態與距離，再顯示可定位資料的地圖；沒有座標的資料仍保留在卡片清單。使用定位時依距離排序且不設固定半徑，確保最近資料即使相距很遠也會顯示。
 - 藥局清單每列顯示一張資訊卡，左側為藥局資料與操作，右側常駐顯示一週政府登記看診時段；窄螢幕改為上下排列，週曆保留水平捲動。
 - 首頁、藥局與藥品頁的站內路由使用 Next.js client-side navigation；共用頁面 template 以 React `ViewTransition` 與 CSS 淡入上移效果處理頁面轉場，並支援 `prefers-reduced-motion` 降級。
+- 藥局與藥品頁共用 landing page 風格的上方導引列，左側固定品牌、中央提供跨頁查詢入口、右側保留主題切換；窄螢幕沿用 landing page 的換行配置。
 - 線上查詢由 Next.js server route 連接 Neon PostgreSQL；Render runtime 使用 `DATABASE_URL` pooled URL，資料庫 URL 不會送到瀏覽器。`/api/ready` 檢查資料庫連線，`/api/health` 保持程序存活檢查。
 - 三份政府 CSV 已由官方資源重新下載、核對 SHA-256，匯入 Neon。藥局使用健保特約來源；藥品只顯示有效日期未過且註銷狀態空白的資料。細節與更新方式見[資料來源文件](docs/data-sources.md)及[維運文件](docs/operations.md)。
 - Parallels SQL Server 不會公開到網際網路，這次遷移來源是官方 CSV，並非從本機 SQL Server dump。
