@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import RootLayout from "../src/app/layout";
 import HomePage from "../src/app/page";
@@ -20,8 +20,10 @@ describe("首頁", () => {
     render(<RootLayout><HomePage /></RootLayout>);
 
     expect(screen.getByRole("img", { name: "全民健康保險標誌" })).toHaveAttribute("src", "/health-insurance-emblem.svg");
-    expect(screen.getByRole("heading", { name: "資料來源與參考" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /健保特約醫事機構/ })).toHaveAttribute("href", "https://data.gov.tw/dataset/39284");
+    expect(screen.getByRole("heading", { name: "資料來源與授權" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "健保特約醫事機構－藥局" })).toHaveAttribute("href", "https://data.gov.tw/dataset/39284");
+    const footer = screen.getByRole("contentinfo");
+    expect(within(footer).getByRole("link", { name: "政府資料開放授權條款第 1 版" })).toHaveAttribute("href", "https://data.gov.tw/license");
   });
 
   it("以共用頁面轉場容器包住路由內容", () => {
