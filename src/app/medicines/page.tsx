@@ -1,4 +1,5 @@
 import MedicineUsageCatalog from "../../components/MedicineUsageCatalog";
+import MedicineAppearanceSection from "../../components/MedicineAppearanceSection";
 import PageHeader from "../../components/PageHeader";
 import SearchPanel from "../../components/SearchPanel";
 
@@ -36,8 +37,13 @@ export default async function MedicinesPage({ searchParams }: PageProps) {
           <div className="medicine-overview-metric"><span className="material-symbols-outlined" aria-hidden="true">calendar_month</span><div><span>使用量統計</span><strong>申報年月</strong><small>彙總申報量</small></div></div>
         </section>
       </section>
-      <SearchPanel kind="medicines" initialQuery={query} />
+      <SearchPanel
+        kind="medicines"
+        initialQuery={query}
+        showPillFeatureFinder={false}
+      />
       <MedicineUsageCatalog />
+      <MedicineAppearanceSection />
     </main>
   );
 }

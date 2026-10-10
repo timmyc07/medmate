@@ -16,10 +16,12 @@ export default function SearchPanel({
   kind,
   enabled = true,
   initialQuery = "",
+  showPillFeatureFinder = true,
 }: {
   kind: Kind;
   enabled?: boolean;
   initialQuery?: string;
+  showPillFeatureFinder?: boolean;
 }) {
   const [keyword, setKeyword] = useState(initialQuery);
   const [city, setCity] = useState("");
@@ -141,10 +143,20 @@ export default function SearchPanel({
     void search(event);
   }
 
+  function applyCityFilter(nextCity: string) {
+    locationRequestIdRef.current += 1;
+    setCity(nextCity);
+    setDistrict("");
+    setLocation(null);
+    void search(undefined, 1, null, keyword, { city: nextCity, district: "" });
+  }
+
   function compareAppearance(marking: string) {
     setKeyword(marking);
     void search(undefined, 1, null, marking, { city: "", district: "" });
   }
+
+  const quickCities = Array.from(new Set([...(city ? [city] : []), ...TAIWAN_CITIES.slice(0, 5)]));
 
   return (
     <section
@@ -163,7 +175,9 @@ export default function SearchPanel({
           {kind === "pharmacies" ? "縣市・區域・附近搜尋" : "藥品名稱・許可證字號"}
         </span>
       </div>
-      {kind === "medicines" && <PillFeatureFinder onCompare={compareAppearance} />}
+      {kind === "medicines" && showPillFeatureFinder && (
+        <PillFeatureFinder onCompare={compareAppearance} />
+      )}
       <form className={`search-form search-form--${kind}`} onSubmit={submitSearch}>
         <label className="search-field">
           <span className="input-icon material-symbols-outlined" aria-hidden="true">search</span>
@@ -249,6 +263,32 @@ export default function SearchPanel({
           <span className="material-symbols-outlined action-icon" aria-hidden="true">my_location</span>
           使用目前位置找附近藥局
         </button>
+      )}
+      {kind === "pharmacies" && (
+        <fieldset className="search-filters">
+          <legend className="search-filters-label">快速縣市篩選</legend>
+          <button
+            className={`filter-chip ${!city && !location ? "is-active" : ""}`}
+            type="button"
+            onClick={() => applyCityFilter("")}
+            aria-pressed={!city && !location}
+            disabled={!enabled || loading}
+          >
+            全部縣市
+          </button>
+          {quickCities.map((name) => (
+            <button
+              className={`filter-chip ${city === name && !location ? "is-active" : ""}`}
+              key={name}
+              type="button"
+              onClick={() => applyCityFilter(name)}
+              aria-pressed={city === name && !location}
+              disabled={!enabled || loading}
+            >
+              {name}
+            </button>
+          ))}
+        </fieldset>
       )}
       {!enabled && (
         <p className="state-message" role="status">

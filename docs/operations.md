@@ -34,6 +34,8 @@ Neon CLI 8.0.12 已登入本機帳號，專案 `lingering-sun-32547332` 已連�
 
 藥品使用量排行新增 `002_medicine_usage.sql` 與 `npm run db:import-medicines -- <資料夾>`。此命令會將 111–115 年用量及健保藥品目錄、FDA 外觀匯入同一交易；必須先把 `DATABASE_URL_UNPOOLED` 明確切到隔離測試 branch，migration 和匯入驗證成功後才能安排 production。榜單 API 是 `/api/medicines/usage?page=N&pageSize=50`，頁面提供數字按鈕；使用量資料期間與申報量限制會顯示於頁首。詳細來源及識別碼規則見[資料來源文件](data-sources.md)。
 
+藥品頁的外觀快搜只提供現有藥品查詢 API 支援的藥品名稱、許可證字號或刻字關鍵字，範本中的形狀與顏色控制不會被當成可用辨識功能。外觀圖片仍須通過 FDA 完整許可證字號精確配對，不能以品名或模糊相似度推測。
+
 Render 必須設定 `DATABASE_URL` 為 Neon pooled URL。direct `DATABASE_URL_UNPOOLED` 僅供本機人工執行 `npm run db:migrate` / `npm run db:import`，不可加入 Render runtime。不要列印連線 URL、寫進 Git 或前端。Pool 上限每個服務程序 5 條連線；查詢錯誤不寫入日誌。`/api/ready` 檢查資料庫是否可查詢，`/api/health` 只用於程序存活。
 
 首次 schema/import 驗證使用有到期時間的 Neon branch `medmate-import-test-20261008`。2026-10-08 已在驗證 branch 測試後，將 `001_catalog.sql` 套用 production 並從 `/Users/reikous/Downloads/藥品資料庫` 匯入三個受支援 CSV：FDA 藥局 9,155 原始列（去重後 9,153）、健保特約藥局 10,187 列、FDA 藥品許可證 72,074 原始列（去重後 66,510）；每個來源 SHA-256 與筆數寫入 `source_imports`。其餘新增 CSV/B5 檔案尚未納入產品功能。正式查詢與匯入帳號應分開管理並授予最小權限；Neon 預設 app connection 若仍使用 owner role，應另建唯讀角色。CSV 匯入命令和白名單/來源更新策略見[資料來源文件](data-sources.md)。原始 CSV 不應提交到 GitHub。

@@ -81,9 +81,9 @@ export default function HomePage() {
             <strong>可查詢</strong>
             <span>品名、適應症與有效期限</span>
         </div>
-        <div className="trust-item">
-            <div className="trust-item-heading"><span className="material-symbols-outlined" aria-hidden="true">verified</span><span>資料同步透明</span></div>
-            <strong>可追溯</strong>
+        <div className="trust-item trust-item--status">
+            <div className="trust-item-heading"><span className="material-symbols-outlined" aria-hidden="true">verified</span><span>資料同步狀態</span></div>
+            <strong>來源已標註</strong>
             <span>來源連結、擷取日期與授權說明</span>
         </div>
       </section>
