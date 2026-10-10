@@ -12,6 +12,8 @@
 
 藥局與藥品頁的 `PageHeader` 共用 Warm Mint header 版型：桌面左側品牌、中央主要導覽、右側快速搜尋錨點與主題切換；窄螢幕將同一組導覽固定在底部，並預留 safe-area 空間。首頁的 `QuickSearch` 會以 query string 導向對應目錄。
 
+主題切換首次載入時以範本指定的淺色 Warm Mint 為預設；只有使用者主動切換後才會在瀏覽器 `localStorage` 保存夜間模式偏好。
+
 ## 本機開發
 
 - 使用 Node.js 24.x 與 npm。

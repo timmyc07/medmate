@@ -13,6 +13,7 @@ MediMate 是以手機瀏覽為優先的繁體中文藥局與藥品公開查詢�
 - 藥局清單每列顯示一張資訊卡，依序呈現藥局資料與操作、政府登記看診時段和一週週曆；週曆保留水平捲動。藥局頁桌面以清單搭配地圖，手機則先顯示地圖再顯示清單。
 - 首頁、藥局與藥品頁的站內路由使用 Next.js client-side navigation；共用頁面 template 以 React `ViewTransition` 與 CSS 淡入效果處理頁面轉場，並支援 `prefers-reduced-motion` 降級。
 - 藥局與藥品頁共用 Warm Mint 頁首，桌面左側固定品牌、中央提供主要導覽、右側提供快速搜尋錨點與主題切換；窄螢幕將同一組導覽移至固定底部並保留安全區空間。
+- 主題沒有已儲存偏好時預設使用範本的淺色 Warm Mint 畫布；使用者主動切換夜間模式後會保留於瀏覽器的 `localStorage`。
 - 線上查詢由 Next.js server route 連接 Neon PostgreSQL；Render runtime 使用 `DATABASE_URL` pooled URL，資料庫 URL 不會送到瀏覽器。`/api/ready` 檢查資料庫連線，`/api/health` 保持程序存活檢查。
 - 三份政府 CSV 已由官方資源重新下載、核對 SHA-256，匯入 Neon。藥局使用健保特約來源；藥品只顯示有效日期未過且註銷狀態空白的資料。2026-10-08 是來源查證與匯入批次日期，不等於藥品使用量統計期間；後者依申報年月決定，民國 115 年目前涵蓋 11501–11507。細節與更新方式見[資料來源文件](docs/data-sources.md)及[維運文件](docs/operations.md)。
 - Parallels SQL Server 不會公開到網際網路，這次遷移來源是官方 CSV，並非從本機 SQL Server dump。

@@ -12,9 +12,7 @@ export default function ThemeToggle() {
     const saved = window.localStorage.getItem(STORAGE_KEY);
     const selected: Theme = saved === "dark" || saved === "light"
       ? saved
-      : window.matchMedia?.("(prefers-color-scheme: dark)").matches ?? false
-        ? "dark"
-        : "light";
+      : "light";
     setTheme(selected);
     document.documentElement.dataset.theme = selected;
   }, []);
