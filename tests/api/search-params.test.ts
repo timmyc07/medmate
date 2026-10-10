@@ -25,6 +25,10 @@ describe("搜尋參數", () => {
       pageSize: 20,
     });
     expect(() => parseSearchParams(new URLSearchParams("lat=91&lng=121"), true, true)).toThrow();
-    expect(() => parseSearchParams(new URLSearchParams("city=&district="), true, true)).toThrow();
+    expect(parseSearchParams(new URLSearchParams("city=&district="), true, true)).toEqual({
+      keyword: "",
+      page: 1,
+      pageSize: 20,
+    });
   });
 });

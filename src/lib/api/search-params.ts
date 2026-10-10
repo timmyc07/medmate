@@ -28,12 +28,11 @@ export function parseSearchParams(params: URLSearchParams, allowCity = false, al
   const radiusKm = radiusValue === null ? undefined : Number(radiusValue);
   const page = Number(params.get("page") ?? "1");
   const pageSize = Number(params.get("pageSize") ?? "20");
-  const hasArea = city.length > 0 || district.length > 0;
   const hasCoordinates = latitude !== undefined || longitude !== undefined;
   const validCoordinates = latitude !== undefined && longitude !== undefined && Number.isFinite(latitude) && Number.isFinite(longitude) && latitude >= -90 && latitude <= 90 && longitude >= -180 && longitude <= 180;
 
   if (
-    (keyword.length === 0 && (!allowLocation || (!hasArea && !validCoordinates))) || keyword.length > 100 ||
+    (keyword.length === 0 && !allowLocation) || keyword.length > 100 ||
     (!allowCity && (city.length > 0 || district.length > 0)) ||
     (allowCity && (city.length > 50 || district.length > 50)) ||
     (allowLocation && ((hasCoordinates && !validCoordinates) || (validCoordinates && radiusKm !== undefined && (!Number.isFinite(radiusKm) || radiusKm < 0.5 || radiusKm > 50)))) ||

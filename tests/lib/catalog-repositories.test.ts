@@ -143,6 +143,18 @@ describe("Neon 公開資料查詢", () => {
     expect(query.mock.calls[1][1]).toEqual(["%安心%", "臺北市%", 20, 0]);
   });
 
+  it("藥局無關鍵字時不加入文字篩選並仍套用分頁", async () => {
+    query
+      .mockResolvedValueOnce({ rows: [{ total: "2" }] })
+      .mockResolvedValueOnce({ rows: [] });
+
+    await searchPharmacies({ keyword: "", page: 1, pageSize: 20 });
+
+    expect(query.mock.calls[0][0]).not.toContain("institution_name ILIKE");
+    expect(query.mock.calls[1][0]).not.toContain("institution_name ILIKE");
+    expect(query.mock.calls[1][1]).toEqual([20, 0]);
+  });
+
   it("位置查詢只回傳有座標的藥局並以距離排序", async () => {
     query
       .mockResolvedValueOnce({ rows: [{ total: "1" }] })
