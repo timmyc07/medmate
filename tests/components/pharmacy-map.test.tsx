@@ -41,4 +41,20 @@ describe("藥局地圖", () => {
     expect(fetchMock.mock.calls[1][0]).toBe("/api/geocode");
     expect(markerCount).toBe(1);
   });
+
+  it("已有座標的藥局直接標示且不呼叫地址定位", async () => {
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(new Response(JSON.stringify({ enabled: true, key: "browser-key" }), { status: 200 }));
+    let markerCount = 0;
+    window.google = { maps: {
+      Map: class { fitBounds() {} setCenter() {} },
+      LatLngBounds: class { extend() {} isEmpty() { return false; } },
+      Marker: class { constructor() { markerCount += 1; } },
+      InfoWindow: class { open() {} },
+    } } as never;
+    await act(async () => { render(<PharmacyMap pharmacies={[{ id: "1", name: "已有座標藥局", address: "台北市中正區", latitude: 25, longitude: 121 } as never]} userLocation={null} />); });
+
+    await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent("已標示 1 家藥局"));
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(markerCount).toBe(1);
+  });
 });

@@ -30,47 +30,48 @@ export default function PharmacyMap({ pharmacies, userLocation }: { pharmacies: 
         return;
       }
       if (!config.enabled || !config.key) { if (!cancelled) setStatus("地圖服務尚未設定"); return; }
-      const missing = [...new Set(pharmacies.filter((item) => item.address).map((item) => item.address as string))];
+      const missing = [...new Set(pharmacies
+        .filter((item) => item.address && (item.latitude === null || item.longitude === null))
+        .map((item) => item.address as string))];
       const geocoded = new Map<string, Point>();
-      let geocodeError: string | null = null;
-      try {
-        for (let index = 0; index < missing.length; index += 20) {
-          const response = await fetch("/api/geocode", { method: "POST", headers: { "Content-Type": "application/json", Accept: "application/json" }, body: JSON.stringify({ addresses: missing.slice(index, index + 20) }) });
-          if (!response.ok) {
-            const body = await response.json() as { error?: { code?: string; message?: string } };
-            geocodeError = body.error?.code === "GEOCODER_NOT_CONFIGURED" ? "地址定位服務尚未設定" : "地址定位服務暫時無法使用";
-            break;
-          }
-          const body = await response.json() as { items?: Array<{ address: string; latitude: number | null; longitude: number | null }> };
-          for (const item of body.items ?? []) if (item.latitude !== null && item.longitude !== null) geocoded.set(item.address, { latitude: item.latitude, longitude: item.longitude });
-          if (cancelled) return;
-        }
-      } catch {
-        geocodeError = "地址定位服務暫時無法使用";
-      }
-      if (cancelled) return;
+      const geocodePromise = geocodeAddresses(missing, geocoded).catch((error: unknown) => ({
+        error: error instanceof Error ? error.message : "地址定位服務暫時無法使用",
+      }));
       try {
         await loadScript(config.key);
         if (cancelled || !containerRef.current || !window.google) return;
-        const map = new window.google.maps.Map(containerRef.current, { center: { lat: 23.7, lng: 121 }, zoom: 7, mapTypeControl: false, streetViewControl: false, fullscreenControl: false, clickableIcons: false, gestureHandling: "cooperative" });
-        const bounds = new window.google.maps.LatLngBounds();
-        const points = pharmacies.flatMap((item) => {
-          const point = (item.address ? geocoded.get(item.address) : undefined)
-            ?? (item.latitude !== null && item.longitude !== null ? { latitude: item.latitude, longitude: item.longitude } : undefined);
-          return point ? [{ item, point }] : [];
-        });
-        for (const { item, point } of points) {
+        const maps = window.google.maps;
+        const map = new maps.Map(containerRef.current, { center: { lat: 23.7, lng: 121 }, zoom: 7, mapTypeControl: false, streetViewControl: false, fullscreenControl: false, clickableIcons: false, gestureHandling: "cooperative" });
+        const bounds = new maps.LatLngBounds();
+        const plotted = new Set<string>();
+        const addMarker = (item: Pharmacy, point: Point) => {
           const position = { lat: point.latitude, lng: point.longitude };
           bounds.extend(position);
-          const marker = new window.google.maps.Marker({ map, position, title: item.name });
-          const info = new window.google.maps.InfoWindow({ content: `<strong>${escapeHtml(item.name)}</strong><br>${escapeHtml(item.address ?? "地址未提供")}` });
+          const marker = new maps.Marker({ map, position, title: item.name });
+          const info = new maps.InfoWindow({ content: `<strong>${escapeHtml(item.name)}</strong><br>${escapeHtml(item.address ?? "地址未提供")}` });
           marker.addListener?.("click", () => info.open({ map, anchor: marker }));
+          plotted.add(item.id);
+        };
+        for (const item of pharmacies) {
+          const point = item.latitude !== null && item.longitude !== null ? { latitude: item.latitude, longitude: item.longitude } : undefined;
+          if (point) addMarker(item, point);
         }
-        if (userLocation) { const position = { lat: userLocation.latitude, lng: userLocation.longitude }; bounds.extend(position); new window.google.maps.Marker({ map, position, title: "目前位置", label: "你" }); }
-        if (!bounds.isEmpty()) map.fitBounds(bounds); else map.setCenter({ lat: 23.7, lng: 121 });
+        if (userLocation) { const position = { lat: userLocation.latitude, lng: userLocation.longitude }; bounds.extend(position); new maps.Marker({ map, position, title: "目前位置", label: "你" }); }
+        if (!bounds.isEmpty()) map.fitBounds(bounds);
+        if (!cancelled) setStatus(missing.length ? "地圖已載入，正在定位藥局…" : plotted.size ? `已標示 ${plotted.size} 家藥局` : "目前沒有可定位的藥局");
+
+        const geocodeResult = await geocodePromise;
+        if (cancelled) return;
+        const geocodeError = "error" in geocodeResult ? geocodeResult.error : null;
+        for (const item of pharmacies) {
+          if (plotted.has(item.id) || !item.address) continue;
+          const point = geocoded.get(item.address);
+          if (point) addMarker(item, point);
+        }
+        if (!bounds.isEmpty()) map.fitBounds(bounds);
         if (!cancelled) {
-          if (geocodeError) setStatus(`${geocodeError}；已顯示 ${points.length} 家可用座標，藥局清單仍可使用。`);
-          else setStatus(points.length ? `已標示 ${points.length} 家藥局` : "目前沒有可定位的藥局");
+          if (geocodeError) setStatus(`${geocodeError}；已顯示 ${plotted.size} 家可用座標，藥局清單仍可使用。`);
+          else setStatus(plotted.size ? `已標示 ${plotted.size} 家藥局` : "目前沒有可定位的藥局");
         }
       } catch {
         if (!cancelled) setStatus("地圖服務暫時無法載入；仍可使用藥局清單與導航。");
@@ -81,6 +82,19 @@ export default function PharmacyMap({ pharmacies, userLocation }: { pharmacies: 
   }, [pharmacies, userLocation]);
 
   return <div className="map-shell"><section className="pharmacy-map" ref={containerRef} role="img" aria-label="藥局分布地圖" aria-roledescription="互動式地圖" /><p className="map-status" role="status">{status}</p></div>;
+}
+
+async function geocodeAddresses(addresses: string[], output: Map<string, Point>): Promise<{ done: true } | { error: string }> {
+  for (let index = 0; index < addresses.length; index += 20) {
+    const response = await fetch("/api/geocode", { method: "POST", headers: { "Content-Type": "application/json", Accept: "application/json" }, body: JSON.stringify({ addresses: addresses.slice(index, index + 20) }) });
+    if (!response.ok) {
+      const body = await response.json() as { error?: { code?: string } };
+      return { error: body.error?.code === "GEOCODER_NOT_CONFIGURED" ? "地址定位服務尚未設定" : "地址定位服務暫時無法使用" };
+    }
+    const body = await response.json() as { items?: Array<{ address: string; latitude: number | null; longitude: number | null }> };
+    for (const item of body.items ?? []) if (item.latitude !== null && item.longitude !== null) output.set(item.address, { latitude: item.latitude, longitude: item.longitude });
+  }
+  return { done: true };
 }
 
 function loadScript(key: string): Promise<void> {
