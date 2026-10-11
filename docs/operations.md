@@ -60,6 +60,8 @@ Render 只連 Neon，不直接連私人 Parallels VM。資料匯入來源為官�
 
 網站地圖目前使用 Google Maps JavaScript API。Render 或本機執行環境可設定 `GOOGLE_MAPS_BROWSER_KEY` 與 `GOOGLE_GEOCODING_API_KEY`；未分拆時會回退使用 `GOOGLE_MAP_API_KEY`。前者只允許網站網域，後者只允許伺服器 IP，並分別啟用 Maps JavaScript API 與 Geocoding API。Google 官方服務仍受帳務、配額、API key referrer/IP 限制與服務條款約束，不能以程式繞過計費。前端只呼叫同源 `/api/maps-config` 載入地圖，地址定位由 `/api/geocode` 伺服器端代理，單次最多處理 20 個地址且只保留在當次查詢結果。
 
+2026-10-11 線上診斷曾觀察到 `/api/geocode` 回 503，且 `/api/maps-config` 回傳未啟用；表示 Render 缺少地圖瀏覽器金鑰與伺服器端 Geocoding 金鑰（或舊共用金鑰）。此情況下應在 Render `medmate` 服務環境設定 `GOOGLE_MAPS_BROWSER_KEY` 及 `GOOGLE_GEOCODING_API_KEY`，不要把瀏覽器金鑰當伺服器金鑰使用。前端現先檢查地圖設定，未啟用時不發送 geocode 請求；遇到定位 HTTP 錯誤則停止剩餘批次並顯示狀態，仍以資料中既有座標標示可用藥局。新增/修改環境變數後須重新部署，再檢查 `/api/maps-config` 的 `enabled` 與 `/api/geocode` 的回應；檢查時勿輸出金鑰值。
+
 地址轉換依附件官方範例採用 `geocode({ address })` 的概念，改用 Geocoding Web Service 以避免暴露伺服器 key。無法定位的地址仍顯示於文字清單，不以行政區中心點代替。若未設定 key 或 Google 回傳錯誤，地圖會顯示服務狀態而不影響藥局文字搜尋。
 
 藥局查詢提供兩種流程：使用者可在 HTTPS 網站按下「使用目前位置找附近藥局」，瀏覽器才會請求 Geolocation 權限；或填寫縣市與區域查詢。精確座標只在當次瀏覽器狀態中使用，不送入資料庫、不寫應用程式日誌。API 以 `lat`、`lng` 查詢 Neon 中已有座標的紀錄並以距離排序；定位搜尋預設不設固定半徑，因此即使最近資料距離數百或數千公里仍會顯示。只有呼叫端明確傳入 `radiusKm` 時才套用 0.5 至 50 公里的驗證與距離限制。

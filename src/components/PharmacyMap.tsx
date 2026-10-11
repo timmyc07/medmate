@@ -21,18 +21,6 @@ export default function PharmacyMap({ pharmacies, userLocation }: { pharmacies: 
   useEffect(() => {
     let cancelled = false;
     async function render() {
-      const missing = [...new Set(pharmacies.filter((item) => item.address).map((item) => item.address as string))];
-      const geocoded = new Map<string, Point>();
-      if (missing.length) {
-        try {
-          for (let index = 0; index < missing.length; index += 20) {
-            const response = await fetch("/api/geocode", { method: "POST", headers: { "Content-Type": "application/json", Accept: "application/json" }, body: JSON.stringify({ addresses: missing.slice(index, index + 20) }) });
-            const body = await response.json() as { items?: Array<{ address: string; latitude: number | null; longitude: number | null }> };
-            for (const item of body.items ?? []) if (item.latitude !== null && item.longitude !== null) geocoded.set(item.address, { latitude: item.latitude, longitude: item.longitude });
-            if (cancelled) return;
-          }
-        } catch { /* 保留既有座標 */ }
-      }
       let config: { enabled?: boolean; key?: string };
       try {
         const configResponse = await fetch("/api/maps-config", { cache: "no-store" });
@@ -42,13 +30,33 @@ export default function PharmacyMap({ pharmacies, userLocation }: { pharmacies: 
         return;
       }
       if (!config.enabled || !config.key) { if (!cancelled) setStatus("地圖服務尚未設定"); return; }
+      const missing = [...new Set(pharmacies.filter((item) => item.address).map((item) => item.address as string))];
+      const geocoded = new Map<string, Point>();
+      let geocodeError: string | null = null;
+      try {
+        for (let index = 0; index < missing.length; index += 20) {
+          const response = await fetch("/api/geocode", { method: "POST", headers: { "Content-Type": "application/json", Accept: "application/json" }, body: JSON.stringify({ addresses: missing.slice(index, index + 20) }) });
+          if (!response.ok) {
+            const body = await response.json() as { error?: { code?: string; message?: string } };
+            geocodeError = body.error?.code === "GEOCODER_NOT_CONFIGURED" ? "地址定位服務尚未設定" : "地址定位服務暫時無法使用";
+            break;
+          }
+          const body = await response.json() as { items?: Array<{ address: string; latitude: number | null; longitude: number | null }> };
+          for (const item of body.items ?? []) if (item.latitude !== null && item.longitude !== null) geocoded.set(item.address, { latitude: item.latitude, longitude: item.longitude });
+          if (cancelled) return;
+        }
+      } catch {
+        geocodeError = "地址定位服務暫時無法使用";
+      }
+      if (cancelled) return;
       try {
         await loadScript(config.key);
         if (cancelled || !containerRef.current || !window.google) return;
         const map = new window.google.maps.Map(containerRef.current, { center: { lat: 23.7, lng: 121 }, zoom: 7, mapTypeControl: false, streetViewControl: false, fullscreenControl: false, clickableIcons: false, gestureHandling: "cooperative" });
         const bounds = new window.google.maps.LatLngBounds();
         const points = pharmacies.flatMap((item) => {
-          const point = item.address ? geocoded.get(item.address) : undefined;
+          const point = (item.address ? geocoded.get(item.address) : undefined)
+            ?? (item.latitude !== null && item.longitude !== null ? { latitude: item.latitude, longitude: item.longitude } : undefined);
           return point ? [{ item, point }] : [];
         });
         for (const { item, point } of points) {
@@ -60,7 +68,10 @@ export default function PharmacyMap({ pharmacies, userLocation }: { pharmacies: 
         }
         if (userLocation) { const position = { lat: userLocation.latitude, lng: userLocation.longitude }; bounds.extend(position); new window.google.maps.Marker({ map, position, title: "目前位置", label: "你" }); }
         if (!bounds.isEmpty()) map.fitBounds(bounds); else map.setCenter({ lat: 23.7, lng: 121 });
-        if (!cancelled) setStatus(points.length ? `已標示 ${points.length} 家藥局` : "目前沒有可定位的藥局");
+        if (!cancelled) {
+          if (geocodeError) setStatus(`${geocodeError}；已顯示 ${points.length} 家可用座標，藥局清單仍可使用。`);
+          else setStatus(points.length ? `已標示 ${points.length} 家藥局` : "目前沒有可定位的藥局");
+        }
       } catch {
         if (!cancelled) setStatus("地圖服務暫時無法載入；仍可使用藥局清單與導航。");
       }
