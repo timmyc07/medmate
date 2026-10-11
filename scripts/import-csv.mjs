@@ -549,7 +549,7 @@ export async function importCsvFiles({
   try {
     await client.query("BEGIN");
     await client.query(
-      "CREATE TEMP TABLE pharmacy_contract_coordinates ON COMMIT DROP AS SELECT institution_code, latitude, longitude, geocoded_at, geocode_provider FROM pharmacy_contracts WHERE latitude IS NOT NULL AND longitude IS NOT NULL",
+      "CREATE TEMP TABLE pharmacy_contract_coordinates ON COMMIT DROP AS SELECT institution_code, address, latitude, longitude, geocoded_at, geocode_provider FROM pharmacy_contracts WHERE latitude IS NOT NULL AND longitude IS NOT NULL",
     );
     for (const [key, source] of Object.entries(SOURCES)) {
       await client.query(`DELETE FROM ${source.table}`);
@@ -566,7 +566,7 @@ export async function importCsvFiles({
       );
       if (key === "nhi_pharmacies") {
         await client.query(
-          "UPDATE pharmacy_contracts AS current SET latitude = saved.latitude, longitude = saved.longitude, geocoded_at = saved.geocoded_at, geocode_provider = saved.geocode_provider FROM pharmacy_contract_coordinates AS saved WHERE current.institution_code = saved.institution_code",
+          "UPDATE pharmacy_contracts AS current SET latitude = saved.latitude, longitude = saved.longitude, geocoded_at = saved.geocoded_at, geocode_provider = saved.geocode_provider FROM pharmacy_contract_coordinates AS saved WHERE current.institution_code = saved.institution_code AND current.address = saved.address",
         );
       }
       results[key] = { rowCount, sha256 };

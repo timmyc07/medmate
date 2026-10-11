@@ -76,3 +76,30 @@ export async function searchPharmacies(params: SearchParams): Promise<Page<Pharm
     total: Number(count.rows[0]?.total ?? 0),
   };
 }
+
+export async function listPharmaciesForMap(city: string, district?: string): Promise<Pharmacy[]> {
+  const values: string[] = [`${escapeLike(city)}%`];
+  let districtClause = "";
+  if (district) {
+    values.push(`%${escapeLike(district)}%`);
+    districtClause = ` AND address ILIKE $${values.length} ESCAPE '!'`;
+  }
+  const rows = await getPool().query<{
+    institution_code: string; institution_name: string; address: string; phone: string;
+    city: string | null; opening_hours: string | null; termination_date: string | null; source_updated_at: string;
+    latitude: string | null; longitude: string | null;
+  }>(`SELECT institution_code, institution_name, address, NULLIF(phone, '') AS phone,
+      substring(address from '^.*?[縣市]') AS city, opening_hours, termination_date::text,
+      source_updated_at::date::text AS source_updated_at, latitude, longitude
+    FROM pharmacy_contracts
+    WHERE (termination_date IS NULL OR termination_date >= (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Taipei')::date)
+      AND address ILIKE $1 ESCAPE '!'${districtClause}
+    ORDER BY institution_name, institution_code`, values);
+  return rows.rows.map((row) => ({
+    id: row.institution_code, name: row.institution_name, address: row.address || null, phone: row.phone,
+    city: row.city, status: row.termination_date ? "健保特約（有效至終止日）" : "健保特約",
+    openingHours: row.opening_hours ?? null, sourceUpdatedAt: row.source_updated_at,
+    latitude: row.latitude == null ? null : Number(row.latitude),
+    longitude: row.longitude == null ? null : Number(row.longitude),
+  }));
+}

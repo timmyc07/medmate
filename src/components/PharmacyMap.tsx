@@ -21,13 +21,16 @@ export default function PharmacyMap({ pharmacies, userLocation }: { pharmacies: 
   useEffect(() => {
     let cancelled = false;
     async function render() {
-      const missing = pharmacies.filter((item) => (item.latitude === null || item.longitude === null) && item.address).map((item) => item.address as string);
+      const missing = [...new Set(pharmacies.filter((item) => item.address).map((item) => item.address as string))];
       const geocoded = new Map<string, Point>();
       if (missing.length) {
         try {
-          const response = await fetch("/api/geocode", { method: "POST", headers: { "Content-Type": "application/json", Accept: "application/json" }, body: JSON.stringify({ addresses: missing }) });
-          const body = await response.json() as { items?: Array<{ address: string; latitude: number | null; longitude: number | null }> };
-          for (const item of body.items ?? []) if (item.latitude !== null && item.longitude !== null) geocoded.set(item.address, { latitude: item.latitude, longitude: item.longitude });
+          for (let index = 0; index < missing.length; index += 20) {
+            const response = await fetch("/api/geocode", { method: "POST", headers: { "Content-Type": "application/json", Accept: "application/json" }, body: JSON.stringify({ addresses: missing.slice(index, index + 20) }) });
+            const body = await response.json() as { items?: Array<{ address: string; latitude: number | null; longitude: number | null }> };
+            for (const item of body.items ?? []) if (item.latitude !== null && item.longitude !== null) geocoded.set(item.address, { latitude: item.latitude, longitude: item.longitude });
+            if (cancelled) return;
+          }
         } catch { /* 保留既有座標 */ }
       }
       let config: { enabled?: boolean; key?: string };
@@ -45,7 +48,7 @@ export default function PharmacyMap({ pharmacies, userLocation }: { pharmacies: 
         const map = new window.google.maps.Map(containerRef.current, { center: { lat: 23.7, lng: 121 }, zoom: 7, mapTypeControl: false, streetViewControl: false, fullscreenControl: false, clickableIcons: false, gestureHandling: "cooperative" });
         const bounds = new window.google.maps.LatLngBounds();
         const points = pharmacies.flatMap((item) => {
-          const point = item.latitude !== null && item.longitude !== null ? { latitude: item.latitude, longitude: item.longitude } : item.address ? geocoded.get(item.address) : undefined;
+          const point = item.address ? geocoded.get(item.address) : undefined;
           return point ? [{ item, point }] : [];
         });
         for (const { item, point } of points) {

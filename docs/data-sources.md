@@ -26,7 +26,7 @@ SHA-256 對應下載日期 2026-10-08 的官方檔案。FDA 藥品 CSV 是 ZIP �
 
 新增的 migration 為 `db/migrations/002_medicine_usage.sql`。先確認 `DATABASE_URL_UNPOOLED` 指向隔離測試 branch，再執行 `npm run db:migrate`；使用者資料夾保持 repo 外，執行 `npm run db:import-medicines -- "/Users/reikous/Downloads/藥品資料庫"`。匯入涵蓋民國 111–115 年藥品使用量檔，並在同一交易寫入目錄、外觀、期間、筆數與原始 CSV SHA-256。匯入器缺檔或資料驗證失敗時會 rollback。不要對 production 執行，除非已先完成測試 branch 匯入與筆數/排名驗證及另行安排發布。
 
-執行 `npm run db:migrate` 套用 `db/migrations/001_catalog.sql`；執行匯入前，將三份官方下載 CSV 解壓/命名為 `35_2.csv`、`36_2.csv`、`A21030000I-D21005-001.csv` 放在同一個本機資料夾，再以 `DATABASE_URL_UNPOOLED=<direct Neon URL> npm run db:import -- <資料夾>` 執行。direct URL 只供人工觸發的 migration/import 使用，不設於 Render。匯入器以單一交易整批刪除並重建三張目錄表；既有藥局座標會按醫事機構代碼暫存並在匯入後恢復。任何來源驗證或資料庫錯誤都會 rollback，批次 metadata 只在交易提交時更新。匯入前須確認三個來源檔齊全並完成來源 hash/schema 檢查；不要把 CSV 放進 repo、Render 檔案系統或瀏覽器。
+執行 `npm run db:migrate` 套用 `db/migrations/001_catalog.sql`；執行匯入前，將三份官方下載 CSV 解壓/命名為 `35_2.csv`、`36_2.csv`、`A21030000I-D21005-001.csv` 放在同一個本機資料夾，再以 `DATABASE_URL_UNPOOLED=<direct Neon URL> npm run db:import -- <資料夾>` 執行。direct URL 只供人工觸發的 migration/import 使用，不設於 Render。匯入器以單一交易整批刪除並重建三張目錄表；既有藥局座標會按醫事機構代碼及地址未變條件暫存並在匯入後恢復，地址變更時不沿用舊座標。任何來源驗證或資料庫錯誤都會 rollback，批次 metadata 只在交易提交時更新。匯入前須確認三個來源檔齊全並完成來源 hash/schema 檢查；不要把 CSV 放進 repo、Render 檔案系統或瀏覽器。
 
 2026-10-08 更新使用 `/Users/reikous/Downloads/藥品資料庫` 中的 `35_2.csv`、`36_2.csv`、`A21030000I-D21005-001.csv` 完成匯入。該目錄的 `37_2.csv`、`42_2.csv`、`A21030000I-E41001-001.csv` 及健保藥品 B5/TXT 檔屬於其他資料集，尚未對應目前的資料庫 schema/API；新增前須各自查核官方欄位、使用條款與識別碼，設計獨立資料表及搜尋介面，不能混入藥品許可證資料表。
 
@@ -34,11 +34,11 @@ SHA-256 對應下載日期 2026-10-08 的官方檔案。FDA 藥品 CSV 是 ZIP �
 
 ## 使用限制
 
-- 地址轉座標使用 Google Geocoding API 的即時結果，僅供當次地圖呈現；正式批次保存座標前仍需依 Google Maps Platform 政策確認儲存與快取條件。
+- 地址轉座標使用 Google Geocoding API 的即時結果，僅供使用者當次指定區域地圖呈現，不寫入資料庫或快取。依 [Google Geocoding API 政策](https://developers.google.com/maps/documentation/geocoding/policies)，未取得另行協議前不可儲存 Place ID 以外的地理編碼結果；地圖內容須使用 Google Map 並提供其標誌及歸屬資訊。
 
 - 查詢是一般公開資訊，不提供診斷或治療建議；用藥疑問請諮詢藥師或醫療人員。
 - 目前搜尋使用健保特約藥局來源；FDA 藥局 registry 獨立保留，不做模糊比對合併。
 - 網站呈現資料擷取批次日期，官方資料集更動後應重新下載、比對 schema/hash、匯入並驗證筆數。
-- 目前藥局來源只有地址文字，沒有可直接繪圖的座標欄位；座標欄位在 schema 中保留為 nullable。不得以 Nominatim 公共服務對全量地址做系統化批次查詢，需改用經核准的政府或商用座標來源。
+- 目前藥局來源只有地址文字，沒有可直接繪圖的座標欄位；schema 座標欄位保留 nullable，但本地 Google Geocoding 結果不會寫入其中。不得以 Nominatim 公共服務對全量地址做系統化批次查詢；地圖只在使用者選定縣市/行政區後，即時定位所選範圍地址。
 - 藥局查詢的縣市/行政區選單採全台 22 縣市、368 鄉鎮市區，依內政部戶政司 114 年開放資料交叉核對。此行政區清單只供篩選使用，不代表藥局地址已完成座標轉換。
 - 開放授權來源：[政府資料開放授權條款第 1 版](https://data.gov.tw/license)。

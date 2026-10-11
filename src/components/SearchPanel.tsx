@@ -32,6 +32,7 @@ export default function SearchPanel({
   } | null>(null);
   const [page, setPage] = useState(1);
   const [result, setResult] = useState<Page<Pharmacy | Medicine> | null>(null);
+  const [mapPharmacies, setMapPharmacies] = useState<Pharmacy[] | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const requestIdRef = useRef(0);
@@ -78,6 +79,19 @@ export default function SearchPanel({
       if (requestId !== requestIdRef.current) return;
       setResult(pageResult);
       setPage(pageResult.page);
+      if (kind === "pharmacies" && areaOverride.city) {
+        const mapQuery = new URLSearchParams({ city: areaOverride.city });
+        if (areaOverride.district) mapQuery.set("district", areaOverride.district);
+        try {
+          const mapResponse = await fetch(`/api/pharmacies/map?${mapQuery}`, { headers: { Accept: "application/json" } });
+          const mapBody = await mapResponse.json() as { items?: Pharmacy[] };
+          if (requestId === requestIdRef.current) setMapPharmacies(mapResponse.ok ? mapBody.items ?? [] : null);
+        } catch {
+          if (requestId === requestIdRef.current) setMapPharmacies(null);
+        }
+      } else if (kind === "pharmacies") {
+        setMapPharmacies(null);
+      }
     } catch {
       if (requestId !== requestIdRef.current) return;
       setError("目前無法連線，請確認網路後再試。");
@@ -98,6 +112,7 @@ export default function SearchPanel({
     setDistrict("");
     setLocation(null);
     setResult(null);
+    setMapPharmacies(null);
     setPage(1);
     setError("");
     if (!enabled || !query) {
@@ -309,7 +324,7 @@ export default function SearchPanel({
           ) : (
             <>
               <PharmacyMap
-                pharmacies={result.items as Pharmacy[]}
+                pharmacies={mapPharmacies ?? result.items as Pharmacy[]}
                 userLocation={location}
               />
               <div className="results-list results-list--pharmacies">
