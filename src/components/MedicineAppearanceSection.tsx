@@ -13,10 +13,8 @@ export default function MedicineAppearanceSection() {
     >
       <div className="section-heading">
         <div>
-          <span className="section-index">02</span>
           <h2 id="medicine-appearance-title">藥品外觀特徵辨識</h2>
         </div>
-        <span className="section-caption">TFDA APPEARANCE DATA</span>
       </div>
       <PillFeatureFinder
         onCompare={(marking) => {

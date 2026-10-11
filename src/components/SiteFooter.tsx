@@ -8,9 +8,9 @@ export default function SiteFooter() {
           <h2 id="footer-brand-title" className="sr-only">資料來源與授權</h2>
           <div className="site-footer-brand">
             <img src="/health-insurance-emblem.svg" alt="全民健康保險標誌" width="48" height="48" loading="lazy" />
-            <span>MediMate · 公開健康資料</span>
+            <span>MediMate</span>
           </div>
-          <p>把政府公開的藥局與藥品資料整理成可查詢的日常工具，方便回到原始來源核對。</p>
+          <p>整理藥局與藥品資訊，方便查詢並回到原始來源核對。</p>
         </section>
         <section className="footer-sources" aria-labelledby="footer-sources-title">
           <h2 id="footer-sources-title">官方資料來源</h2>
@@ -32,7 +32,7 @@ export default function SiteFooter() {
       </div>
       <p className="footer-disclaimer"><strong>健康提醒：</strong>資訊僅供參考；用藥疑問請諮詢藥師或醫療專業人員，出發前請先致電確認。</p>
       <div className="footer-bottom">
-        <span>© 2026 MediMate Taiwan Open Health Data Project</span>
+        <span>© 2026 MediMate</span>
         <span className="footer-links"><Link href="/#data-status">資料來源</Link><Link href="https://data.gov.tw/license" target="_blank" rel="noreferrer">使用條款</Link></span>
       </div>
     </footer>

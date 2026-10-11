@@ -165,15 +165,7 @@ export default function SearchPanel({
       aria-labelledby={`${kind}-title`}
     >
       <div className="section-heading">
-        <div>
-          <span className="section-index">
-            {kind === "pharmacies" ? "01" : "02"}
-          </span>
-          <h2 id={`${kind}-title`}>{label}查詢</h2>
-        </div>
-        <span className="section-caption">
-          {kind === "pharmacies" ? "縣市・區域・附近搜尋" : "藥品名稱・許可證字號"}
-        </span>
+        <h2 id={`${kind}-title`}>{label}查詢</h2>
       </div>
       {kind === "medicines" && showPillFeatureFinder && (
         <PillFeatureFinder onCompare={compareAppearance} />

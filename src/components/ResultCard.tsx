@@ -69,7 +69,7 @@ export function PharmacyResult({ item }: { item: Pharmacy }) {
               </section>
             </div>
           ) : (
-            <p>政府資料未提供固定看診時段</p>
+            <p>未提供固定看診時段</p>
           )}
           <small>此為政府登記的看診安排，不代表即時營業狀態；出發前請先電話確認。</small>
         </section>

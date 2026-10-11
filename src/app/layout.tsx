@@ -8,7 +8,7 @@ const bodyFont = Nunito_Sans({ subsets: ["latin"], variable: "--font-body" });
 
 export const metadata: Metadata = {
   title: "MediMate｜藥局與藥品查詢",
-  description: "以繁體中文查詢藥局與藥品公開資訊。",
+  description: "以繁體中文查詢藥局與藥品資訊。",
 };
 
 export const viewport: Viewport = {

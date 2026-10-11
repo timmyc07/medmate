@@ -17,13 +17,9 @@ export default function PageHeader({ currentPath }: { currentPath: PagePath }) {
           <Link className="brand" href="/" aria-label="MediMate 首頁">
             <span className="brand-mark material-symbols-outlined" aria-hidden="true">藥</span>
             <span className="brand-copy">
-              <span className="brand-name-row"><span>MediMate</span><span className="brand-tag">TW</span></span>
-              <small>台灣公開健康資料</small>
+              <span className="brand-name-row"><span>MediMate</span></span>
             </span>
           </Link>
-          <span className="header-sync-pill">
-            <span>政府公開資料集</span>
-          </span>
         </div>
         <nav className="site-nav" aria-label="主要導覽">
           {navigation.map(({ href, label, icon, mobileOnly }) => (

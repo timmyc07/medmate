@@ -46,10 +46,8 @@ export default function MedicineUsageCatalog() {
     <section className="usage-catalog" aria-labelledby="usage-catalog-title">
       <div className="section-heading">
         <div>
-          <span className="section-index">01</span>
           <h2 id="usage-catalog-title">健保藥品使用量排行</h2>
         </div>
-        <span className="section-caption">GOVERNMENT CLAIMS DATA</span>
       </div>
       {page?.feeYear && (
         <p className="usage-source-note">
@@ -60,7 +58,7 @@ export default function MedicineUsageCatalog() {
       )}
       {loading && (
         <p className="state-message" role="status">
-          正在載入政府藥品使用量資料…
+          正在載入藥品使用量資料…
         </p>
       )}
       {error && (
@@ -94,15 +92,12 @@ export default function MedicineUsageCatalog() {
                       <div
                         className="medicine-image-placeholder"
                         role="img"
-                        aria-label="政府資料未提供此藥品外觀圖片"
+                        aria-label="未提供此藥品外觀圖片"
                       >
                         <span aria-hidden="true">＋</span>
                         <small>外觀圖未提供</small>
                       </div>
                     )}
-                    <span className="medicine-rank">
-                      RANK {item.rank.toString().padStart(2, "0")}
-                    </span>
                   </div>
                   <div className="medicine-usage-copy">
                     <h3>{item.name}</h3>

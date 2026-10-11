@@ -54,8 +54,8 @@ export function getCurrentPharmacyHoursStatus(
     return { status: "unavailable", label: `${weekdayName}${period}看診安排未提供`, period };
 
   return match[1] === "看診"
-    ? { status: "listed", label: `政府資料列示：${weekdayName}${period}有看診安排`, period }
-    : { status: "not-listed", label: `政府資料列示：${weekdayName}${period}未列看診安排`, period };
+    ? { status: "listed", label: `${weekdayName}${period}有看診安排`, period }
+    : { status: "not-listed", label: `${weekdayName}${period}未列看診安排`, period };
 }
 
 /** 依星期彙整相同看診狀態的時段，讓卡片更容易掃讀。 */

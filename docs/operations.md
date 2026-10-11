@@ -2,7 +2,7 @@
 
 全站頁面由根 layout 共用健保標誌及政府開放資料來源頁尾。若增加新的政府資料或參考來源，請同步更新 `src/components/SiteFooter.tsx` 與 `docs/data-sources.md`；目前 FDA 外觀資料的精確資料集頁及授權資訊尚待核實。
 
-藥局卡片只顯示政府公開資料中的文字資訊，圖片與 Google Street View 抓圖功能已移除，因此不會產生街景 metadata 或 Static API 請求與相關費用。地圖、地址定位與 Google Maps 導航仍為獨立功能。
+藥局卡片只顯示文字資訊，圖片與 Google Street View 抓圖功能已移除，因此不會產生街景 metadata 或 Static API 請求與相關費用。地圖、地址定位與 Google Maps 導航仍為獨立功能。
 
 藥局卡片會顯示健保署「固定看診時段」原文及依台灣時區判讀的目前半日時段。來源只有上午、下午、晚上三段，沒有精確鐘點或即時營業回報；畫面明確標示為政府登記看診安排，出發前應電話確認。資料未提供時不推定休診。
 
@@ -48,7 +48,7 @@ Render 必須設定 `DATABASE_URL` 為 Neon pooled URL。direct `DATABASE_URL_UN
 
 公開網站：[https://medmate-53s1.onrender.com](https://medmate-53s1.onrender.com)。Render Web Service `medmate` 使用 GitHub `main` 自動部署，`autoDeployTrigger` 固定為 `commit`。2026-10-09 曾發現 GitHub push 未進入部署佇列，已透過 Render API 重新寫入 `branch=main` 與 `autoDeployTrigger=commit`，重新註冊自動部署觸發並手動補部署最新 commit；若再次發生，應先在 Render Deploys 確認 commit 是否出現，再檢查 GitHub/Render webhook 連線，不要重複提交程式碼。部署完成後需以首頁、`/api/ready`、兩個搜尋 API 驗證。Render Free 閒置時休眠，恢復服務可能延遲 50 秒以上，故不代表隨時即時可用性。
 
-網站路由：`/pharmacies` 專注藥局位置與資料卡，`/medicines` 專注藥品公開資料；首頁不直接載入查詢結果。藥局資料來源目前只有地址、電話、合約/資料狀態與部分座標，沒有可信的即時營業時間或官方圖片欄位，因此介面會標示「營業狀況待查」或資料狀態，不將合約狀態冒充即時營業中。若日後啟用 Google Places，須確認 API、帳務與儲存政策後才可補充營業時間或照片。
+網站路由：`/pharmacies` 專注藥局位置與資訊卡，`/medicines` 專注藥品查詢及使用量排行；首頁不直接載入查詢結果。藥局資料目前只有地址、電話、合約/資料狀態與部分座標，沒有可信的即時營業時間或官方圖片欄位，因此介面會標示「營業狀況待查」或資料狀態，不將合約狀態冒充即時營業中。若日後啟用 Google Places，須確認 API、帳務與儲存政策後才可補充營業時間或照片。
 
 Render API key 僅是平台管理憑證，不要加入 Render 網站的 runtime env、Render Blueprint 或 Git。若需在本機供 Render CLI/管理腳本使用，可存於被 `.gitignore` 忽略的 `.env.local`，使用 `RENDER_API_KEY` 名稱；此檔只存在本機，不要複製到 Render 網站環境。此專案目前沒有程式會讀取該變數，也不會把它傳給瀏覽器。已在對話中提供的 key 應儘速輪替。
 
@@ -72,7 +72,7 @@ Render 只連 Neon，不直接連私人 Parallels VM。資料匯入來源為官�
 
 ## 2026-10-10 Warm Mint Stitch 介面更新
 
-首頁、藥局與藥品頁依 `/Users/reikous/Downloads/stitch_medmate_design_system/` 的 Warm Mint Health token 重整為 Rice Milk 畫布、森林綠操作色、薄荷狀態色、膠囊控制項與柔和圓角卡片。首頁桌面保留主視覺與資料可信度區，手機改為垂直 CTA、快搜、資料來源卡及固定底部導覽；範本中的統計、評分、熱門藥局、帳號、收藏和健康手冊入口沒有接到真實 API，因此不呈現為產品功能。
+首頁、藥局與藥品頁依 `/Users/reikous/Downloads/stitch_medmate_design_system/` 的 Warm Mint Health token 重整為 Rice Milk 畫布、森林綠操作色、薄荷狀態色、膠囊控制項與柔和圓角卡片。範本中的統計、評分、熱門藥局、帳號、收藏和健康手冊入口沒有接到真實 API，因此不呈現為產品功能。
 
 藥局頁維持查詢 API、縣市/區域、定位、地圖、固定看診週曆與分頁。桌面結果以左側清單、右側地圖呈現，手機先顯示地圖再顯示清單；Google Maps 設定或腳本失敗時顯示明確狀態，文字清單與導航仍可使用。藥品頁維持許可證查詢與政府使用量排行，桌面使用三欄卡片、手機單欄，並標示申報期間和彙總量限制。
 
@@ -81,3 +81,7 @@ Render 只連 Neon，不直接連私人 Parallels VM。資料匯入來源為官�
 ## 2026-10-11 圖示與裝飾元件收尾
 
 移除 Material Symbols subset 字型依賴，避免字型載入失敗時將圖示渲染成破圖或不可讀字串；頁面圖示改用穩定的 Unicode／短文字替代，按鈕的中文標籤與互動行為維持不變。同步狀態、來源類型、資料頻率、排行、區段編號、外觀快搜徽章及熱門藥局狀態改為一般文字，移除狀態圓點與不可細節編輯的裝飾膠囊。搜尋、定位、分頁、API、資料庫與地圖流程未更動。
+
+## 2026-10-11 全站文案精簡
+
+移除品牌旁「台灣公開健康資料」、首頁公開資料口號、導覽同步標籤、搜尋區段編號與重複欄位說明，以及藥品卡上的 `RANK` 裝飾。保留藥品使用排行這項真實功能、資料來源入口、授權條款、申報量限制、看診時段非即時營業提醒及健康提醒；未改動查詢、定位、地圖、分頁或資料 API。
