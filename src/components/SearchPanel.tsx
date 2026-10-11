@@ -180,7 +180,7 @@ export default function SearchPanel({
       )}
       <form className={`search-form search-form--${kind}`} onSubmit={submitSearch}>
         <label className="search-field">
-          <span className="input-icon material-symbols-outlined" aria-hidden="true">search</span>
+          <span className="input-icon material-symbols-outlined" aria-hidden="true">⌕</span>
           <span className="sr-only">搜尋{label}名稱或相關文字</span>
           <input
             type="search"
@@ -248,7 +248,7 @@ export default function SearchPanel({
           type="submit"
           disabled={!enabled || loading}
         >
-          <span className="material-symbols-outlined action-icon" aria-hidden="true">search</span>
+          <span className="material-symbols-outlined action-icon" aria-hidden="true">⌕</span>
           <span>{!enabled ? "資料尚未開放" : loading ? "查詢中…" : "搜尋"}</span>
         </button>
       </form>
@@ -260,7 +260,7 @@ export default function SearchPanel({
           onClick={useMyLocation}
           disabled={!enabled || loading}
         >
-          <span className="material-symbols-outlined action-icon" aria-hidden="true">my_location</span>
+          <span className="material-symbols-outlined action-icon" aria-hidden="true">◎</span>
           使用目前位置找附近藥局
         </button>
       )}

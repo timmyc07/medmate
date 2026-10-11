@@ -22,7 +22,7 @@ export default function QuickSearch() {
     <section className="quick-search" id="quick-search" aria-labelledby="quick-search-title">
       <div className="section-lead section-lead--split">
         <div>
-          <p className="eyebrow"><span className="status-dot" />快速查詢</p>
+          <p className="eyebrow">快速查詢</p>
           <h2 id="quick-search-title">從一個關鍵字開始</h2>
         </div>
         <p>藥局可用名稱、地址、健保代碼或所在地查詢；藥品可用名稱與許可證字號查詢。</p>
@@ -35,7 +35,7 @@ export default function QuickSearch() {
         </fieldset>
         <form className="quick-search-form" onSubmit={submit}>
           <label className="input-with-icon">
-            <span className="input-icon material-symbols-outlined" aria-hidden="true">search</span>
+            <span className="input-icon material-symbols-outlined" aria-hidden="true">⌕</span>
             <span className="sr-only">搜尋{kind === "pharmacies" ? "藥局" : "藥品"}</span>
             <input
               type="search"

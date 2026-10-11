@@ -32,7 +32,7 @@ export default function ThemeToggle() {
       aria-label={`切換至${theme === "light" ? "夜間" : "白天"}模式`}
       title={`切換至${theme === "light" ? "夜間" : "白天"}模式`}
     >
-      <span className="icon material-symbols-outlined" aria-hidden="true">{theme === "light" ? "dark_mode" : "light_mode"}</span>
+      <span className="icon material-symbols-outlined" aria-hidden="true">{theme === "light" ? "夜" : "日"}</span>
       <span className="theme-label">{theme === "light" ? "夜間模式" : "白天模式"}</span>
     </button>
   );

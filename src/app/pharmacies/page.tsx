@@ -13,11 +13,11 @@ export default async function PharmaciesPage({ searchParams }: PageProps) {
     <main className="page-shell page-shell--inner">
       <PageHeader currentPath="/pharmacies" />
       <section className="data-status-bar" aria-label="資料狀態">
-        <span className="data-status-detail"><span className="status-dot" />資料來源：中央健康保險署</span>
+        <span className="data-status-detail">資料來源：中央健康保險署</span>
         <span className="data-status-detail"><strong>查詢結果依公開資料呈現</strong>　固定看診時段不代表即時營業</span>
       </section>
       <section className="inner-hero" aria-labelledby="pharmacy-page-title">
-        <p className="eyebrow"><span className="status-dot" />PHARMACY DIRECTORY</p>
+        <p className="eyebrow">PHARMACY DIRECTORY</p>
         <div className="page-title-row">
           <div>
             <h1 id="pharmacy-page-title">藥局位置與<br /><span>營業資訊</span></h1>

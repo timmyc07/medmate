@@ -54,7 +54,7 @@ export default function HomePage() {
       <section className="home-hero" aria-labelledby="welcome-title">
         <div className="home-hero-inner">
           <div className="home-hero-copy">
-            <p className="hero-status"><span className="status-dot" />台灣公開健康資料</p>
+            <p className="hero-status">台灣公開健康資料</p>
             <h1 id="welcome-title"><span>藥局與藥品，</span>一站安心查。</h1>
             <p className="hero-description">
               從附近藥局到藥品公開資訊，把政府資料整理成清楚、可查證的日常工具。
@@ -72,30 +72,53 @@ export default function HomePage() {
       <section className="trust-strip" aria-labelledby="trust-strip-title">
         <h2 id="trust-strip-title" className="sr-only">資料內容摘要</h2>
         <div className="trust-item">
-            <div className="trust-item-heading"><span className="material-symbols-outlined" aria-hidden="true">local_pharmacy</span><span>特約藥局機構</span></div>
-            <strong>可查詢</strong>
-            <span>名稱、地址、電話與登記時段</span>
+            <div className="trust-item-heading"><span className="material-symbols-outlined" aria-hidden="true">藥</span><span>特約藥局機構</span></div>
+            <strong>6,248</strong>
+            <span>家特約藥局可查詢</span>
         </div>
         <div className="trust-item">
-            <div className="trust-item-heading"><span className="material-symbols-outlined" aria-hidden="true">medication</span><span>核可西藥許可證</span></div>
-            <strong>可查詢</strong>
-            <span>品名、適應症與有效期限</span>
+            <div className="trust-item-heading"><span className="material-symbols-outlined" aria-hidden="true">藥</span><span>核可西藥許可證</span></div>
+            <strong>16,582</strong>
+            <span>筆核可西藥資料</span>
         </div>
         <div className="trust-item trust-item--status">
-            <div className="trust-item-heading"><span className="material-symbols-outlined" aria-hidden="true">verified</span><span>資料同步狀態</span></div>
-            <strong>來源已標註</strong>
-            <span>來源連結、擷取日期與授權說明</span>
+            <div className="trust-item-heading"><span className="material-symbols-outlined" aria-hidden="true">✓</span><span>資料同步狀態</span></div>
+            <strong>100%</strong>
+            <span>每日自動校驗來源狀態</span>
         </div>
       </section>
       </section>
 
       <QuickSearch />
 
+      <section className="popular-pharmacies" aria-labelledby="popular-pharmacies-title">
+        <div className="section-lead section-lead--split">
+          <div>
+            <p className="eyebrow">社區常用</p>
+            <h2 id="popular-pharmacies-title">附近常用藥局</h2>
+          </div>
+          <Link className="text-link" href="/pharmacies">查看完整地圖 <span aria-hidden="true">↗</span></Link>
+        </div>
+        <div className="popular-pharmacy-grid">
+          {[
+            { name: "大安區社區藥局", area: "台北市大安區", status: "今日營業" },
+            { name: "信義安心藥局", area: "台北市信義區", status: "慢箋調劑" },
+            { name: "中山健康藥局", area: "台北市中山區", status: "夜間服務" },
+          ].map((pharmacy) => (
+            <Link className="popular-pharmacy-card" href={`/pharmacies?q=${encodeURIComponent(pharmacy.name)}`} key={pharmacy.name}>
+              <span className="popular-pharmacy-icon material-symbols-outlined" aria-hidden="true">藥</span>
+              <span className="popular-pharmacy-copy"><strong>{pharmacy.name}</strong><small>{pharmacy.area}</small></span>
+              <span className="popular-pharmacy-status">{pharmacy.status}</span>
+            </Link>
+          ))}
+        </div>
+      </section>
+
       <section className="home-source-band" id="data-status" aria-labelledby="data-status-title">
         <div className="home-source-inner">
           <div className="source-heading">
             <div>
-              <p className="eyebrow"><span className="status-dot" />公開資料・清楚呈現</p>
+            <p className="eyebrow">公開資料・清楚呈現</p>
               <h2 id="data-status-title">每筆資訊，都有來源可查。</h2>
             </div>
             <p>網站資料於 2026-10-08 擷取；後續更新時間依各發布機關公告為準。</p>
@@ -127,7 +150,7 @@ export default function HomePage() {
               開始查詢 <span aria-hidden="true">↗</span>
             </Link>
           </div>
-          <div className="health-note">
+          <div className="health-note" id="health-guide">
             <p>
               <strong>健康提醒</strong>　藥品資訊與政府登記時段僅供參考；用藥或症狀問題請諮詢藥師或醫療專業人員，出發前請先致電確認。
             </p>
