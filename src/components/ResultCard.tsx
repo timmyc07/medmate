@@ -1,5 +1,6 @@
 import type { Medicine, Pharmacy } from "../types/catalog";
 import { getCurrentPharmacyHoursStatus, parsePharmacyWeeklySchedule } from "../lib/pharmacy-hours";
+import ScrollReveal from "./ScrollReveal";
 
 export function PharmacyResult({ item }: { item: Pharmacy }) {
   const currentHours = getCurrentPharmacyHoursStatus(item.openingHours);
@@ -9,7 +10,7 @@ export function PharmacyResult({ item }: { item: Pharmacy }) {
       ? `https://www.google.com/maps/dir/?api=1&destination=${item.latitude},${item.longitude}`
       : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.address ?? item.name)}`;
   return (
-    <article className="result-row pharmacy-card">
+    <ScrollReveal as="article" className="result-row pharmacy-card">
       <div className="pharmacy-card-layout">
         <div className="result-main pharmacy-card-info">
           <h3>{item.name}</h3>
@@ -74,13 +75,13 @@ export function PharmacyResult({ item }: { item: Pharmacy }) {
           <small>此為政府登記的看診安排，不代表即時營業狀態；出發前請先電話確認。</small>
         </section>
       </div>
-    </article>
+    </ScrollReveal>
   );
 }
 
 export function MedicineResult({ item }: { item: Medicine }) {
   return (
-    <article className="result-row result-row--medicine">
+    <ScrollReveal as="article" className="result-row result-row--medicine">
       <div className="result-main">
         <h3>{item.name}</h3>
         <p>許可證字號：{item.licenseNumber}</p>
@@ -96,6 +97,6 @@ export function MedicineResult({ item }: { item: Medicine }) {
           </span>
         )}
       </div>
-    </article>
+    </ScrollReveal>
   );
 }

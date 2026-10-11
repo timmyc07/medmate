@@ -43,5 +43,6 @@ describe("藥局資訊卡", () => {
     expect(container.querySelector(".pharmacy-hours-panel")).toBeInTheDocument();
     expect(container.querySelector(".pharmacy-hours details")).toBeNull();
     expect(container.querySelector("summary")).toBeNull();
+    expect(container.querySelector("[data-scroll-reveal]")).toBeInTheDocument();
   });
 });

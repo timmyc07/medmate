@@ -11,6 +11,12 @@ beforeEach(() => push.mockClear());
 afterEach(() => cleanup());
 
 describe("首頁快速搜尋", () => {
+  it("搜尋欄使用可見的向量圖示", () => {
+    const { container } = render(<QuickSearch />);
+    expect(container.querySelector(".quick-search-form svg")).toBeInTheDocument();
+    expect(container.querySelector(".material-symbols-outlined")).toBeNull();
+  });
+
   it("以藥品模式將關鍵字導向藥品目錄", () => {
     render(<QuickSearch />);
 

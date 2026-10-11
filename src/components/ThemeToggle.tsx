@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Moon, Sun } from "lucide-react";
 
 type Theme = "light" | "dark";
 const STORAGE_KEY = "medmate-theme";
@@ -32,7 +33,7 @@ export default function ThemeToggle() {
       aria-label={`切換至${theme === "light" ? "夜間" : "白天"}模式`}
       title={`切換至${theme === "light" ? "夜間" : "白天"}模式`}
     >
-      <span className="icon material-symbols-outlined" aria-hidden="true">{theme === "light" ? "夜" : "日"}</span>
+      {theme === "light" ? <Moon className="icon" aria-hidden="true" /> : <Sun className="icon" aria-hidden="true" />}
       <span className="theme-label">{theme === "light" ? "夜間模式" : "白天模式"}</span>
     </button>
   );

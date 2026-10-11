@@ -2,6 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
+import { Search } from "lucide-react";
+import ScrollReveal from "./ScrollReveal";
 
 type SearchKind = "pharmacies" | "medicines";
 
@@ -27,7 +29,7 @@ export default function QuickSearch() {
         </div>
         <p>藥局可用名稱、地址、健保代碼或所在地查詢；藥品可用名稱與許可證字號查詢。</p>
       </div>
-      <div className="quick-search-card">
+      <ScrollReveal className="quick-search-card">
         <fieldset className="segmented-control">
           <legend className="sr-only">快速搜尋類別</legend>
           <button type="button" aria-pressed={kind === "pharmacies"} className={kind === "pharmacies" ? "is-active" : ""} onClick={() => setKind("pharmacies")}>藥局</button>
@@ -35,7 +37,7 @@ export default function QuickSearch() {
         </fieldset>
         <form className="quick-search-form" onSubmit={submit}>
           <label className="input-with-icon">
-            <span className="input-icon material-symbols-outlined" aria-hidden="true">⌕</span>
+            <Search className="input-icon" aria-hidden="true" />
             <span className="sr-only">搜尋{kind === "pharmacies" ? "藥局" : "藥品"}</span>
             <input
               type="search"
@@ -49,7 +51,7 @@ export default function QuickSearch() {
           <button className="button button--primary" type="submit">開始查詢 <span aria-hidden="true">→</span></button>
         </form>
         <p className="quick-search-note">查詢結果會帶入對應目錄，可再使用縣市、區域、定位或頁碼功能。</p>
-      </div>
+      </ScrollReveal>
     </section>
   );
 }

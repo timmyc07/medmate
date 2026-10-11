@@ -1,6 +1,7 @@
 import Link from "next/link";
 import PageHeader from "../components/PageHeader";
 import QuickSearch from "../components/QuickSearch";
+import ScrollReveal from "../components/ScrollReveal";
 
 const sources = [
   {
@@ -83,7 +84,7 @@ export default function HomePage() {
           </div>
           <div className="source-grid">
             {sources.map((source) => (
-              <article className="source-card" key={source.title}>
+              <ScrollReveal as="article" className="source-card" key={source.title}>
                 <div>
                   <div className="source-card-top">
                     <span className="source-type">{source.type}</span>
@@ -95,10 +96,10 @@ export default function HomePage() {
                 <Link className="source-card-link" href={source.href} target="_blank" rel="noreferrer">
                   查看原始入口 <span aria-hidden="true">↗</span>
                 </Link>
-              </article>
+              </ScrollReveal>
             ))}
           </div>
-          <div className="license-note">
+          <ScrollReveal className="license-note">
             <p>
               <strong>授權與使用限制</strong>　政府資料依
               <a href="https://data.gov.tw/license" target="_blank" rel="noreferrer">政府資料開放授權條款第 1 版</a>
@@ -107,12 +108,12 @@ export default function HomePage() {
             <Link className="button button--secondary" href="/pharmacies">
               開始查詢 <span aria-hidden="true">↗</span>
             </Link>
-          </div>
-          <div className="health-note" id="health-guide">
+          </ScrollReveal>
+          <ScrollReveal className="health-note" id="health-guide">
             <p>
               <strong>健康提醒</strong>　藥品資訊與政府登記時段僅供參考；用藥或症狀問題請諮詢藥師或醫療專業人員，出發前請先致電確認。
             </p>
-          </div>
+          </ScrollReveal>
         </div>
       </section>
     </main>

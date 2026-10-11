@@ -18,9 +18,11 @@ describe("搜尋面板", () => {
   });
 
   it("資料啟用後允許搜尋輸入", () => {
-    render(<SearchPanel kind="medicines" enabled />);
+    const { container } = render(<SearchPanel kind="medicines" enabled />);
     expect(screen.getByRole("searchbox")).toBeEnabled();
     expect(screen.getByRole("button", { name: "搜尋" })).toBeEnabled();
+    expect(container.querySelector(".search-button svg")).toBeInTheDocument();
+    expect(container.querySelector(".material-symbols-outlined")).toBeNull();
   });
 
   it("包含全台 22 個縣市與 368 個鄉鎮市區", () => {

@@ -12,6 +12,7 @@ MediMate 是以手機瀏覽為優先的繁體中文藥局與藥品公開查詢�
 - 首頁提供兩個主要查詢路由：`/pharmacies` 藥局位置與營業資訊、`/medicines` 藥品資訊，並提供會把關鍵字帶入對應路由的快速搜尋。藥局查詢在結果卡先呈現地址、電話、資料狀態與距離，再顯示可定位資料的地圖；沒有座標的資料仍保留在卡片清單。使用定位時依距離排序且不設固定半徑，確保最近資料即使相距很遠也會顯示。
 - 藥局清單每列顯示一張資訊卡，依序呈現藥局資料與操作、政府登記看診時段和一週週曆；週曆保留水平捲動。藥局頁桌面以清單搭配地圖，手機則先顯示地圖再顯示清單。
 - 首頁、藥局與藥品頁的站內路由使用 Next.js client-side navigation；共用頁面 template 以 React `ViewTransition` 與 CSS 淡入效果處理頁面轉場，並支援 `prefers-reduced-motion` 降級。
+- 全站操作圖示使用 `lucide-react` SVG，避免 Material Symbols 字型缺失造成圖示顯示為文字；來源卡、搜尋卡、結果卡、藥品排行卡與外觀快搜卡會在進入 viewport 時以共用 `IntersectionObserver` 淡入，並支援 `prefers-reduced-motion`。
 - 藥局與藥品頁共用 Warm Mint 頁首，桌面左側固定品牌、中央提供主要導覽、右側提供快速搜尋錨點與主題切換；窄螢幕將同一組導覽移至固定底部並保留安全區空間。
 - 主題沒有已儲存偏好時預設使用範本的淺色 Warm Mint 畫布；使用者主動切換夜間模式後會保留於瀏覽器的 `localStorage`。
 - 線上查詢由 Next.js server route 連接 Neon PostgreSQL；Render runtime 使用 `DATABASE_URL` pooled URL，資料庫 URL 不會送到瀏覽器。`/api/ready` 檢查資料庫連線，`/api/health` 保持程序存活檢查。
@@ -24,6 +25,7 @@ MediMate 是以手機瀏覽為優先的繁體中文藥局與藥品公開查詢�
 - 地圖使用 Google Maps JavaScript API；指定區域的藥局會先以資料庫既有座標立即顯示，缺少座標的地址才透過同源 `/api/geocode` 分批代理 Google Geocoding API，即時轉換後補上標記。API key 由伺服器環境讀取，座標不寫回資料庫或快取。未設定地圖金鑰時會停止定位請求；定位服務錯誤會停止後續批次並沿用資料既有座標。
 - CSV、資料庫匯出/備份、`.env`、密碼、API key 及其他秘密資訊不得提交 GitHub。Render 管理用 API key 只用於管理平台，不能加入網站執行環境。
 - 藥品使用量排行 migration 與匯入器已新增；部署及資料庫匯入仍須先在隔離 Neon branch 驗證，不能直接對 production 執行。來源 CSV 保留在使用者下載資料夾，不提交 repo。
+- 藥品使用量排行的外觀圖片使用 Next.js `Image`、響應式 `sizes`、lazy loading 與 quality 70，並只允許 FDA 官方 `mcp.fda.gov.tw` 圖片來源，降低首屏下載量與外部圖片載入時間。
 
 ## 文件
 

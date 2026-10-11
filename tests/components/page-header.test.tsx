@@ -4,7 +4,7 @@ import PageHeader from "../../src/components/PageHeader";
 
 describe("PageHeader", () => {
   it("提供全站導覽、目前頁狀態與主題切換入口", () => {
-    render(<PageHeader currentPath="/medicines" />);
+    const { container } = render(<PageHeader currentPath="/medicines" />);
 
     expect(screen.getByRole("link", { name: "MediMate 首頁" })).toHaveAttribute("href", "/");
     expect(screen.getByRole("link", { name: "首頁" })).toHaveAttribute("href", "/");
@@ -14,5 +14,7 @@ describe("PageHeader", () => {
     expect(screen.getByRole("link", { name: "資料來源" })).toHaveAttribute("href", "/#data-status");
     expect(screen.getByRole("link", { name: "前往快速搜尋" })).toHaveAttribute("href", "/#quick-search");
     expect(screen.getByRole("button", { name: /切換至夜間模式|切換至白天模式/ })).toBeInTheDocument();
+    expect(container.querySelectorAll("svg").length).toBeGreaterThan(0);
+    expect(container.querySelector(".material-symbols-outlined")).toBeNull();
   });
 });

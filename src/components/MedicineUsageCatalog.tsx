@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import type { MedicineUsagePage } from "../types/catalog";
+import ScrollReveal from "./ScrollReveal";
 
 const PAGE_SIZE = 50;
 
@@ -79,14 +81,17 @@ export default function MedicineUsageCatalog() {
           ) : (
             <div className="medicine-grid">
               {page.items.map((item) => (
-                <article className="medicine-usage-card" key={item.drugCode}>
+                <ScrollReveal as="article" className="medicine-usage-card" key={item.drugCode}>
                   <div className="medicine-usage-image">
                     {item.appearanceImageUrl ? (
-                      <img
+                      <Image
                         src={item.appearanceImageUrl}
                         alt={`${item.name}藥品外觀`}
+                        fill
+                        sizes="(max-width: 680px) 50vw, (max-width: 1100px) 33vw, 360px"
                         loading="lazy"
-                        decoding="async"
+                        quality={70}
+                        style={{ objectFit: "contain" }}
                       />
                     ) : (
                       <div
@@ -129,7 +134,7 @@ export default function MedicineUsageCatalog() {
                       <span>含包裹支付醫令量</span>
                     </div>
                   </div>
-                </article>
+                </ScrollReveal>
               ))}
             </div>
           )}
