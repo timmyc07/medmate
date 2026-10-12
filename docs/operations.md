@@ -32,7 +32,7 @@ TGOS 範本欄位為 `id,Address,Response_Address,Response_X,Response_Y`。需�
 DATABASE_URL_UNPOOLED='請使用本機秘密環境變數' npm run tgos:export -- /安全的本機路徑/pharmacies-tgos.csv
 ```
 
-匯出檔只含有效且沒有座標的藥局機構代碼及原始地址。登入 TGOS 上傳 CSV，選擇 `EPSG:4326 (WGS84)`，依需要選擇完全或模糊比對；每日上限 10,000 筆，超量時分批處理。下載完成檔後執行：
+匯出檔包含所有沒有座標的藥局機構代碼及原始地址，超過 10,000 筆時會自動拆成 `-part1`、`-part2` 等檔案。登入 TGOS 依序上傳各批 CSV，選擇 `EPSG:4326 (WGS84)`，依需要選擇完全或模糊比對；每日上限 10,000 筆，因此超過額度的批次要等次日再提交。下載完成檔後執行：
 
 ```sh
 DATABASE_URL_UNPOOLED='請使用本機秘密環境變數' npm run tgos:import -- /安全的本機路徑/TGOS完成檔.csv

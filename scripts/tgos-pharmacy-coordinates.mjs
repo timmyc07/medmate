@@ -1,4 +1,5 @@
 import { createReadStream, createWriteStream } from "node:fs";
+import { basename, dirname, extname, join } from "node:path";
 import { parse } from "csv-parse";
 import { Pool } from "pg";
 
@@ -16,14 +17,22 @@ async function exportAddresses(filepath) {
   try {
     const { rows } = await pool.query(`SELECT institution_code, address FROM pharmacy_contracts
       WHERE address <> '' AND (latitude IS NULL OR longitude IS NULL)
-      AND (termination_date IS NULL OR termination_date >= (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Taipei')::date)
       ORDER BY institution_code`);
-    const output = createWriteStream(filepath, { encoding: "utf8", flags: "wx" });
-    output.write(`\uFEFF${HEADERS.join(",")}\r\n`);
-    for (const row of rows) output.write(`${csv(row.institution_code)},${csv(row.address)},,,\r\n`);
-    await new Promise((resolve, reject) => { output.end(resolve); output.on("error", reject); });
-    console.log(`已匯出 ${rows.length} 筆待定位地址：${filepath}`);
-    console.log("TGOS 上傳時請選擇 EPSG:4326 (WGS84)，並下載完成後的 CSV 再執行回匯。");
+    const batchSize = 10_000;
+    const extension = extname(filepath) || ".csv";
+    const stem = basename(filepath, extname(filepath));
+    for (let offset = 0; offset < rows.length; offset += batchSize) {
+      const batch = rows.slice(offset, offset + batchSize);
+      const part = Math.floor(offset / batchSize) + 1;
+      const outputPath = rows.length > batchSize ? join(dirname(filepath), `${stem}-part${part}${extension}`) : filepath;
+      const output = createWriteStream(outputPath, { encoding: "utf8", flags: "wx" });
+      output.write(`\uFEFF${HEADERS.join(",")}\r\n`);
+      for (const row of batch) output.write(`${csv(row.institution_code)},${csv(row.address)},,,\r\n`);
+      await new Promise((resolve, reject) => { output.end(resolve); output.on("error", reject); });
+      console.log(`已匯出第 ${part} 批 ${batch.length} 筆地址：${outputPath}`);
+    }
+    if (rows.length === 0) console.log("沒有需要轉換的地址。");
+    console.log("TGOS 上傳時請選擇 EPSG:4326 (WGS84)；每日上限 10,000 筆，請依序送出批次並下載完成檔。");
   } finally { await pool.end(); }
 }
 
