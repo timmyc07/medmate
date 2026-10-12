@@ -11,6 +11,7 @@ export interface Pharmacy {
   latitude: number | null;
   longitude: number | null;
   distanceKm?: number | null;
+  coordinateCandidates?: Array<{ latitude: number; longitude: number; address: string }>;
 }
 
 /** 藥品公開資料的前端/API 共用 DTO。 */

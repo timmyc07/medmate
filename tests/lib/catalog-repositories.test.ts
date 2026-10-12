@@ -233,4 +233,18 @@ describe("Neon 公開資料查詢", () => {
     expect(query.mock.calls[1][0]).toContain("ORDER BY distance_km");
     expect(query.mock.calls[1][1]).toEqual([25.04, 121.52, 20, 0]);
   });
+
+  it("附近搜尋會將多候選座標納入篩選並以最近候選點排序", async () => {
+    query.mockResolvedValueOnce({ rows: [{ total: "1" }] }).mockResolvedValueOnce({ rows: [{
+      institution_code: "5903", institution_name: "多點藥局", address: "台北市", phone: null,
+      city: "台北市", termination_date: null, source_updated_at: "2026-10-08",
+      latitude: "25.05", longitude: "121.53", distance_km: "1.1",
+    }] });
+    const result = await searchPharmacies({ keyword: "", latitude: 25.04, longitude: 121.52, page: 1, pageSize: 20 });
+    expect(query.mock.calls[0][0]).toContain("pharmacy_coordinate_candidates");
+    expect(query.mock.calls[1][0]).toContain("MIN(6371 * acos");
+    expect(query.mock.calls[1][0]).toContain("ORDER BY (6371 * acos");
+    expect(query.mock.calls[1][0]).toContain("CASE WHEN latitude IS NOT NULL AND longitude IS NOT NULL");
+    expect(result.items[0]).toMatchObject({ latitude: 25.05, longitude: 121.53, distanceKm: 1.1 });
+  });
 });

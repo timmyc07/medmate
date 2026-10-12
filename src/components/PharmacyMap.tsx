@@ -31,7 +31,7 @@ export default function PharmacyMap({ pharmacies, userLocation }: { pharmacies: 
       }
       if (!config.enabled || !config.key) { if (!cancelled) setStatus("地圖服務尚未設定"); return; }
       const missing = [...new Set(pharmacies
-        .filter((item) => item.address && (item.latitude === null || item.longitude === null))
+        .filter((item) => item.address && !item.coordinateCandidates?.length && (item.latitude === null || item.longitude === null))
         .map((item) => item.address as string))];
       const geocoded = new Map<string, Point>();
       const geocodePromise = geocodeAddresses(missing, geocoded).catch((error: unknown) => ({
@@ -54,7 +54,9 @@ export default function PharmacyMap({ pharmacies, userLocation }: { pharmacies: 
         };
         for (const item of pharmacies) {
           const point = item.latitude !== null && item.longitude !== null ? { latitude: item.latitude, longitude: item.longitude } : undefined;
-          if (point) addMarker(item, point);
+          if (item.coordinateCandidates?.length) {
+            for (const candidate of item.coordinateCandidates) addMarker({ ...item, address: candidate.address || item.address }, candidate);
+          } else if (point) addMarker(item, point);
         }
         if (userLocation) { const position = { lat: userLocation.latitude, lng: userLocation.longitude }; bounds.extend(position); new maps.Marker({ map, position, title: "目前位置", label: "你" }); }
         if (!bounds.isEmpty()) map.fitBounds(bounds);

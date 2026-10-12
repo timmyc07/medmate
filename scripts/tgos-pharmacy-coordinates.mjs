@@ -48,6 +48,11 @@ async function importResults(filepath) {
       id text, address text, response_address text, longitude_text text, latitude_text text,
       longitude double precision, latitude double precision, reason text
     ) ON COMMIT DROP`);
+    await client.query(`CREATE TEMP TABLE tgos_candidates (
+      id text, address text, candidate_index integer, response_address text,
+      longitude_text text, latitude_text text, longitude double precision, latitude double precision,
+      reason text
+    ) ON COMMIT DROP`);
     const records = [];
     const parser = createReadStream(filepath).pipe(parse({ bom: true, columns: true, skip_empty_lines: true, trim: true, relax_column_count: false }));
     for await (const row of parser) {
@@ -55,6 +60,18 @@ async function importResults(filepath) {
       records.push(row);
     }
     if (records.length === 0) throw new Error("TGOS CSV 沒有資料列。");
+    const candidates = [];
+    for (const row of records) {
+      const longitudes = String(row.Response_X ?? "").split(";").map((value) => value.trim());
+      const latitudes = String(row.Response_Y ?? "").split(";").map((value) => value.trim());
+      const addresses = String(row.Response_Address ?? "").split(";").map((value) => value.trim());
+      if (longitudes.length < 2 && latitudes.length < 2) continue;
+      if (longitudes.length !== latitudes.length || longitudes.length !== addresses.length) {
+        candidates.push({ id: row.id, address: row.Address, index: 0, responseAddress: "", longitudeText: "", latitudeText: "", reason: "多候選欄位筆數不一致" });
+        continue;
+      }
+      for (let index = 0; index < longitudes.length; index += 1) candidates.push({ id: row.id, address: row.Address, index: index + 1, responseAddress: addresses[index], longitudeText: longitudes[index], latitudeText: latitudes[index], reason: "" });
+    }
     for (let offset = 0; offset < records.length; offset += 1000) {
       const batch = records.slice(offset, offset + 1000);
       const values = [];
@@ -72,6 +89,26 @@ async function importResults(filepath) {
       WHEN longitude_text !~ '^-?[0-9]+(\\.[0-9]+)?$' OR latitude_text !~ '^-?[0-9]+(\\.[0-9]+)?$' THEN '沒有有效座標'
       ELSE NULL END`);
     await client.query(`UPDATE tgos_import SET longitude = longitude_text::double precision, latitude = latitude_text::double precision WHERE reason IS NULL`);
+    if (candidates.length) {
+      for (let offset = 0; offset < candidates.length; offset += 500) {
+        const batch = candidates.slice(offset, offset + 500);
+        const values = [];
+        const placeholders = batch.map((candidate, index) => {
+          const base = index * 7;
+          values.push(candidate.id ?? "", candidate.address ?? "", candidate.index, candidate.responseAddress ?? "", candidate.longitudeText ?? "", candidate.latitudeText ?? "", candidate.reason ?? "");
+          return `($${base + 1}::text,$${base + 2}::text,$${base + 3}::integer,$${base + 4}::text,$${base + 5}::text,$${base + 6}::text,$${base + 7}::text)`;
+        });
+        await client.query(`INSERT INTO tgos_candidates (id,address,candidate_index,response_address,longitude_text,latitude_text,reason) VALUES ${placeholders.join(",")}`, values);
+      }
+      await client.query(`UPDATE tgos_candidates SET reason=CASE
+        WHEN reason <> '' THEN reason
+        WHEN candidate_index < 1 OR id='' OR address='' THEN '候選欄位不完整'
+        WHEN longitude_text !~ '^-?[0-9]+(\\.[0-9]+)?$' OR latitude_text !~ '^-?[0-9]+(\\.[0-9]+)?$' THEN '候選座標格式無效'
+        ELSE NULL END`);
+      await client.query(`UPDATE tgos_candidates SET longitude=longitude_text::double precision, latitude=latitude_text::double precision WHERE reason IS NULL`);
+      await client.query(`UPDATE tgos_candidates SET reason='候選座標超出台灣範圍' WHERE reason IS NULL AND (latitude<21.5 OR latitude>26.5 OR longitude<118 OR longitude>123)`);
+      await client.query(`UPDATE tgos_candidates AS source SET reason='候選地址所屬機構不符' WHERE reason IS NULL AND NOT EXISTS (SELECT 1 FROM pharmacy_contracts p WHERE p.institution_code=source.id AND p.address=source.address)`);
+    }
     await client.query(`UPDATE tgos_import SET reason = '座標超出台灣範圍' WHERE reason IS NULL AND (latitude < 21.5 OR latitude > 26.5 OR longitude < 118 OR longitude > 123)`);
     await client.query(`UPDATE tgos_import AS source SET reason = '機構代碼或原始地址不符' WHERE reason IS NULL AND NOT EXISTS (SELECT 1 FROM pharmacy_contracts p WHERE p.institution_code=source.id AND p.address=source.address)`);
     await client.query(`UPDATE tgos_import AS source SET reason = '資料庫已有座標' WHERE reason IS NULL AND EXISTS (SELECT 1 FROM pharmacy_contracts p WHERE p.institution_code=source.id AND p.address=source.address AND (p.latitude IS NOT NULL OR p.longitude IS NOT NULL))`);
@@ -86,16 +123,27 @@ async function importResults(filepath) {
       COUNT(*) FILTER (WHERE reason='缺少機構代碼或地址')::int AS malformed FROM tgos_import`);
     const counts = summary.rows[0];
     if (dryRun) {
+      const candidateSummary = await client.query("SELECT COUNT(*) FILTER (WHERE reason IS NULL)::int AS valid, COUNT(*) FILTER (WHERE reason IS NOT NULL)::int AS rejected FROM tgos_candidates");
       await client.query("ROLLBACK");
-      console.log(`TGOS 座標預檢：檔案 ${counts.total} 筆，可匯入 ${counts.valid} 筆，多候選座標 ${counts.multiple} 筆，無有效座標 ${counts.no_coordinates} 筆，超出台灣範圍 ${counts.out_of_range} 筆，資料不匹配 ${counts.unmatched} 筆，已有座標 ${counts.existing} 筆，重複機構代碼 ${counts.duplicate_ids} 筆，格式異常 ${counts.malformed} 筆。`);
+      console.log(`TGOS 座標預檢：檔案 ${counts.total} 筆，可寫入單點 ${counts.valid} 筆，多候選藥局 ${counts.multiple} 家，候選點 ${candidateSummary.rows[0].valid} 個（拒收 ${candidateSummary.rows[0].rejected} 個），無座標 ${counts.no_coordinates} 筆，超出台灣範圍 ${counts.out_of_range} 筆，資料不匹配 ${counts.unmatched} 筆，已有座標 ${counts.existing} 筆，重複機構代碼 ${counts.duplicate_ids} 筆，格式異常 ${counts.malformed} 筆。`);
       return;
     }
     await client.query(`UPDATE pharmacy_contracts AS p SET latitude=s.latitude, longitude=s.longitude,
       geocoded_at=CURRENT_TIMESTAMP, geocode_provider='TGOS batch EPSG:4326'
       FROM tgos_import s WHERE s.reason IS NULL AND p.institution_code=s.id AND p.address=s.address
         AND p.latitude IS NULL AND p.longitude IS NULL`);
+    await client.query(`DELETE FROM pharmacy_coordinate_candidates stored USING (
+      SELECT id FROM tgos_candidates GROUP BY id
+      HAVING id <> '' AND COUNT(*) FILTER (WHERE reason IS NULL) = COUNT(*)
+    ) synced WHERE stored.institution_code=synced.id`);
+    await client.query(`INSERT INTO pharmacy_coordinate_candidates (institution_code,candidate_index,response_address,latitude,longitude,geocoded_at)
+      SELECT source.id,source.candidate_index,source.response_address,source.latitude,source.longitude,CURRENT_TIMESTAMP
+      FROM tgos_candidates source WHERE source.reason IS NULL
+      ON CONFLICT (institution_code,candidate_index) DO UPDATE SET response_address=EXCLUDED.response_address,
+        latitude=EXCLUDED.latitude,longitude=EXCLUDED.longitude,geocoded_at=EXCLUDED.geocoded_at`);
+    const candidateSummary = await client.query("SELECT COUNT(*) FILTER (WHERE reason IS NULL)::int AS valid, COUNT(*) FILTER (WHERE reason IS NOT NULL)::int AS rejected FROM tgos_candidates");
     await client.query("COMMIT");
-    console.log(`TGOS 座標回匯完成：更新 ${counts.valid} 筆，多候選座標 ${counts.multiple} 筆，無有效座標 ${counts.no_coordinates} 筆，超出台灣範圍 ${counts.out_of_range} 筆，資料不匹配 ${counts.unmatched} 筆，已有座標 ${counts.existing} 筆，重複機構代碼 ${counts.duplicate_ids} 筆，格式異常 ${counts.malformed} 筆。`);
+    console.log(`TGOS 座標回匯完成：更新單點 ${counts.valid} 筆，保存候選座標 ${candidateSummary.rows[0].valid} 個（拒收 ${candidateSummary.rows[0].rejected} 個），多候選藥局 ${counts.multiple} 家，無座標 ${counts.no_coordinates} 筆，超出台灣範圍 ${counts.out_of_range} 筆，資料不匹配 ${counts.unmatched} 筆，已有座標 ${counts.existing} 筆，重複機構代碼 ${counts.duplicate_ids} 筆，格式異常 ${counts.malformed} 筆。`);
   } catch (error) {
     await client.query("ROLLBACK");
     throw error;

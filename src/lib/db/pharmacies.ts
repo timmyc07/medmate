@@ -28,13 +28,22 @@ export async function searchPharmacies(params: SearchParams): Promise<Page<Pharm
   const hasCoordinates = latitude !== undefined && longitude !== undefined;
   let countValues: (string | number)[];
   const distanceExpression = hasCoordinates
-    ? `(6371 * acos(least(1, cos(radians($${values.length + 1})) * cos(radians(latitude)) * cos(radians(longitude) - radians($${values.length + 2})) + sin(radians($${values.length + 1})) * sin(radians(latitude)))))`
+    ? `CASE WHEN latitude IS NOT NULL AND longitude IS NOT NULL THEN (6371 * acos(least(1, cos(radians($${values.length + 1})) * cos(radians(latitude)) * cos(radians(longitude) - radians($${values.length + 2})) + sin(radians($${values.length + 1})) * sin(radians(latitude))))) END`
     : null;
+  const candidateDistanceExpression = hasCoordinates
+    ? `(SELECT MIN(6371 * acos(least(1, cos(radians($${values.length + 1})) * cos(radians(candidate.latitude)) * cos(radians(candidate.longitude) - radians($${values.length + 2})) + sin(radians($${values.length + 1})) * sin(radians(candidate.latitude))))) FROM pharmacy_coordinate_candidates candidate WHERE candidate.institution_code=pharmacy_contracts.institution_code)`
+    : null;
+  const nearestCandidateLatitude = hasCoordinates
+    ? `(SELECT candidate.latitude FROM pharmacy_coordinate_candidates candidate WHERE candidate.institution_code=pharmacy_contracts.institution_code ORDER BY (6371 * acos(least(1, cos(radians($${values.length + 1})) * cos(radians(candidate.latitude)) * cos(radians(candidate.longitude) - radians($${values.length + 2})) + sin(radians($${values.length + 1})) * sin(radians(candidate.latitude))))), candidate.candidate_index LIMIT 1)`
+    : `(SELECT candidate.latitude FROM pharmacy_coordinate_candidates candidate WHERE candidate.institution_code=pharmacy_contracts.institution_code ORDER BY candidate.candidate_index LIMIT 1)`;
+  const nearestCandidateLongitude = hasCoordinates
+    ? `(SELECT candidate.longitude FROM pharmacy_coordinate_candidates candidate WHERE candidate.institution_code=pharmacy_contracts.institution_code ORDER BY (6371 * acos(least(1, cos(radians($${values.length + 1})) * cos(radians(candidate.latitude)) * cos(radians(candidate.longitude) - radians($${values.length + 2})) + sin(radians($${values.length + 1})) * sin(radians(candidate.latitude))))), candidate.candidate_index LIMIT 1)`
+    : `(SELECT candidate.longitude FROM pharmacy_coordinate_candidates candidate WHERE candidate.institution_code=pharmacy_contracts.institution_code ORDER BY candidate.candidate_index LIMIT 1)`;
   if (hasCoordinates) {
-    clauses.push("latitude IS NOT NULL AND longitude IS NOT NULL");
+    clauses.push("((latitude IS NOT NULL AND longitude IS NOT NULL) OR EXISTS (SELECT 1 FROM pharmacy_coordinate_candidates candidate WHERE candidate.institution_code=pharmacy_contracts.institution_code))");
     if (params.radiusKm !== undefined) {
       values.push(latitude, longitude, params.radiusKm);
-      clauses.push(`${distanceExpression} <= $${values.length}`);
+      clauses.push(`COALESCE(${distanceExpression}, ${candidateDistanceExpression}) <= $${values.length}`);
       countValues = [...values];
     } else {
       values.push(latitude, longitude);
@@ -52,7 +61,8 @@ export async function searchPharmacies(params: SearchParams): Promise<Page<Pharm
     latitude: string | null; longitude: string | null; distance_km: string | null;
   }>(`SELECT institution_code, institution_name, address, NULLIF(phone, '') AS phone,
       substring(address from '^.*?[縣市]') AS city, opening_hours, termination_date::text, source_updated_at::date::text AS source_updated_at,
-      latitude, longitude${distanceExpression ? `, ${distanceExpression} AS distance_km` : ", NULL::text AS distance_km"}
+      COALESCE(latitude, ${nearestCandidateLatitude}) AS latitude,
+      COALESCE(longitude, ${nearestCandidateLongitude}) AS longitude${distanceExpression ? `, COALESCE(${distanceExpression}, ${candidateDistanceExpression}) AS distance_km` : ", NULL::text AS distance_km"}
     FROM pharmacy_contracts WHERE ${filter}
     ORDER BY ${distanceExpression ? "distance_km, " : ""}institution_name, institution_code LIMIT $${values.length + 1} OFFSET $${values.length + 2}`,
     [...values, params.pageSize, offset]);
@@ -88,9 +98,14 @@ export async function listPharmaciesForMap(city: string, district?: string): Pro
     institution_code: string; institution_name: string; address: string; phone: string;
     city: string | null; opening_hours: string | null; termination_date: string | null; source_updated_at: string;
     latitude: string | null; longitude: string | null;
+    coordinate_candidates: Array<{ latitude: number; longitude: number; address: string }> | null;
   }>(`SELECT institution_code, institution_name, address, NULLIF(phone, '') AS phone,
       substring(address from '^.*?[縣市]') AS city, opening_hours, termination_date::text,
-      source_updated_at::date::text AS source_updated_at, latitude, longitude
+      source_updated_at::date::text AS source_updated_at,
+      COALESCE(latitude, (SELECT candidate.latitude FROM pharmacy_coordinate_candidates candidate WHERE candidate.institution_code=pharmacy_contracts.institution_code ORDER BY candidate.candidate_index LIMIT 1)) AS latitude,
+      COALESCE(longitude, (SELECT candidate.longitude FROM pharmacy_coordinate_candidates candidate WHERE candidate.institution_code=pharmacy_contracts.institution_code ORDER BY candidate.candidate_index LIMIT 1)) AS longitude,
+      COALESCE((SELECT json_agg(json_build_object('latitude',candidate.latitude,'longitude',candidate.longitude,'address',candidate.response_address) ORDER BY candidate.candidate_index)
+        FROM pharmacy_coordinate_candidates candidate WHERE candidate.institution_code=pharmacy_contracts.institution_code), '[]'::json) AS coordinate_candidates
     FROM pharmacy_contracts
     WHERE (termination_date IS NULL OR termination_date >= (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Taipei')::date)
       AND address ILIKE $1 ESCAPE '!'${districtClause}
@@ -101,5 +116,6 @@ export async function listPharmaciesForMap(city: string, district?: string): Pro
     openingHours: row.opening_hours ?? null, sourceUpdatedAt: row.source_updated_at,
     latitude: row.latitude == null ? null : Number(row.latitude),
     longitude: row.longitude == null ? null : Number(row.longitude),
+    coordinateCandidates: row.coordinate_candidates ?? [],
   }));
 }
