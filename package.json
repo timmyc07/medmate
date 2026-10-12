@@ -10,6 +10,8 @@
     "build": "next build",
     "db:migrate": "node scripts/migrate.mjs",
     "db:import": "node scripts/import-csv.mjs",
+    "tgos:export": "node scripts/tgos-pharmacy-coordinates.mjs export",
+    "tgos:import": "node scripts/tgos-pharmacy-coordinates.mjs import",
     "start": "next start --hostname 0.0.0.0",
     "db:import-medicines": "node scripts/import-medicine-usage.mjs"
   },

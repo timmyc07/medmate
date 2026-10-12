@@ -22,6 +22,26 @@
 - 驗證：`npm run lint`、`npm run typecheck`、`npm test -- --run`、`npm run build`
 - `/api/health` 回傳網站程序健康狀態，不代表資料庫可用。
 
+## TGOS 批次補齊藥局座標
+
+TGOS「批次門牌地址比對服務」是人工上傳 CSV、完成後以電子郵件通知下載的非同步服務，官方說明作業約 1–2 天、每日最多 10,000 筆。它不能用於網站即時定位請求。官方頁面：[批次地址比對](https://www.tgos.tw/TGOS/Addr/addrCompare)。
+
+TGOS 範本欄位為 `id,Address,Response_Address,Response_X,Response_Y`。需先用 direct Neon URL 在本機匯出待定位資料：
+
+```sh
+DATABASE_URL_UNPOOLED='請使用本機秘密環境變數' npm run tgos:export -- /安全的本機路徑/pharmacies-tgos.csv
+```
+
+匯出檔只含有效且沒有座標的藥局機構代碼及原始地址。登入 TGOS 上傳 CSV，選擇 `EPSG:4326 (WGS84)`，依需要選擇完全或模糊比對；每日上限 10,000 筆，超量時分批處理。下載完成檔後執行：
+
+```sh
+DATABASE_URL_UNPOOLED='請使用本機秘密環境變數' npm run tgos:import -- /安全的本機路徑/TGOS完成檔.csv
+```
+
+回匯採單一資料庫交易，只接受 CSV 欄位完全符合官方格式、`id` 與原地址同時吻合資料庫機構，且 WGS84 座標落在台灣範圍內的結果；失敗或未匹配列略過並統計，資料庫錯誤則整批 rollback。藥局重匯入會依機構代碼及地址保留已存座標，地址變更時不沿用舊座標。CSV 僅供本機操作，已由 `.gitignore` 排除。
+
+TGOS 憑證放在被忽略的 `.env.local`，範例變數名稱為 `TGOS_BATCH_APP_ID` 與 `TGOS_BATCH_API_KEY`。目前這兩個變數僅供人工批次作業管理，不由腳本或網站讀取；TGOS 線上頁面本身仍要求登入並在表單輸入 APIKEY。不要設定到 Render、不要傳到瀏覽器或提交 Git。若憑證曾公開，應向 TGOS 輪替後再用。附近搜尋只會使用資料庫已核可的座標，地圖則仍依現有地圖服務顯示。
+
 ## 前端圖示、圖片與卡片動畫
 
 頁面操作圖示統一使用 `lucide-react` SVG；不要重新加入依賴字型 ligature 的 Material Symbols class，避免字型未載入時顯示成不可讀文字。藥品排行卡的 FDA 外觀圖使用 Next.js `Image`，`next.config.ts` 僅允許 `mcp.fda.gov.tw` 的 HTTPS 圖片，元件設定響應式 `sizes`、lazy loading 與 quality 70；若新增圖片來源，必須同步檢查來源授權並加入明確的 `remotePatterns`。
