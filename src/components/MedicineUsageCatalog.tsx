@@ -94,7 +94,7 @@ export default function MedicineUsageCatalog() {
                         fill
                         sizes="(max-width: 680px) 50vw, (max-width: 1100px) 33vw, 360px"
                         loading="lazy"
-                        unoptimized
+                        quality={55}
                         onError={() => {
                           const imageUrl = item.appearanceImageUrl;
                           if (imageUrl) {

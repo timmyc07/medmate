@@ -13,7 +13,8 @@ describe("藥品使用量目錄", () => {
     await act(async () => { render(<MedicineUsageCatalog />); });
 
     const image = await screen.findByRole("img", { name: "測試藥品藥品外觀" });
-    await waitFor(() => expect(image).toHaveAttribute("src", "https://mcp.fda.gov.tw/image.jpg"));
+    await waitFor(() => expect(image).toHaveAttribute("src", expect.stringContaining("/_next/image")));
+    expect(image.getAttribute("src")).toContain("url=https%3A%2F%2Fmcp.fda.gov.tw%2Fimage.jpg");
     expect(image).toHaveAttribute("loading", "lazy");
     expect(screen.queryByText("TEST TABLET 500MG")).not.toBeInTheDocument();
   });
