@@ -106,13 +106,6 @@ export default function HomePage() {
               </ScrollReveal>
             ))}
           </div>
-          <ScrollReveal className="license-note">
-            <p>
-              <strong>授權與使用限制</strong>　政府資料依
-              <a href="https://data.gov.tw/license" target="_blank" rel="noreferrer">政府資料開放授權條款第 1 版</a>
-              使用。本網站不提供診斷或治療建議。
-            </p>
-          </ScrollReveal>
         </div>
       </section>
     </main>

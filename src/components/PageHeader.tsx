@@ -14,6 +14,11 @@ const navigation: Array<{ href: PagePath; label: string; icon: typeof House }> =
 
 export default function PageHeader({ currentPath }: { currentPath: PagePath }) {
   return (
+    <div className="site-header-shell">
+      <aside className="site-disclaimer" aria-label="授權與使用限制">
+        <strong>授權與使用限制</strong>
+        <span>政府資料依<a href="https://data.gov.tw/license" target="_blank" rel="noreferrer">政府資料開放授權條款第 1 版</a>使用。本網站不提供診斷或治療建議。</span>
+      </aside>
       <header className="site-header">
         <div className="brand-cluster">
           <Link className="brand" href="/" aria-label="MediMate 首頁">
@@ -41,5 +46,6 @@ export default function PageHeader({ currentPath }: { currentPath: PagePath }) {
         </div>
         <QuickSearch />
       </header>
+    </div>
   );
 }
