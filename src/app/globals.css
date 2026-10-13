@@ -123,8 +123,8 @@ svg { display: block; }
 .brand-copy { display: grid; gap: 0; }
 .brand-name-row { display: inline-flex; align-items: center; gap: 7px; }
 .brand-copy small { color: var(--muted); font-family: var(--font-stack-body); font-size: 10px; font-weight: 600; }
-.site-nav { display: flex; align-items: center; gap: 4px; padding: 5px; border: 1px solid var(--line); border-radius: 999px; background: color-mix(in srgb, var(--surface-soft) 62%, var(--surface)); }
-.site-nav a { display: inline-flex; min-height: 48px; align-items: center; justify-content: center; border-radius: 999px; padding: 0 18px; color: var(--ink-soft); font-size: 13px; font-weight: 700; white-space: nowrap; transition: color 150ms ease, background-color 150ms ease; }
+.site-nav { display: flex; align-items: center; gap: 2px; padding: 0; border: 0; background: transparent; }
+.site-nav a { display: inline-flex; min-height: 40px; align-items: center; justify-content: center; border-radius: 999px; padding: 0 15px; color: var(--ink-soft); font-size: 12px; font-weight: 700; white-space: nowrap; transition: color 150ms ease, background-color 150ms ease; }
 .desktop-nav-only { display: inline-flex; }
 .nav-icon { display: none; }
 .site-nav a:hover { color: var(--forest); background: var(--mint-soft); }
