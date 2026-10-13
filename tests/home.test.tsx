@@ -16,6 +16,7 @@ describe("首頁", () => {
     expect(screen.queryByRole("heading", { name: "從一個關鍵字開始" })).not.toBeInTheDocument();
     expect(screen.queryByText(/健康提醒/)).not.toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "健康手冊" })).not.toBeInTheDocument();
+    expect(document.querySelector(".home-hero-inner")).toHaveClass("home-hero-inner");
   });
 
   it("在共用版型底部顯示健保標誌與政府資料來源", () => {
@@ -25,6 +26,7 @@ describe("首頁", () => {
     expect(screen.getByRole("heading", { name: "資料來源與授權" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "健保特約醫事機構－藥局" })).toHaveAttribute("href", "https://data.gov.tw/dataset/39284");
     const footer = screen.getByRole("contentinfo");
+    expect(footer.querySelector(".footer-disclaimer")).toHaveClass("footer-disclaimer");
     expect(within(footer).getByRole("link", { name: "政府資料開放授權條款第 1 版" })).toHaveAttribute("href", "https://data.gov.tw/license");
   });
 
