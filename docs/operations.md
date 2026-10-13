@@ -48,7 +48,7 @@ TGOS 憑證放在被忽略的 `.env.local`，範例變數名稱為 `TGOS_BATCH_A
 
 ## 前端圖示、圖片與卡片動畫
 
-頁面操作圖示統一使用 `lucide-react` SVG；不要重新加入依賴字型 ligature 的 Material Symbols class，避免字型未載入時顯示成不可讀文字。藥品排行卡的 FDA 外觀圖使用 Next.js `Image`，`next.config.ts` 僅允許 `mcp.fda.gov.tw` 的 HTTPS 圖片，元件設定響應式 `sizes`、lazy loading 與 quality 70；若新增圖片來源，必須同步檢查來源授權並加入明確的 `remotePatterns`。
+頁面操作圖示統一使用 `lucide-react` SVG；不要重新加入依賴字型 ligature 的 Material Symbols class，避免字型未載入時顯示成不可讀文字。藥品排行卡的 FDA 外觀圖使用 Next.js `Image`，`next.config.ts` 僅允許 `mcp.fda.gov.tw` 的 HTTPS 圖片，元件設定響應式 `sizes`、lazy loading 與 `unoptimized`，直接載入來源圖片；圖片載入失敗時顯示占位圖。藥品卡片只顯示中文品名。若新增圖片來源，必須同步檢查來源授權並加入明確的 `remotePatterns`。
 
 來源卡、搜尋卡、藥局/藥品結果卡、藥品排行卡與外觀快搜卡共用 `src/components/ScrollReveal.tsx`。元件以單一 `IntersectionObserver` 觀察卡片，進入 viewport 後套用淡入與上移效果；SSR、未支援 IntersectionObserver 或 `prefers-reduced-motion` 時保持內容可見。新增卡片時應沿用此元件，不要在各頁重複建立 observer。
 

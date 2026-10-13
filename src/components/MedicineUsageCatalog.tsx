@@ -9,6 +9,9 @@ const PAGE_SIZE = 50;
 
 export default function MedicineUsageCatalog() {
   const [page, setPage] = useState<MedicineUsagePage | null>(null);
+  const [failedImageUrls, setFailedImageUrls] = useState<Set<string>>(
+    () => new Set(),
+  );
   const [pageNumber, setPageNumber] = useState(1);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
@@ -83,14 +86,23 @@ export default function MedicineUsageCatalog() {
               {page.items.map((item) => (
                 <ScrollReveal as="article" className="medicine-usage-card" key={item.drugCode}>
                   <div className="medicine-usage-image">
-                    {item.appearanceImageUrl ? (
+                    {item.appearanceImageUrl &&
+                    !failedImageUrls.has(item.appearanceImageUrl) ? (
                       <Image
                         src={item.appearanceImageUrl}
                         alt={`${item.name}藥品外觀`}
                         fill
                         sizes="(max-width: 680px) 50vw, (max-width: 1100px) 33vw, 360px"
                         loading="lazy"
-                        quality={70}
+                        unoptimized
+                        onError={() => {
+                          const imageUrl = item.appearanceImageUrl;
+                          if (imageUrl) {
+                            setFailedImageUrls((previous) =>
+                              new Set(previous).add(imageUrl),
+                            );
+                          }
+                        }}
                         style={{ objectFit: "contain" }}
                       />
                     ) : (
@@ -106,11 +118,6 @@ export default function MedicineUsageCatalog() {
                   </div>
                   <div className="medicine-usage-copy">
                     <h3>{item.name}</h3>
-                    {item.englishName && (
-                      <p className="medicine-english-name">
-                        {item.englishName}
-                      </p>
-                    )}
                     <p>健保藥品代碼：{item.drugCode}</p>
                     {item.ingredient && <p>成分：{item.ingredient}</p>}
                     {item.dosageForm && <p>劑型：{item.dosageForm}</p>}
