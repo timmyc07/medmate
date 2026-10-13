@@ -107,6 +107,7 @@ svg { display: block; }
   top: auto;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto auto;
+  column-gap: clamp(12px, 1.5vw, 24px);
   align-items: center;
   width: 100%;
   min-height: 80px;
