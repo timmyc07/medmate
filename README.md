@@ -30,6 +30,7 @@ MediMate 是以手機瀏覽為優先的繁體中文藥局與藥品公開查詢�
 
 ## 文件
 
+- [資料庫大綱（資料表與欄位）](docs/database-schema.md)
 - [核准的設計範圍與架構](docs/superpowers/specs/2026-10-08-medmate-public-web-design.md)
 - [實作計劃](docs/superpowers/plans/2026-10-08-medmate-public-web.md)
 - [專案代理規則](AGENTS.md)
