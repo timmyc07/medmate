@@ -141,3 +141,7 @@ Render 只連 Neon，不直接連私人 Parallels VM。資料匯入來源為官�
 ## 頁首按鈕間距
 
 頁首 grid 欄位使用流體 `column-gap`，確保資料來源導覽、快速搜尋與主題切換按鈕在寬螢幕與中等解析度下保持可讀間距。
+
+## 全屏頁首背景
+
+`site-header-shell` 明確脫離首頁內容寬度限制並使用 `width: 100%`，讓 disclaimer、導覽背景與底線延伸至完整 viewport；頁首內部欄位仍由 padding 與 grid 控制內容寬度。
