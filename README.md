@@ -38,3 +38,7 @@ MediMate 是以手機瀏覽為優先的繁體中文藥局與藥品公開查詢�
 ## 開發狀態
 
 啟動與部署細節見[維運文件](docs/operations.md)。程式 lint 使用 Biome；production build、TypeScript 型別檢查與測試分別驗證框架相容性、型別及功能。Biome 不包含 Next.js 專屬 ESLint 規則。
+
+### Responsive layout
+
+全站版面採用流體寬度、`clamp()` 字級與自適應 grid，頁首工具列會依視窗寬度收縮為圖示，藥品卡片、來源清單、地圖與營業時間表會在桌面、平板與手機解析度自動重排，避免文字直排與水平溢出。

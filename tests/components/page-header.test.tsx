@@ -15,6 +15,8 @@ describe("PageHeader", () => {
     expect(screen.getByRole("link", { name: "前往快速搜尋" })).toHaveAttribute("href", "#quick-search");
     expect(screen.getByRole("img", { name: "全民健康保險標誌" })).toHaveAttribute("src", "/health-insurance-emblem.svg");
     expect(screen.getByRole("button", { name: /切換至夜間模式|切換至白天模式/ })).toBeInTheDocument();
+    expect(container.querySelector(".site-header")).toHaveClass("site-header");
+    expect(container.querySelector(".header-tools")).toHaveClass("header-tools");
     expect(container.querySelectorAll("svg").length).toBeGreaterThan(0);
     expect(container.querySelector(".material-symbols-outlined")).toBeNull();
   });
