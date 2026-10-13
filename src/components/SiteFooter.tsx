@@ -30,7 +30,6 @@ export default function SiteFooter() {
           </ul>
         </section>
       </div>
-      <p className="footer-disclaimer"><strong>健康提醒：</strong>資訊僅供參考；用藥疑問請諮詢藥師或醫療專業人員，出發前請先致電確認。</p>
       <div className="footer-bottom">
         <span>© 2026 MediMate</span>
         <span className="footer-links"><Link href="/#data-status">資料來源</Link><Link href="https://data.gov.tw/license" target="_blank" rel="noreferrer">使用條款</Link></span>

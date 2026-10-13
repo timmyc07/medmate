@@ -26,7 +26,7 @@ describe("首頁", () => {
     expect(screen.getByRole("heading", { name: "資料來源與授權" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "健保特約醫事機構－藥局" })).toHaveAttribute("href", "https://data.gov.tw/dataset/39284");
     const footer = screen.getByRole("contentinfo");
-    expect(footer.querySelector(".footer-disclaimer")).toHaveClass("footer-disclaimer");
+    expect(footer.querySelector(".footer-disclaimer")).toBeNull();
     expect(within(footer).getByRole("link", { name: "政府資料開放授權條款第 1 版" })).toHaveAttribute("href", "https://data.gov.tw/license");
   });
 

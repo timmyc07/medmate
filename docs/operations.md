@@ -50,7 +50,7 @@ TGOS 憑證放在被忽略的 `.env.local`，範例變數名稱為 `TGOS_BATCH_A
 
 頁面操作圖示統一使用 `lucide-react` SVG；不要重新加入依賴字型 ligature 的 Material Symbols class，避免字型未載入時顯示成不可讀文字。藥品排行卡的 FDA 外觀圖使用 Next.js `Image`，`next.config.ts` 僅允許 `mcp.fda.gov.tw` 的 HTTPS 圖片，元件設定響應式 `sizes` 與 lazy loading，並以 `quality={55}` 透過圖片最佳化服務傳送縮小預覽，避免卡片直接載入全尺寸來源圖；圖片載入失敗時顯示占位圖。藥品卡片只顯示中文品名。若新增圖片來源，必須同步檢查來源授權並加入明確的 `remotePatterns`。
 
-來源清單、搜尋視窗、藥局/藥品結果卡、藥品排行卡與外觀快搜卡共用 `src/components/ScrollReveal.tsx`。來源區塊採無卡片陰影的清單，授權限制採扁平 reference block；首頁不另顯示健康提醒區塊，醫療提醒保留於全站頁尾。元件以單一 `IntersectionObserver` 觀察內容，進入 viewport 後套用淡入與上移效果；SSR、未支援 IntersectionObserver 或 `prefers-reduced-motion` 時保持內容可見。新增內容時應沿用此元件，不要在各頁重複建立 observer。
+來源清單、搜尋視窗、藥局/藥品結果卡、藥品排行卡與外觀快搜卡共用 `src/components/ScrollReveal.tsx`。來源區塊採無卡片陰影的清單，授權限制採扁平 reference block；首頁及全站頁尾均不顯示額外健康提醒區塊。元件以單一 `IntersectionObserver` 觀察內容，進入 viewport 後套用淡入與上移效果；SSR、未支援 IntersectionObserver 或 `prefers-reduced-motion` 時保持內容可見。新增內容時應沿用此元件，不要在各頁重複建立 observer。
 
 ## SQL Server 連線狀態
 
@@ -108,7 +108,7 @@ Render 只連 Neon，不直接連私人 Parallels VM。資料匯入來源為官�
 
 藥局頁維持查詢 API、縣市/區域、定位、地圖、固定看診週曆與分頁。桌面結果以左側清單、右側地圖呈現，手機先顯示地圖再顯示清單；Google Maps 設定或腳本失敗時顯示明確狀態，文字清單與導航仍可使用。藥品頁維持許可證查詢與政府使用量排行，桌面使用三欄卡片、手機單欄，並標示申報期間和彙總量限制。
 
-首頁與頁尾的 2026-10-08 文案指來源查證／匯入批次日期；藥品使用量期間仍由 API 回傳的申報年月決定，115 年目前是 11501–11507。藥局固定看診時段不代表即時營業，所有頁面保留資料來源、授權與醫療提醒。production build、TypeScript 型別檢查、測試與 lint 均已執行；桌面版及 390px 手機版首頁、藥局與藥品頁預覽已檢查，手機固定底部導覽未遮擋頁面操作區。
+首頁及頁尾的 2026-10-08 文案指來源查證／匯入批次日期；藥品使用量期間仍由 API 回傳的申報年月決定，115 年目前是 11501–11507。藥局固定看診時段不代表即時營業，頁面仍保留資料來源與授權資訊。production build、TypeScript 型別檢查、測試與 lint 均已執行；桌面版及 390px 手機版首頁、藥局與藥品頁預覽已檢查，手機固定底部導覽未遮擋頁面操作區。
 
 ## 2026-10-11 圖示與裝飾元件收尾
 
@@ -124,7 +124,7 @@ Render 只連 Neon，不直接連私人 Parallels VM。資料匯入來源為官�
 
 ## 首頁健康提醒區塊
 
-首頁不再顯示獨立的健康提醒 reference block，也移除導向該區塊的手機導覽入口；全站頁尾保留醫療提醒文字。
+首頁不再顯示獨立的健康提醒 reference block，也移除導向該區塊的手機導覽入口；全站頁尾亦不顯示健康提醒文字。
 
 ## 頁首授權 disclaimer
 
@@ -132,7 +132,7 @@ Render 只連 Neon，不直接連私人 Parallels VM。資料匯入來源為官�
 
 ## 首頁版面微調
 
-首頁主視覺使用明確的 `place-items: center` 保持內容水平與垂直置中；頁首 disclaimer 採滿版橫條；頁尾醫療提醒改為無卡片、無圓角的左色線提示，並縮小頁尾上方留白。
+首頁主視覺使用明確的 `place-items: center` 保持內容水平與垂直置中；頁首 disclaimer 採滿版橫條；頁尾保留來源與授權資訊。
 
 ## 來源清單標籤排列
 
