@@ -12,7 +12,7 @@ describe("PageHeader", () => {
     expect(screen.getByRole("link", { name: "藥品目錄" })).toHaveAttribute("aria-current", "page");
     expect(screen.getByRole("link", { name: "資料來源" })).toHaveAttribute("class", "desktop-nav-only");
     expect(screen.getByRole("link", { name: "資料來源" })).toHaveAttribute("href", "/#data-status");
-    expect(screen.getByRole("link", { name: "前往快速搜尋" })).toHaveAttribute("href", "#quick-search");
+    expect(screen.queryByRole("link", { name: "前往快速搜尋" })).not.toBeInTheDocument();
     expect(screen.getByText("授權與使用限制")).toBeInTheDocument();
     expect(container.querySelector(".site-header-shell > .site-disclaimer + header.site-header")).toBeInTheDocument();
     expect(screen.getByRole("img", { name: "全民健康保險標誌" })).toHaveAttribute("src", "/health-insurance-emblem.svg");

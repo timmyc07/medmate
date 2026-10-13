@@ -10,7 +10,7 @@
 
 首頁、藥局與藥品頁的站內導覽使用 Next.js `Link` 進行 client-side navigation。共用 `src/app/template.tsx` 透過 React `ViewTransition` 淡入路由內容；瀏覽器不支援 View Transitions API 時仍有一般 CSS 入場效果，使用者啟用 `prefers-reduced-motion` 時會縮短動畫。
 
-藥局與藥品頁的 `PageHeader` 共用 Warm Mint header 版型：品牌使用 `public/health-insurance-emblem.svg`，桌面左側品牌、中央主要導覽、右側快速搜尋與主題切換；窄螢幕將同一組導覽固定在底部並只顯示圖示，預留 safe-area 空間。`QuickSearch` 以頁首錨點開啟浮動視窗，單一輸入框依關鍵字導向藥局或藥品目錄，首頁不再顯示獨立搜尋區塊。
+藥局與藥品頁的 `PageHeader` 共用 Warm Mint header 版型：品牌使用 `public/health-insurance-emblem.svg`，桌面左側品牌、中央主要導覽、右側主題切換；窄螢幕將同一組導覽固定在底部並只顯示圖示，預留 safe-area 空間。搜尋從各自的藥局或藥品目錄頁進入，不在導航列提供快速搜尋浮動視窗。
 
 主題切換首次載入時以範本指定的淺色 Warm Mint 為預設；只有使用者主動切換後才會在瀏覽器 `localStorage` 保存夜間模式偏好。
 
@@ -140,7 +140,7 @@ Render 只連 Neon，不直接連私人 Parallels VM。資料匯入來源為官�
 
 ## 頁首按鈕間距
 
-頁首 grid 欄位使用流體 `column-gap`，確保資料來源導覽、快速搜尋與主題切換按鈕在寬螢幕與中等解析度下保持可讀間距。
+頁首 grid 欄位使用流體 `column-gap`，確保資料來源導覽與主題切換按鈕在寬螢幕與中等解析度下保持可讀間距。
 
 ## 全屏頁首背景
 

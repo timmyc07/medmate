@@ -1,8 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Database, House, Map as MapIcon, Pill, Search } from "lucide-react";
+import { Database, House, Map as MapIcon, Pill } from "lucide-react";
 import ThemeToggle from "./ThemeToggle";
-import QuickSearch from "./QuickSearch";
 
 type PagePath = "/" | "/pharmacies" | "/medicines";
 
@@ -38,13 +37,8 @@ export default function PageHeader({ currentPath }: { currentPath: PagePath }) {
           <Link className="desktop-nav-only" href="/#data-status"><Database className="nav-icon" aria-hidden="true" />資料來源</Link>
         </nav>
         <div className="header-tools">
-          <Link className="header-quick-link" href="#quick-search" aria-label="前往快速搜尋">
-            <Search className="icon" aria-hidden="true" />
-            <span className="header-quick-label">快速搜尋</span>
-          </Link>
           <ThemeToggle />
         </div>
-        <QuickSearch />
       </header>
     </div>
   );

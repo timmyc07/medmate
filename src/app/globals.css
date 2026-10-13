@@ -131,9 +131,9 @@ svg { display: block; }
 .site-nav a[aria-current="page"] { color: #fff; background: var(--forest); }
 .mobile-nav-only { display: none; }
 .header-tools { display: flex; min-width: 0; align-items: center; justify-content: flex-end; gap: clamp(7px, 1vw, 12px); white-space: nowrap; }
-.header-quick-link, .theme-toggle { display: inline-flex; min-width: 48px; min-height: 48px; flex: 0 0 auto; align-items: center; justify-content: center; gap: 8px; border: 1px solid var(--line); border-radius: 999px; padding: 0 14px; color: var(--ink-soft); background: var(--surface); font-size: 12px; font-weight: 700; white-space: nowrap; cursor: pointer; }
-.header-quick-link:hover, .theme-toggle:hover { border-color: var(--mint); color: var(--forest); background: var(--surface-soft); }
-.header-quick-link .icon, .theme-toggle .icon { color: var(--forest); font-size: 17px; }
+.theme-toggle { display: inline-flex; min-width: 48px; min-height: 48px; flex: 0 0 auto; align-items: center; justify-content: center; gap: 8px; border: 1px solid var(--line); border-radius: 999px; padding: 0 14px; color: var(--ink-soft); background: var(--surface); font-size: 12px; font-weight: 700; white-space: nowrap; cursor: pointer; }
+.theme-toggle:hover { border-color: var(--mint); color: var(--forest); background: var(--surface-soft); }
+.theme-toggle .icon { color: var(--forest); font-size: 17px; }
 .profile-chip { display: inline-grid; width: 40px; height: 40px; place-items: center; border-radius: 50%; color: #fff; background: linear-gradient(135deg, var(--forest), var(--mint)); font-size: 20px; box-shadow: var(--shadow-soft); }
 
 .page-shell, .page-content { width: min(calc(100% - clamp(32px, 6vw, 64px)), 1280px); margin-inline: auto; }
@@ -381,9 +381,9 @@ svg { display: block; }
   .brand-mark { width: 37px; border-radius: 50%; }
   .brand-copy small { display: none; }
   .header-tools { gap: 7px; }
-  .header-quick-link, .theme-toggle { width: 48px; min-height: 48px; padding: 0; }
-  .header-quick-link .header-quick-label, .theme-toggle .theme-label { display: none; }
-  .header-quick-link .icon, .theme-toggle .icon { font-size: 18px; }
+  .theme-toggle { width: 48px; min-height: 48px; padding: 0; }
+  .theme-toggle .theme-label { display: none; }
+  .theme-toggle .icon { font-size: 18px; }
   .page-shell, .page-content { width: calc(100% - 32px); }
   .page-shell--inner { width: 100%; }
   .page-shell--inner > .inner-hero, .page-shell--inner > .lookup-section, .page-shell--inner > .usage-catalog, .page-shell--inner > .medicine-appearance-section { width: calc(100% - 32px); }
@@ -497,16 +497,15 @@ svg { display: block; }
   .site-header { grid-template-columns: minmax(0, 1fr) auto auto; padding-inline: 20px; }
   .brand-cluster { gap: 9px; }
   .site-nav a { padding-inline: 11px; font-size: 11px; }
-  .header-quick-link { padding-inline: 10px; }
-  .header-quick-label, .theme-label { display: none; }
-  .header-quick-link, .theme-toggle { width: 43px; padding: 0; }
+  .theme-label { display: none; }
+  .theme-toggle { width: 43px; padding: 0; }
   .page-shell, .page-content { width: min(100% - 40px, 1280px); }
   .page-shell--inner > .inner-hero, .page-shell--inner > .lookup-section, .page-shell--inner > .usage-catalog, .page-shell--inner > .medicine-appearance-section { width: min(100% - 40px, 1280px); }
 }
 
 @media (min-width: 981px) and (max-width: 1120px) {
-  .header-quick-label, .theme-label { display: none; }
-  .header-quick-link, .theme-toggle { width: 48px; padding: 0; }
+  .theme-label { display: none; }
+  .theme-toggle { width: 48px; padding: 0; }
   .site-nav a { padding-inline: clamp(9px, 1.2vw, 14px); }
 }
 
