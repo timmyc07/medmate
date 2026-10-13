@@ -140,6 +140,7 @@ svg { display: block; }
 .page-shell--inner { width: 100%; max-width: none; padding-top: 0; }
 .page-shell--inner > .inner-hero, .page-shell--inner > .lookup-section, .page-shell--inner > .usage-catalog, .page-shell--inner > .medicine-appearance-section { width: min(100% - 64px, 1280px); margin-inline: auto; }
 .page-shell { min-height: 75svh; padding: 30px 0 72px; }
+.page-shell--inner { padding-top: 0; }
 .page-shell--home { width: 100%; padding: 0 0 72px; }
 .page-shell--home > *:not(.home-hero):not(.home-source-band):not(.site-header-shell) { width: min(100% - 64px, 1280px); margin-inline: auto; }
 .page-shell--home > .site-header-shell { width: 100%; margin-inline: 0; }
@@ -387,6 +388,7 @@ svg { display: block; }
   .page-shell--inner { width: 100%; }
   .page-shell--inner > .inner-hero, .page-shell--inner > .lookup-section, .page-shell--inner > .usage-catalog, .page-shell--inner > .medicine-appearance-section { width: calc(100% - 32px); }
   .page-shell { min-height: 72svh; padding: 19px 0 32px; }
+  .page-shell--inner { padding-top: 0; }
   .page-shell--home { width: 100%; padding: 0 0 32px; }
   .page-shell--home > *:not(.home-hero):not(.home-source-band):not(.site-header-shell) { width: calc(100% - 32px); }
   .home-hero { padding: 16px 16px 20px; background: var(--canvas); }

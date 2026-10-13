@@ -132,7 +132,7 @@ Render 只連 Neon，不直接連私人 Parallels VM。資料匯入來源為官�
 
 ## 首頁版面微調
 
-首頁主視覺使用明確的 `place-items: center` 保持內容水平與垂直置中；頁首 disclaimer 採滿版橫條；頁尾保留來源與授權資訊。
+首頁主視覺使用明確的 `place-items: center` 保持內容水平與垂直置中；頁首 disclaimer 採滿版橫條；首頁與內頁共用相同頂端留白；頁尾保留來源與授權資訊。
 
 ## 來源清單標籤排列
 
