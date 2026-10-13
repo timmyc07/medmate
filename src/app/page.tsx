@@ -113,11 +113,6 @@ export default function HomePage() {
               使用。本網站不提供診斷或治療建議。
             </p>
           </ScrollReveal>
-          <ScrollReveal className="health-note" id="health-guide">
-            <p>
-              <strong>健康提醒</strong>　藥品資訊與政府登記時段僅供參考；用藥或症狀問題請諮詢藥師或醫療專業人員，出發前請先致電確認。
-            </p>
-          </ScrollReveal>
         </div>
       </section>
     </main>

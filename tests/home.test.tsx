@@ -14,6 +14,8 @@ describe("首頁", () => {
     expect(screen.getByRole("link", { name: /查詢藥品/ })).toHaveAttribute("href", "/medicines");
     expect(screen.getByRole("link", { name: /藥品目錄/ })).toHaveAttribute("href", "/medicines");
     expect(screen.queryByRole("heading", { name: "從一個關鍵字開始" })).not.toBeInTheDocument();
+    expect(screen.queryByText(/健康提醒/)).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "健康手冊" })).not.toBeInTheDocument();
   });
 
   it("在共用版型底部顯示健保標誌與政府資料來源", () => {

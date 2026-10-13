@@ -50,7 +50,7 @@ TGOS 憑證放在被忽略的 `.env.local`，範例變數名稱為 `TGOS_BATCH_A
 
 頁面操作圖示統一使用 `lucide-react` SVG；不要重新加入依賴字型 ligature 的 Material Symbols class，避免字型未載入時顯示成不可讀文字。藥品排行卡的 FDA 外觀圖使用 Next.js `Image`，`next.config.ts` 僅允許 `mcp.fda.gov.tw` 的 HTTPS 圖片，元件設定響應式 `sizes`、lazy loading 與 `unoptimized`，直接載入來源圖片；圖片載入失敗時顯示占位圖。藥品卡片只顯示中文品名。若新增圖片來源，必須同步檢查來源授權並加入明確的 `remotePatterns`。
 
-來源清單、搜尋視窗、藥局/藥品結果卡、藥品排行卡與外觀快搜卡共用 `src/components/ScrollReveal.tsx`。來源區塊採無卡片陰影的兩欄清單，授權與健康提醒採扁平 reference block；元件以單一 `IntersectionObserver` 觀察內容，進入 viewport 後套用淡入與上移效果；SSR、未支援 IntersectionObserver 或 `prefers-reduced-motion` 時保持內容可見。新增內容時應沿用此元件，不要在各頁重複建立 observer。
+來源清單、搜尋視窗、藥局/藥品結果卡、藥品排行卡與外觀快搜卡共用 `src/components/ScrollReveal.tsx`。來源區塊採無卡片陰影的清單，授權限制採扁平 reference block；首頁不另顯示健康提醒區塊，醫療提醒保留於全站頁尾。元件以單一 `IntersectionObserver` 觀察內容，進入 viewport 後套用淡入與上移效果；SSR、未支援 IntersectionObserver 或 `prefers-reduced-motion` 時保持內容可見。新增內容時應沿用此元件，不要在各頁重複建立 observer。
 
 ## SQL Server 連線狀態
 
@@ -116,8 +116,12 @@ Render 只連 Neon，不直接連私人 Parallels VM。資料匯入來源為官�
 
 ## 2026-10-11 全站文案精簡
 
-移除品牌旁「台灣公開健康資料」、首頁公開資料口號、導覽同步標籤、搜尋區段編號與重複欄位說明，以及藥品卡上的 `RANK` 裝飾。保留藥品使用排行這項真實功能、資料來源入口、授權條款、申報量限制、看診時段非即時營業提醒及健康提醒；未改動查詢、定位、地圖、分頁或資料 API。
+移除品牌旁「台灣公開健康資料」、首頁公開資料口號、導覽同步標籤、搜尋區段編號與重複欄位說明，以及藥品卡上的 `RANK` 裝飾。保留藥品使用排行這項真實功能、資料來源入口、授權條款、申報量限制與看診時段非即時營業提醒；未改動查詢、定位、地圖、分頁或資料 API。
 
 ## Responsive layout
 
 `globals.css` 使用流體容器、`clamp()` 與 `auto-fit` grid 讓首頁、搜尋結果、藥品卡片與頁尾依解析度調整；768–1120px 的頁首工具列收斂為圖示，手機與平板不會因固定按鈕寬度造成文字直排。地圖高度與藥局營業時間表也會隨 viewport 收縮。
+
+## 首頁健康提醒區塊
+
+首頁不再顯示獨立的健康提醒 reference block，也移除導向該區塊的手機導覽入口；全站頁尾保留醫療提醒文字。

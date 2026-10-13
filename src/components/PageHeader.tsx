@@ -1,16 +1,15 @@
 import Link from "next/link";
 import Image from "next/image";
-import { BookOpen, Database, House, Map as MapIcon, Pill, Search } from "lucide-react";
+import { Database, House, Map as MapIcon, Pill, Search } from "lucide-react";
 import ThemeToggle from "./ThemeToggle";
 import QuickSearch from "./QuickSearch";
 
 type PagePath = "/" | "/pharmacies" | "/medicines";
 
-const navigation: Array<{ href: PagePath | "/#health-guide"; label: string; icon: typeof House; mobileOnly?: boolean }> = [
+const navigation: Array<{ href: PagePath; label: string; icon: typeof House }> = [
   { href: "/", label: "首頁", icon: House },
   { href: "/pharmacies", label: "藥局地圖", icon: MapIcon },
   { href: "/medicines", label: "藥品目錄", icon: Pill },
-  { href: "/#health-guide", label: "健康手冊", icon: BookOpen, mobileOnly: true },
 ];
 
 export default function PageHeader({ currentPath }: { currentPath: PagePath }) {
@@ -25,8 +24,8 @@ export default function PageHeader({ currentPath }: { currentPath: PagePath }) {
           </Link>
         </div>
         <nav className="site-nav" aria-label="主要導覽">
-          {navigation.map(({ href, label, icon: Icon, mobileOnly }) => (
-            <Link key={href} className={mobileOnly ? "mobile-nav-only" : undefined} href={href} aria-current={currentPath === href ? "page" : undefined}>
+          {navigation.map(({ href, label, icon: Icon }) => (
+            <Link key={href} href={href} aria-current={currentPath === href ? "page" : undefined}>
               <Icon className="nav-icon" aria-hidden="true" />
               {label}
             </Link>
