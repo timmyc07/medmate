@@ -10,7 +10,7 @@
 
 首頁、藥局與藥品頁的站內導覽使用 Next.js `Link` 進行 client-side navigation。共用 `src/app/template.tsx` 透過 React `ViewTransition` 淡入路由內容；瀏覽器不支援 View Transitions API 時仍有一般 CSS 入場效果，使用者啟用 `prefers-reduced-motion` 時會縮短動畫。
 
-藥局與藥品頁的 `PageHeader` 共用 Warm Mint header 版型：桌面左側品牌、中央主要導覽、右側快速搜尋錨點與主題切換；窄螢幕將同一組導覽固定在底部，並預留 safe-area 空間。首頁的 `QuickSearch` 會以 query string 導向對應目錄。
+藥局與藥品頁的 `PageHeader` 共用 Warm Mint header 版型：品牌使用 `public/health-insurance-emblem.svg`，桌面左側品牌、中央主要導覽、右側快速搜尋與主題切換；窄螢幕將同一組導覽固定在底部並只顯示圖示，預留 safe-area 空間。`QuickSearch` 以頁首錨點開啟浮動視窗，單一輸入框依關鍵字導向藥局或藥品目錄，首頁不再顯示獨立搜尋區塊。
 
 主題切換首次載入時以範本指定的淺色 Warm Mint 為預設；只有使用者主動切換後才會在瀏覽器 `localStorage` 保存夜間模式偏好。
 
@@ -50,7 +50,7 @@ TGOS 憑證放在被忽略的 `.env.local`，範例變數名稱為 `TGOS_BATCH_A
 
 頁面操作圖示統一使用 `lucide-react` SVG；不要重新加入依賴字型 ligature 的 Material Symbols class，避免字型未載入時顯示成不可讀文字。藥品排行卡的 FDA 外觀圖使用 Next.js `Image`，`next.config.ts` 僅允許 `mcp.fda.gov.tw` 的 HTTPS 圖片，元件設定響應式 `sizes`、lazy loading 與 `unoptimized`，直接載入來源圖片；圖片載入失敗時顯示占位圖。藥品卡片只顯示中文品名。若新增圖片來源，必須同步檢查來源授權並加入明確的 `remotePatterns`。
 
-來源卡、搜尋卡、藥局/藥品結果卡、藥品排行卡與外觀快搜卡共用 `src/components/ScrollReveal.tsx`。元件以單一 `IntersectionObserver` 觀察卡片，進入 viewport 後套用淡入與上移效果；SSR、未支援 IntersectionObserver 或 `prefers-reduced-motion` 時保持內容可見。新增卡片時應沿用此元件，不要在各頁重複建立 observer。
+來源清單、搜尋視窗、藥局/藥品結果卡、藥品排行卡與外觀快搜卡共用 `src/components/ScrollReveal.tsx`。來源區塊採無卡片陰影的兩欄清單，授權與健康提醒採扁平 reference block；元件以單一 `IntersectionObserver` 觀察內容，進入 viewport 後套用淡入與上移效果；SSR、未支援 IntersectionObserver 或 `prefers-reduced-motion` 時保持內容可見。新增內容時應沿用此元件，不要在各頁重複建立 observer。
 
 ## SQL Server 連線狀態
 

@@ -254,10 +254,10 @@ export default function SearchPanel({
         <button
           className="search-button"
           type="submit"
+          aria-label={!enabled ? "資料尚未開放" : loading ? "查詢中…" : "搜尋"}
           disabled={!enabled || loading}
         >
           <Search className="action-icon" aria-hidden="true" />
-          <span>{!enabled ? "資料尚未開放" : loading ? "查詢中…" : "搜尋"}</span>
         </button>
       </form>
       {kind === "pharmacies" && (

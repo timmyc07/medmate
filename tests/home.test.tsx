@@ -13,13 +13,13 @@ describe("首頁", () => {
     expect(screen.getByRole("link", { name: /探索藥局/ })).toHaveAttribute("href", "/pharmacies");
     expect(screen.getByRole("link", { name: /查詢藥品/ })).toHaveAttribute("href", "/medicines");
     expect(screen.getByRole("link", { name: /藥品目錄/ })).toHaveAttribute("href", "/medicines");
-    expect(screen.getByRole("link", { name: /開始查詢/ })).toHaveAttribute("href", "/pharmacies");
+    expect(screen.queryByRole("heading", { name: "從一個關鍵字開始" })).not.toBeInTheDocument();
   });
 
   it("在共用版型底部顯示健保標誌與政府資料來源", () => {
     render(<RootLayout><HomePage /></RootLayout>);
 
-    expect(screen.getByRole("img", { name: "全民健康保險標誌" })).toHaveAttribute("src", "/health-insurance-emblem.svg");
+    expect(screen.getAllByRole("img", { name: "全民健康保險標誌" }).some((image) => image.getAttribute("src") === "/health-insurance-emblem.svg")).toBe(true);
     expect(screen.getByRole("heading", { name: "資料來源與授權" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "健保特約醫事機構－藥局" })).toHaveAttribute("href", "https://data.gov.tw/dataset/39284");
     const footer = screen.getByRole("contentinfo");

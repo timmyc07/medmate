@@ -1,6 +1,8 @@
 import Link from "next/link";
+import Image from "next/image";
 import { BookOpen, Database, House, Map as MapIcon, Pill, Search } from "lucide-react";
 import ThemeToggle from "./ThemeToggle";
+import QuickSearch from "./QuickSearch";
 
 type PagePath = "/" | "/pharmacies" | "/medicines";
 
@@ -16,7 +18,7 @@ export default function PageHeader({ currentPath }: { currentPath: PagePath }) {
       <header className="site-header">
         <div className="brand-cluster">
           <Link className="brand" href="/" aria-label="MediMate 首頁">
-            <span className="brand-mark" aria-hidden="true"><Pill /></span>
+            <span className="brand-mark"><Image src="/health-insurance-emblem.svg" alt="全民健康保險標誌" width={42} height={42} priority /></span>
             <span className="brand-copy">
               <span className="brand-name-row"><span>MediMate</span></span>
             </span>
@@ -32,12 +34,13 @@ export default function PageHeader({ currentPath }: { currentPath: PagePath }) {
           <Link className="desktop-nav-only" href="/#data-status"><Database className="nav-icon" aria-hidden="true" />資料來源</Link>
         </nav>
         <div className="header-tools">
-          <Link className="header-quick-link" href="/#quick-search" aria-label="前往快速搜尋">
+          <Link className="header-quick-link" href="#quick-search" aria-label="前往快速搜尋">
             <Search className="icon" aria-hidden="true" />
             <span className="header-quick-label">快速搜尋</span>
           </Link>
           <ThemeToggle />
         </div>
+        <QuickSearch />
       </header>
   );
 }

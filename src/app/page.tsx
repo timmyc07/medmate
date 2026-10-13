@@ -1,6 +1,6 @@
 import Link from "next/link";
+import { BarChart3, Database, FileText, Image as ImageIcon, MapPinned, Pill } from "lucide-react";
 import PageHeader from "../components/PageHeader";
-import QuickSearch from "../components/QuickSearch";
 import ScrollReveal from "../components/ScrollReveal";
 
 const sources = [
@@ -10,6 +10,7 @@ const sources = [
     title: "健保特約醫事機構－藥局",
     description: "藥局名稱、地址、電話、定位與政府登記看診時段。",
     href: "https://data.gov.tw/dataset/39284",
+    icon: MapPinned,
   },
   {
     type: "查詢核心",
@@ -17,6 +18,7 @@ const sources = [
     title: "全部藥品許可證資料",
     description: "有效藥品許可證、品名、適應症與有效期限。",
     href: "https://data.gov.tw/dataset/9122",
+    icon: Pill,
   },
   {
     type: "延伸參考",
@@ -24,6 +26,7 @@ const sources = [
     title: "健保藥品使用量統計",
     description: "排行依含包裹支付的醫令量合計，不代表病人數或實際服藥量。",
     href: "https://data.nhi.gov.tw/",
+    icon: BarChart3,
   },
   {
     type: "延伸參考",
@@ -31,6 +34,7 @@ const sources = [
     title: "FDA 藥品外觀資料",
     description: "僅在完整許可證字號精確配對時顯示官方外觀圖片。",
     href: "https://mcp.fda.gov.tw/",
+    icon: ImageIcon,
   },
   {
     type: "延伸參考",
@@ -38,6 +42,7 @@ const sources = [
     title: "內政部行政區資料",
     description: "供縣市與行政區選單使用，不代表地址已完成座標轉換。",
     href: "https://www.ris.gov.tw/rs-opendata/api/v1/datastore/ODRP019/114",
+    icon: Database,
   },
   {
     type: "授權說明",
@@ -45,6 +50,7 @@ const sources = [
     title: "政府資料開放授權條款第 1 版",
     description: "資料欄位、發布時間與使用條件仍以原始機關公告為準。",
     href: "https://data.gov.tw/license",
+    icon: FileText,
   },
 ];
 
@@ -71,8 +77,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      <QuickSearch />
-
       <section className="home-source-band" id="data-status" aria-labelledby="data-status-title">
         <div className="home-source-inner">
           <div className="source-heading">
@@ -85,13 +89,16 @@ export default function HomePage() {
           <div className="source-grid">
             {sources.map((source) => (
               <ScrollReveal as="article" className="source-card" key={source.title}>
-                <div>
+                <div className="source-card-main">
+                  <source.icon className="source-icon" aria-hidden="true" />
+                  <div>
                   <div className="source-card-top">
                     <span className="source-type">{source.type}</span>
                     <span className="source-cadence">{source.cadence}</span>
                   </div>
                   <h3>{source.title}</h3>
                   <p>{source.description}</p>
+                  </div>
                 </div>
                 <Link className="source-card-link" href={source.href} target="_blank" rel="noreferrer">
                   查看原始入口 <span aria-hidden="true">↗</span>
@@ -105,9 +112,6 @@ export default function HomePage() {
               <a href="https://data.gov.tw/license" target="_blank" rel="noreferrer">政府資料開放授權條款第 1 版</a>
               使用。本網站不提供診斷或治療建議。
             </p>
-            <Link className="button button--secondary" href="/pharmacies">
-              開始查詢 <span aria-hidden="true">↗</span>
-            </Link>
           </ScrollReveal>
           <ScrollReveal className="health-note" id="health-guide">
             <p>
