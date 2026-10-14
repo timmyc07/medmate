@@ -328,11 +328,11 @@ export default function SearchPanel({
                 pharmacies={mapPharmacies ?? result.items as Pharmacy[]}
                 userLocation={location}
               />
-              <div className="results-list results-list--pharmacies">
+              <section className="results-list results-list--pharmacies" aria-label="藥局資訊清單">
                 {(result.items as Pharmacy[]).map((item) => (
                   <PharmacyResult key={item.id} item={item} />
                 ))}
-              </div>
+              </section>
             </>
           )}
           {result.items.length > 0 && (

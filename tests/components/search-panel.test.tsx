@@ -54,6 +54,23 @@ describe("搜尋面板", () => {
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
   });
 
+  it("提供具語意標籤的藥局資訊清單捲動區", async () => {
+    vi.spyOn(globalThis, "fetch")
+      .mockResolvedValueOnce(new Response(JSON.stringify({
+        items: [{ id: "p1", name: "安心藥局", address: "臺北市中正區", phone: null, city: "臺北市", status: null, openingHours: null, sourceUpdatedAt: null, latitude: 25, longitude: 121 }],
+        page: 1,
+        pageSize: 20,
+        total: 1,
+      }), { status: 200 }))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ enabled: false }), { status: 200 }));
+    render(<SearchPanel kind="pharmacies" enabled />);
+
+    fireEvent.click(screen.getByRole("button", { name: "搜尋" }));
+
+    const list = await screen.findByRole("region", { name: "藥局資訊清單" });
+    expect(list).toContainElement(screen.getByRole("heading", { name: "安心藥局" }));
+  });
+
   it("選擇縣市後只顯示對應行政區，換縣市會清除區域", () => {
     render(<SearchPanel kind="pharmacies" enabled />);
     const city = screen.getByRole("combobox", { name: "縣市" });
