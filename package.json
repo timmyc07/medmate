@@ -13,7 +13,8 @@
     "tgos:export": "node scripts/tgos-pharmacy-coordinates.mjs export",
     "tgos:import": "node scripts/tgos-pharmacy-coordinates.mjs import",
     "start": "next start --hostname 0.0.0.0",
-    "db:import-medicines": "node scripts/import-medicine-usage.mjs"
+    "db:import-medicines": "node scripts/import-medicine-usage.mjs",
+    "db:import-medicine-information": "node scripts/import-medicine-information.mjs"
   },
   "license": "UNLICENSED",
   "type": "module",

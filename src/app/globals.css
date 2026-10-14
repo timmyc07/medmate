@@ -336,6 +336,17 @@ svg { display: block; }
 .appearance-source-note { margin: 12px 0 0; border-radius: 15px; padding: 12px 15px; color: var(--ink-soft); background: var(--surface-soft); font-size: 11px; line-height: 1.65; }
 .result-row--medicine { min-height: 136px; padding: 17px; }
 .result-main .indications { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 3; }
+.medicine-details-toggle { display: inline-flex; min-height: 36px; align-items: center; margin-top: 12px; border: 0; border-top: 1px solid var(--line); padding: 8px 0 0; color: var(--forest); background: transparent; font-size: 11px; font-weight: 800; cursor: pointer; }
+.medicine-details-toggle:hover { text-decoration: underline; text-underline-offset: 3px; }
+.medicine-official-details { display: grid; gap: 12px; margin-top: 10px; border-top: 1px solid var(--line); padding-top: 12px; color: var(--ink-soft); font-size: 11px; line-height: 1.65; }
+.medicine-official-details section { min-width: 0; }
+.medicine-official-details h4 { margin: 0 0 4px; color: var(--forest); font-size: 11px; }
+.medicine-official-details p { margin: 3px 0; overflow-wrap: anywhere; }
+.medicine-official-details ul { margin: 3px 0; padding-left: 16px; }
+.medicine-official-details li { overflow-wrap: anywhere; }
+.medicine-official-details article { border-top: 1px solid var(--line); padding-top: 6px; }
+.medicine-official-details a { color: var(--forest); text-decoration: underline; text-underline-offset: 2px; }
+.medicine-official-details--catalog { margin-top: 12px; }
 
 .site-footer { border-top: 1px solid var(--line); padding: 16px max(clamp(16px, 3vw, 32px), calc((100vw - 1280px) / 2)) 24px; background: var(--surface-low); }
 .site-footer-inner { display: grid; grid-template-columns: 1.15fr 1fr 1fr; gap: 38px; max-width: 1280px; margin: auto; }

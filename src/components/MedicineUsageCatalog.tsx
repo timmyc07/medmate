@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
 import type { MedicineUsagePage } from "../types/catalog";
 import ScrollReveal from "./ScrollReveal";
 
@@ -9,9 +8,6 @@ const PAGE_SIZE = 50;
 
 export default function MedicineUsageCatalog() {
   const [page, setPage] = useState<MedicineUsagePage | null>(null);
-  const [failedImageUrls, setFailedImageUrls] = useState<Set<string>>(
-    () => new Set(),
-  );
   const [pageNumber, setPageNumber] = useState(1);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
@@ -61,6 +57,9 @@ export default function MedicineUsageCatalog() {
           月｜排序依含包裹支付的醫令量合計，屬彙總申報量，不代表病人數或實際服藥量。
         </p>
       )}
+      <p className="usage-source-note">
+        排行資料的健保藥品代碼尚無法與 FDA 完整許可證字號精確對照，因此本頁不顯示推測的藥證、外觀圖或官方用藥資料；請用上方藥品查詢依完整許可證字號查閱。
+      </p>
       {loading && (
         <p className="state-message" role="status">
           正在載入藥品使用量資料…
@@ -83,55 +82,13 @@ export default function MedicineUsageCatalog() {
             </p>
           ) : (
             <div className="medicine-grid">
-              {page.items.map((item) => (
-                <ScrollReveal as="article" className="medicine-usage-card" key={item.drugCode}>
-                  <div className="medicine-usage-image">
-                    {item.appearanceImageUrl &&
-                    !failedImageUrls.has(item.appearanceImageUrl) ? (
-                      <Image
-                        src={item.appearanceImageUrl}
-                        alt={`${item.name}藥品外觀`}
-                        fill
-                        sizes="(max-width: 680px) 50vw, (max-width: 1100px) 33vw, 360px"
-                        loading="lazy"
-                        quality={55}
-                        onError={() => {
-                          const imageUrl = item.appearanceImageUrl;
-                          if (imageUrl) {
-                            setFailedImageUrls((previous) =>
-                              new Set(previous).add(imageUrl),
-                            );
-                          }
-                        }}
-                        style={{ objectFit: "contain" }}
-                      />
-                    ) : (
-                      <div
-                        className="medicine-image-placeholder"
-                        role="img"
-                        aria-label="未提供此藥品外觀圖片"
-                      >
-                        <span aria-hidden="true">＋</span>
-                        <small>外觀圖未提供</small>
-                      </div>
-                    )}
-                  </div>
+              {page.items.map((item) => {
+                return <ScrollReveal as="article" className="medicine-usage-card" key={item.drugCode}>
                   <div className="medicine-usage-copy">
                     <h3>{item.name}</h3>
                     <p>健保藥品代碼：{item.drugCode}</p>
                     {item.ingredient && <p>成分：{item.ingredient}</p>}
                     {item.dosageForm && <p>劑型：{item.dosageForm}</p>}
-                    {item.licenseNumber && (
-                      <p>許可證字號：{item.licenseNumber}</p>
-                    )}
-                    {item.appearanceShape && (
-                      <p>
-                        外觀：
-                        {[item.appearanceColor, item.appearanceShape]
-                          .filter(Boolean)
-                          .join("・")}
-                      </p>
-                    )}
                     <div className="medicine-usage-quantity">
                       <strong>
                         {item.claimQuantity.toLocaleString("zh-TW", {
@@ -142,7 +99,7 @@ export default function MedicineUsageCatalog() {
                     </div>
                   </div>
                 </ScrollReveal>
-              ))}
+              })}
             </div>
           )}
           {totalPages > 1 && (

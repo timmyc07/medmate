@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import type { Medicine, Pharmacy } from "../types/catalog";
 import { getCurrentPharmacyHoursStatus, parsePharmacyWeeklySchedule } from "../lib/pharmacy-hours";
 import ScrollReveal from "./ScrollReveal";
@@ -80,6 +83,7 @@ export function PharmacyResult({ item }: { item: Pharmacy }) {
 }
 
 export function MedicineResult({ item }: { item: Medicine }) {
+  const [detailsOpen, setDetailsOpen] = useState(false);
   return (
     <ScrollReveal as="article" className="result-row result-row--medicine">
       <div className="result-main">
@@ -95,6 +99,37 @@ export function MedicineResult({ item }: { item: Medicine }) {
               .filter(Boolean)
               .join("・")}
           </span>
+        )}
+        <button className="medicine-details-toggle" type="button" onClick={() => setDetailsOpen((open) => !open)} aria-expanded={detailsOpen}>
+          {detailsOpen ? "收合官方用藥與安全資料" : "查看官方用藥與安全資料"}
+        </button>
+        {detailsOpen && (
+          <div className="medicine-official-details">
+            <section>
+              <h4>官方用法用量</h4>
+              <p>{item.usageDosage || "官方資料未提供此藥品的用法用量。"}</p>
+            </section>
+            <section>
+              <h4>官方處方成分</h4>
+              {item.ingredients.length ? <ul>{item.ingredients.map((ingredient) => <li key={JSON.stringify(ingredient)}>
+                {[ingredient.prescriptionLabel, ingredient.ingredientName, ingredient.contentDescription || [ingredient.contentValue, ingredient.contentUnit].filter(Boolean).join(" ")].filter(Boolean).join("｜")}
+              </li>)}</ul> : <p>官方資料未提供此藥品的處方成分。</p>}
+            </section>
+            <section>
+              <h4>精確許可證安全公告</h4>
+              {item.safetyCommunications.length ? item.safetyCommunications.map((communication) => <article key={`${communication.publicationDate}-${communication.sourceUrl}`}>
+                <p><strong>{communication.publicationDate}</strong>{communication.reason ? `｜${communication.reason}` : ""}</p>
+                {communication.scopeText && <p>公告涵蓋範圍：{communication.scopeText}</p>}
+                {communication.indications && <p>公告適應症：{communication.indications}</p>}
+                {communication.mechanism && <p>公告作用機轉：{communication.mechanism}</p>}
+                {communication.safetyAnalysis && <p>{communication.safetyAnalysis}</p>}
+                {communication.tfdaCommunication && <p>{communication.tfdaCommunication}</p>}
+                <a href={communication.sourceUrl} target="_blank" rel="noreferrer">TFDA 公告來源</a>
+              </article>) : <p>目前沒有可用完整許可證字號精確配對的安全公告。</p>}
+              <p>副作用、禁忌與交互作用資料未由目前來源提供；請洽藥師或醫療人員。</p>
+              <p>安全公告來源目前涵蓋 2014-01-21 至 2022-12-16；未列入公告不代表沒有風險。</p>
+            </section>
+          </div>
         )}
       </div>
     </ScrollReveal>

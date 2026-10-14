@@ -30,7 +30,19 @@
 
 ### `medicines` — FDA 藥品許可證
 
-`license_number` text · `cancellation_status` text · `cancellation_date` date · `cancellation_reason` text · `valid_until` date · `name` text · `english_name` text · `indications` text · `dosage_form` text · `applicant_name` text · `source_updated_at` timestamptz
+`license_number` text · `cancellation_status` text · `cancellation_date` date · `cancellation_reason` text · `valid_until` date · `name` text · `english_name` text · `indications` text · `dosage_form` text · `applicant_name` text · `usage_dosage` text · `source_updated_at` timestamptz
+
+### `medicine_ingredients` — FDA 藥品處方成分
+
+`license_number` text · `component_index` integer · `prescription_label` text · `ingredient_name` text · `ingredient_code` text · `content_description` text · `content_value` text · `content_unit` text · `source_updated_at` timestamptz
+
+### `medicine_safety_communications` — FDA 安全風險溝通公告
+
+`message_id` text · `publication_date` date · `ingredient` text · `scope_text` text · `indications` text · `mechanism` text · `reason` text · `safety_analysis` text · `tfda_communication` text · `link_method` text · `source_url` text · `retrieved_at` timestamptz · `source_updated_at` timestamptz
+
+### `medicine_safety_license_links` — 安全公告與許可證精確關聯
+
+`message_id` text · `license_number` text · `link_method` text · `evidence` text
 
 ### `nhi_medicine_catalog` — 健保藥品目錄
 
@@ -50,5 +62,6 @@
 - `db/migrations/002_medicine_usage.sql`
 - `db/migrations/003_pharmacy_opening_hours.sql`
 - `db/migrations/004_pharmacy_coordinate_candidates.sql`
+- `db/migrations/005_medicine_information.sql`
 
 官方文件：[PostgreSQL 18 — Table Basics](https://www.postgresql.org/docs/current/ddl-basics.html)。

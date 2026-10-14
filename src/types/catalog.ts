@@ -20,9 +20,39 @@ export interface Medicine {
   licenseNumber: string;
   name: string;
   indications: string | null;
+  usageDosage: string | null;
+  ingredients: MedicineIngredient[];
+  safetyCommunications: MedicineSafetyCommunication[];
   licenseStatus: string | null;
   validUntil: string | null;
   sourceUpdatedAt: string | null;
+}
+
+export interface MedicineIngredient {
+  prescriptionLabel: string;
+  ingredientName: string;
+  ingredientCode: string;
+  contentDescription: string;
+  contentValue: string;
+  contentUnit: string;
+}
+
+export interface MedicineSafetyCommunication {
+  publicationDate: string;
+  ingredient: string;
+  scopeText: string;
+  indications: string;
+  mechanism: string;
+  reason: string;
+  safetyAnalysis: string;
+  tfdaCommunication: string;
+  sourceUrl: string;
+}
+
+export interface MedicineOfficialInformation {
+  usageDosage: string | null;
+  ingredients: MedicineIngredient[];
+  safetyCommunications: MedicineSafetyCommunication[];
 }
 
 export interface MedicineUsageItem {
@@ -33,10 +63,6 @@ export interface MedicineUsageItem {
   ingredient: string;
   dosageForm: string;
   claimQuantity: number;
-  licenseNumber: string | null;
-  appearanceImageUrl: string | null;
-  appearanceShape: string | null;
-  appearanceColor: string | null;
 }
 
 export interface MedicineUsagePage {

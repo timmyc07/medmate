@@ -463,8 +463,9 @@ const SOURCES = {
       "劑型",
       "申請商名稱",
       "異動日期",
+      "用法用量",
     ],
-    insert: `INSERT INTO medicines (license_number,cancellation_status,cancellation_date,cancellation_reason,valid_until,name,english_name,indications,dosage_form,applicant_name,source_updated_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) ON CONFLICT (license_number) DO UPDATE SET cancellation_status=excluded.cancellation_status,cancellation_date=excluded.cancellation_date,cancellation_reason=excluded.cancellation_reason,valid_until=excluded.valid_until,name=excluded.name,english_name=excluded.english_name,indications=excluded.indications,dosage_form=excluded.dosage_form,applicant_name=excluded.applicant_name,source_updated_at=excluded.source_updated_at`,
+    insert: `INSERT INTO medicines (license_number,cancellation_status,cancellation_date,cancellation_reason,valid_until,name,english_name,indications,dosage_form,applicant_name,source_updated_at,usage_dosage) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) ON CONFLICT (license_number) DO UPDATE SET cancellation_status=excluded.cancellation_status,cancellation_date=excluded.cancellation_date,cancellation_reason=excluded.cancellation_reason,valid_until=excluded.valid_until,name=excluded.name,english_name=excluded.english_name,indications=excluded.indications,dosage_form=excluded.dosage_form,applicant_name=excluded.applicant_name,source_updated_at=excluded.source_updated_at,usage_dosage=excluded.usage_dosage`,
     values: (r, at) => [
       r.許可證字號,
       r.註銷狀態,
@@ -477,6 +478,7 @@ const SOURCES = {
       r.劑型,
       r.申請商名稱,
       at,
+      r.用法用量,
     ],
   },
 };

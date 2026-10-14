@@ -37,19 +37,12 @@ export async function getMedicineUsagePage(
     ingredient: string;
     dosage_form: string;
     claim_quantity: string;
-    license_number: string | null;
-    appearance_image_url: string | null;
-    appearance_shape: string | null;
-    appearance_color: string | null;
   }>(
     `SELECT ROW_NUMBER() OVER (ORDER BY usage.package_claim_quantity DESC, usage.drug_code ASC)::text AS rank,
       catalog.drug_code, catalog.name, catalog.english_name, catalog.ingredient, catalog.dosage_form,
-      usage.package_claim_quantity::text AS claim_quantity, medicine.license_number, appearance.image_url AS appearance_image_url,
-      appearance.shape AS appearance_shape, appearance.color AS appearance_color
+      usage.package_claim_quantity::text AS claim_quantity
      FROM medicine_usage AS usage
      JOIN nhi_medicine_catalog AS catalog ON catalog.drug_code = usage.drug_code
-     LEFT JOIN medicines AS medicine ON medicine.license_number = catalog.fda_license_id
-     LEFT JOIN medicine_appearances AS appearance ON appearance.license_number = medicine.license_number
      WHERE usage.fee_year = $1
      ORDER BY usage.package_claim_quantity DESC, usage.drug_code ASC
      LIMIT $2 OFFSET $3`,
@@ -63,10 +56,6 @@ export async function getMedicineUsagePage(
     ingredient: row.ingredient,
     dosageForm: row.dosage_form,
     claimQuantity: Number(row.claim_quantity),
-    licenseNumber: row.license_number,
-    appearanceImageUrl: row.appearance_image_url,
-    appearanceShape: row.appearance_shape,
-    appearanceColor: row.appearance_color,
   }));
   return {
     items,

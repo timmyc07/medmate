@@ -20,6 +20,9 @@ describe("Neon 公開資料查詢", () => {
             license_number: "藥字1",
             name: "藥品甲",
             indications: null,
+            usage_dosage: "每日依醫師指示使用",
+            ingredients: [{ prescriptionLabel: "每錠", ingredientName: "成分甲", ingredientCode: "A", contentDescription: "10 mg", contentValue: "10", contentUnit: "mg" }],
+            safety_communications: [{ publicationDate: "2026-01-02", ingredient: "成分甲", scopeText: "藥品（衛部藥製字第000001號）", indications: "", mechanism: "", reason: "安全資訊", safetyAnalysis: "公告原文", tfdaCommunication: "", sourceUrl: "https://data.fda.gov.tw/data/opendata/export/53/csv" }],
             license_status: "有效",
             valid_until: "2099-01-01",
             source_updated_at: "2026-10-08",
@@ -42,6 +45,9 @@ describe("Neon 公開資料查詢", () => {
           licenseStatus: "有效",
           validUntil: "2099-01-01",
           sourceUpdatedAt: "2026-10-08",
+          usageDosage: "每日依醫師指示使用",
+          ingredients: [{ prescriptionLabel: "每錠", ingredientName: "成分甲", ingredientCode: "A", contentDescription: "10 mg", contentValue: "10", contentUnit: "mg" }],
+          safetyCommunications: [{ publicationDate: "2026-01-02", ingredient: "成分甲", scopeText: "藥品（衛部藥製字第000001號）", indications: "", mechanism: "", reason: "安全資訊", safetyAnalysis: "公告原文", tfdaCommunication: "", sourceUrl: "https://data.fda.gov.tw/data/opendata/export/53/csv" }],
         },
       ],
       page: 2,
@@ -49,6 +55,8 @@ describe("Neon 公開資料查詢", () => {
       total: 3,
     });
     expect(query.mock.calls[0][0]).toContain("cancellation_status = ''");
+    expect(query.mock.calls[1][0]).toContain("medicine_safety_license_links");
+    expect(query.mock.calls[1][0]).toContain("medicine_ingredients");
     expect(query.mock.calls[0][0]).toContain(
       "valid_until >= (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Taipei')::date",
     );
@@ -56,7 +64,7 @@ describe("Neon 公開資料查詢", () => {
     expect(query.mock.calls[1][1]).toEqual(["%藥!%!_\\%", 10, 10]);
   });
 
-  it("依最新年度含包裹醫令量排名分頁並帶出外觀圖", async () => {
+  it("依最新年度含包裹醫令量排名分頁且不推測藥證關聯", async () => {
     query
       .mockResolvedValueOnce({
         rows: [
@@ -78,9 +86,6 @@ describe("Neon 公開資料查詢", () => {
             ingredient: "成分甲",
             dosage_form: "錠劑",
             claim_quantity: "123.5",
-            license_number: "衛部藥製字第1號",
-            appearance_image_url: "https://mcp.fda.gov.tw/shape.jpg",
-            source_updated_at: "2026-10-09",
           },
         ],
       });
@@ -99,13 +104,13 @@ describe("Neon 公開資料查詢", () => {
       rank: 51,
       drugCode: "A0001",
       claimQuantity: 123.5,
-      licenseNumber: "衛部藥製字第1號",
-      appearanceImageUrl: "https://mcp.fda.gov.tw/shape.jpg",
     });
     expect(query.mock.calls[0][0]).toContain("MAX(fee_year)");
     expect(query.mock.calls[1][0]).toContain(
       "ORDER BY usage.package_claim_quantity DESC, usage.drug_code ASC",
     );
+    expect(query.mock.calls[1][0]).not.toContain("fda_license_id");
+    expect(query.mock.calls[1][0]).not.toContain("medicine_appearances");
     expect(query.mock.calls[1][1]).toEqual([115, 50, 50]);
     expect(query.mock.calls[1][0]).not.toContain("LIKE '%'");
   });
