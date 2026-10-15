@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2400" height="1700" viewBox="0 0 2400 1700">
+  <title>MediMate 實體關聯圖 Chen notation</title>
+  <defs>
+    <style>
+      text{font-family:'Noto Sans TC','Microsoft JhengHei',sans-serif;fill:#111}
+      .title{font-size:46px;font-weight:700}.subtitle{font-size:22px;fill:#555}
+      .entity{fill:#fff;stroke:#111;stroke-width:4}.weak{fill:#fff;stroke:#111;stroke-width:4}
+      .attr{fill:#fff;stroke:#111;stroke-width:3}.key{font-weight:700;text-decoration:underline}
+      .rel{fill:#fff;stroke:#111;stroke-width:4}.line{stroke:#111;stroke-width:4;fill:none}
+      .logic{stroke:#555;stroke-width:3;stroke-dasharray:12 10;fill:none}
+      .label{font-size:24px}.small{font-size:19px;fill:#444}.card{font-size:20px;font-weight:700;fill:#173f38}
+    </style>
+  </defs>
+  <rect width="2400" height="1700" fill="#fff"/>
+  <text x="1200" y="72" text-anchor="middle" class="title">MediMate 資料庫實體關聯圖（Chen ERD）</text>
+  <text x="1200" y="110" text-anchor="middle" class="subtitle">矩形＝實體　橢圓＝屬性　菱形＝關聯　底線＝主鍵　實線＝正式外鍵　虛線＝邏輯 JOIN</text>
+
+  <!-- pharmacy domain -->
+  <rect x="55" y="150" width="1070" height="690" rx="24" fill="#f4faf8" stroke="#a9d3c6" stroke-width="3"/>
+  <text x="90" y="195" class="card">藥局資料域</text>
+  <rect x="180" y="390" width="260" height="75" class="entity"/><text x="310" y="437" text-anchor="middle" class="label">健保特約藥局</text>
+  <rect x="745" y="390" width="300" height="75" class="entity"/><text x="895" y="437" text-anchor="middle" class="label">候選座標</text>
+  <polygon points="610,375 690,427 610,479 530,427" class="rel"/><text x="610" y="435" text-anchor="middle" class="label">包含</text>
+  <path d="M440 427 H530 M690 427 H745" class="line"/><text x="470" y="410" class="label">1</text><text x="710" y="410" class="label">N</text>
+  <ellipse cx="310" cy="270" rx="145" ry="42" class="attr"/><text x="310" y="278" text-anchor="middle" class="key">institution_code</text><path d="M310 312 V390" class="line"/>
+  <ellipse cx="105" cy="325" rx="120" ry="40" class="attr"/><text x="105" y="333" text-anchor="middle" class="label">institution_name</text><path d="M180 390 L140 355" class="line"/>
+  <ellipse cx="510" cy="285" rx="110" ry="40" class="attr"/><text x="510" y="293" text-anchor="middle" class="label">address</text><path d="M440 390 L490 325" class="line"/>
+  <ellipse cx="535" cy="570" rx="100" ry="40" class="attr"/><text x="535" y="578" text-anchor="middle" class="label">phone</text><path d="M440 465 L500 545" class="line"/>
+  <ellipse cx="250" cy="590" rx="125" ry="40" class="attr"/><text x="250" y="598" text-anchor="middle" class="label">opening_hours</text><path d="M310 465 L270 550" class="line"/>
+  <ellipse cx="850" cy="285" rx="115" ry="40" class="attr"/><text x="850" y="293" text-anchor="middle" class="label">candidate_index</text><path d="M895 390 L865 325" class="line"/>
+  <ellipse cx="1050" cy="550" rx="105" ry="40" class="attr"/><text x="1050" y="558" text-anchor="middle" class="label">latitude</text><path d="M1000 465 L1030 510" class="line"/>
+  <ellipse cx="830" cy="610" rx="105" ry="40" class="attr"/><text x="830" y="618" text-anchor="middle" class="label">longitude</text><path d="M850 465 L840 570" class="line"/>
+
+  <!-- medicine core -->
+  <rect x="1175" y="150" width="1170" height="1390" rx="24" fill="#fbf8ff" stroke="#cbb8e7" stroke-width="3"/>
+  <text x="1210" y="195" class="card">藥品資料域</text>
+  <rect x="1390" y="300" width="300" height="75" class="entity"/><text x="1540" y="347" text-anchor="middle" class="label">藥品許可證</text>
+  <ellipse cx="1540" cy="225" rx="135" ry="42" class="attr"/><text x="1540" y="233" text-anchor="middle" class="key">license_number</text><path d="M1540 267 V300" class="line"/>
+  <ellipse cx="1330" cy="260" rx="90" ry="40" class="attr"/><text x="1330" y="268" text-anchor="middle" class="label">name</text><path d="M1405 300 L1370 282" class="line"/>
+  <ellipse cx="1765" cy="260" rx="105" ry="40" class="attr"/><text x="1765" y="268" text-anchor="middle" class="label">valid_until</text><path d="M1670 300 L1725 282" class="line"/>
+  <ellipse cx="1540" cy="475" rx="110" ry="40" class="attr"/><text x="1540" y="483" text-anchor="middle" class="label">usage_dosage</text><path d="M1540 375 V435" class="line"/>
+  <polygon points="1540,565 1630,620 1540,675 1450,620" class="rel"/><text x="1540" y="628" text-anchor="middle" class="label">具有</text>
+  <path d="M1540 515 V565" class="line"/><text x="1560" y="550" class="label">1</text>
+
+  <rect x="1300" y="750" width="310" height="75" class="entity"/><text x="1455" y="797" text-anchor="middle" class="label">處方成分</text>
+  <path d="M1450 675 V750" class="line"/><text x="1470" y="720" class="label">N</text>
+  <ellipse cx="1260" cy="910" rx="105" ry="40" class="attr"/><text x="1260" y="918" text-anchor="middle" class="key">component_index</text><path d="M1360 825 L1300 885" class="line"/>
+  <ellipse cx="1500" cy="920" rx="115" ry="40" class="attr"/><text x="1500" y="928" text-anchor="middle" class="label">ingredient_name</text><path d="M1455 825 V880" class="line"/>
+  <ellipse cx="1740" cy="910" rx="95" ry="40" class="attr"/><text x="1740" y="918" text-anchor="middle" class="label">content_value</text><path d="M1570 825 L1680 885" class="line"/>
+
+  <rect x="1840" y="750" width="350" height="75" class="entity"/><text x="2015" y="797" text-anchor="middle" class="label">安全公告</text>
+  <polygon points="1695,750 1775,805 1695,860 1615,805" class="rel"/><text x="1695" y="813" text-anchor="middle" class="label">發布</text>
+  <path d="M1610 620 H1695 V750 M1775 805 H1840" class="line"/><text x="1630" y="605" class="label">1</text><text x="1800" y="788" class="label">N</text>
+  <ellipse cx="2020" cy="680" rx="125" ry="40" class="attr"/><text x="2020" y="688" text-anchor="middle" class="key">message_id</text><path d="M2015 750 V720" class="line"/>
+  <ellipse cx="2240" cy="900" rx="110" ry="40" class="attr"/><text x="2240" y="908" text-anchor="middle" class="label">publication_date</text><path d="M2110 825 L2190 875" class="line"/>
+
+  <rect x="1770" y="1110" width="340" height="75" class="entity"/><text x="1940" y="1157" text-anchor="middle" class="label">藥品外觀</text>
+  <polygon points="1540,1030 1630,1085 1540,1140 1450,1085" class="rel"/><text x="1540" y="1093" text-anchor="middle" class="label">呈現</text>
+  <path d="M1540 825 V1030 M1630 1085 H1770" class="logic"/><text x="1560" y="1005" class="small">license_number（邏輯 JOIN）</text><text x="1650" y="1068" class="label">0..1</text>
+  <ellipse cx="1730" cy="1280" rx="90" ry="40" class="attr"/><text x="1730" y="1288" text-anchor="middle" class="label">shape</text><path d="M1810 1185 L1760 1245" class="line"/>
+  <ellipse cx="1970" cy="1280" rx="90" ry="40" class="attr"/><text x="1970" y="1288" text-anchor="middle" class="label">color</text><path d="M1940 1185 V1240" class="line"/>
+  <ellipse cx="2200" cy="1280" rx="100" ry="40" class="attr"/><text x="2200" y="1288" text-anchor="middle" class="label">image_url</text><path d="M2070 1185 L2160 1245" class="line"/>
+
+  <!-- usage catalog -->
+  <rect x="1210" y="1320" width="300" height="75" class="entity"/><text x="1360" y="1367" text-anchor="middle" class="label">健保藥品目錄</text>
+  <rect x="1670" y="1450" width="300" height="75" class="entity"/><text x="1820" y="1497" text-anchor="middle" class="label">藥品使用量</text>
+  <polygon points="1510,1370 1590,1420 1510,1470 1430,1420" class="rel"/><text x="1510" y="1428" text-anchor="middle" class="label">統計</text>
+  <path d="M1510 1395 H1430 M1590 1420 H1670 V1450" class="line"/><text x="1530" y="1385" class="label">1</text><text x="1610" y="1405" class="label">N</text>
+  <ellipse cx="1210" cy="1510" rx="100" ry="40" class="attr"/><text x="1210" y="1518" text-anchor="middle" class="key">drug_code</text><path d="M1300 1395 L1240 1470" class="line"/>
+  <ellipse cx="2050" cy="1570" rx="115" ry="40" class="attr"/><text x="2050" y="1578" text-anchor="middle" class="label">fee_year</text><path d="M1930 1525 L2010 1550" class="line"/>
+  <ellipse cx="1800" cy="1630" rx="150" ry="40" class="attr"/><text x="1800" y="1638" text-anchor="middle" class="label">package_claim_quantity</text><path d="M1820 1525 L1810 1590" class="line"/>
+  <path d="M1510 1320 V1370" class="logic"/><text x="1530" y="1315" class="small">fda_license_id → license_number（邏輯 JOIN）</text>
+
+  <!-- import entities -->
+  <rect x="90" y="1030" width="300" height="75" class="entity"/><text x="240" y="1077" text-anchor="middle" class="label">FDA 藥局登記</text>
+  <ellipse cx="240" cy="940" rx="120" ry="40" class="attr"/><text x="240" y="948" text-anchor="middle" class="label">institution_name</text><path d="M240 980 V1030" class="line"/>
+  <rect x="500" y="1030" width="300" height="75" class="entity"/><text x="650" y="1077" text-anchor="middle" class="label">來源匯入批次</text>
+  <ellipse cx="650" cy="940" rx="105" ry="40" class="attr"/><text x="650" y="948" text-anchor="middle" class="key">dataset_key</text><path d="M650 980 V1030" class="line"/>
+  <rect x="900" y="1030" width="330" height="75" class="entity"/><text x="1065" y="1077" text-anchor="middle" class="label">使用量匯入批次</text>
+  <ellipse cx="1065" cy="940" rx="100" ry="40" class="attr"/><text x="1065" y="948" text-anchor="middle" class="key">fee_year</text><path d="M1065 980 V1030" class="line"/>
+
+  <!-- legend -->
+  <rect x="55" y="1580" width="2290" height="82" rx="12" fill="#fafafa" stroke="#bbb" stroke-width="2"/>
+  <rect x="90" y="1602" width="100" height="38" class="entity"/><text x="210" y="1628" class="small">實體</text>
+  <ellipse cx="395" cy="1621" rx="60" ry="22" class="attr"/><text x="480" y="1628" class="small">屬性</text>
+  <polygon points="620,1600 655,1621 620,1642 585,1621" class="rel"/><text x="690" y="1628" class="small">關聯</text>
+  <path d="M820 1621 H980" class="line"/><text x="1000" y="1628" class="small">正式外鍵</text>
+  <path d="M1170 1621 H1330" class="logic"/><text x="1350" y="1628" class="small">邏輯 JOIN</text>
+  <text x="1590" y="1628" class="small">1：一對一端　N：一對多端　0..1：可選且最多一筆</text>
+</svg>

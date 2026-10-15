@@ -1,5 +1,13 @@
 # MediMate 實體關聯圖（ERD）
 
+## Chen 表示法圖檔
+
+依附件範例的 Chen ERD 符號製作：
+
+[開啟 Chen ERD 圖檔](./entity-relationship-diagram-chen.svg)
+
+圖中矩形代表實體、橢圓代表屬性、菱形代表關聯；主鍵以底線標示，正式外鍵以實線表示，程式邏輯 JOIN 以虛線表示。
+
 以下 ERD 依 `db/migrations/001_catalog.sql` 至 `005_medicine_information.sql` 繪製。
 
 - 實線關聯：資料庫 migration 明確定義的外鍵。
