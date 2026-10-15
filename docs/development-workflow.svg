@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="2200" viewBox="0 0 1600 2200" role="img" aria-labelledby="title desc">
+  <title id="title">MediMate 系統開發標準流程</title>
+  <desc id="desc">從需求確認到 Render 自動部署的國際標準軟體開發流程圖。</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f7fbfa"/><stop offset="1" stop-color="#eef5f3"/></linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#123c35" flood-opacity=".12"/></filter>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#4d746b"/></marker>
+    <style>
+      .title{font:700 42px 'Noto Sans TC','Microsoft JhengHei',sans-serif;fill:#123c35}
+      .subtitle{font:400 20px 'Noto Sans TC','Microsoft JhengHei',sans-serif;fill:#52716a}
+      .phase{font:700 20px 'Noto Sans TC','Microsoft JhengHei',sans-serif;fill:#fff;letter-spacing:1px}
+      .node{font:600 23px 'Noto Sans TC','Microsoft JhengHei',sans-serif;fill:#173f38}
+      .small{font:400 16px 'Noto Sans TC','Microsoft JhengHei',sans-serif;fill:#5b756f}
+      .flow{fill:none;stroke:#4d746b;stroke-width:5;stroke-linecap:round;marker-end:url(#arrow)}
+    </style>
+  </defs>
+  <rect width="1600" height="2200" fill="url(#bg)"/>
+  <rect x="70" y="55" width="1460" height="2090" rx="34" fill="#ffffff" stroke="#d7e8e3" stroke-width="2"/>
+  <text x="800" y="125" text-anchor="middle" class="title">MediMate 系統開發標準流程</text>
+  <text x="800" y="165" text-anchor="middle" class="subtitle">需求 → 設計 → 實作 → 驗證 → 發布（Software Development Lifecycle）</text>
+
+  <!-- phase bands -->
+  <rect x="150" y="220" width="1300" height="250" rx="22" fill="#e8f5f0"/>
+  <rect x="150" y="505" width="1300" height="390" rx="22" fill="#eef3fb"/>
+  <rect x="150" y="931" width="1300" height="390" rx="22" fill="#fff5df"/>
+  <rect x="150" y="1357" width="1300" height="390" rx="22" fill="#f3edfb"/>
+  <rect x="150" y="1783" width="1300" height="280" rx="22" fill="#e9f5ef"/>
+  <rect x="180" y="245" width="170" height="42" rx="21" fill="#217a67"/><text x="265" y="274" text-anchor="middle" class="phase">需求定義</text>
+  <rect x="180" y="530" width="170" height="42" rx="21" fill="#3d63a4"/><text x="265" y="559" text-anchor="middle" class="phase">分析與規劃</text>
+  <rect x="180" y="956" width="170" height="42" rx="21" fill="#b7791f"/><text x="265" y="985" text-anchor="middle" class="phase">設計與實作</text>
+  <rect x="180" y="1382" width="170" height="42" rx="21" fill="#7650a5"/><text x="265" y="1411" text-anchor="middle" class="phase">品質驗證</text>
+  <rect x="180" y="1808" width="170" height="42" rx="21" fill="#217a67"/><text x="265" y="1837" text-anchor="middle" class="phase">發布與維運</text>
+
+  <!-- flow nodes -->
+  <ellipse cx="800" cy="255" rx="190" ry="48" fill="#217a67" filter="url(#shadow)"/><text x="800" y="264" text-anchor="middle" class="phase">開始：需求確認</text>
+  <path d="M800 303 V345" class="flow"/>
+  <rect x="450" y="345" width="700" height="82" rx="18" fill="#fff" stroke="#9bcfc0" stroke-width="3" filter="url(#shadow)"/>
+  <text x="800" y="379" text-anchor="middle" class="node">閱讀 AGENTS.md、README 與既有文件</text><text x="800" y="405" text-anchor="middle" class="small">建立共同規範、限制與工作範圍</text>
+  <path d="M800 427 V505" class="flow"/>
+
+  <rect x="450" y="610" width="700" height="82" rx="18" fill="#fff" stroke="#a8bce1" stroke-width="3" filter="url(#shadow)"/>
+  <text x="800" y="644" text-anchor="middle" class="node">確認官方技術文件與 API 相容性</text><text x="800" y="670" text-anchor="middle" class="small">確認版本、限制與可行的技術方案</text>
+  <path d="M800 692 V770" class="flow"/>
+  <rect x="450" y="770" width="700" height="82" rx="18" fill="#fff" stroke="#a8bce1" stroke-width="3" filter="url(#shadow)"/>
+  <text x="800" y="804" text-anchor="middle" class="node">檢查現有程式碼與資料庫 schema</text><text x="800" y="830" text-anchor="middle" class="small">確認既有架構、相依關係與資料流</text>
+  <path d="M800 852 V931" class="flow"/>
+
+  <rect x="450" y="1036" width="700" height="82" rx="18" fill="#fff" stroke="#e4bd73" stroke-width="3" filter="url(#shadow)"/>
+  <text x="800" y="1070" text-anchor="middle" class="node">設計資料流與 database migration</text><text x="800" y="1096" text-anchor="middle" class="small">定義資料表、欄位、API 與回復策略</text>
+  <path d="M800 1118 V1196" class="flow"/>
+  <rect x="450" y="1196" width="700" height="82" rx="18" fill="#fff" stroke="#e4bd73" stroke-width="3" filter="url(#shadow)"/>
+  <text x="800" y="1230" text-anchor="middle" class="node">修改程式碼</text><text x="800" y="1256" text-anchor="middle" class="small">實作前端、API、資料存取與資料庫變更</text>
+  <path d="M800 1278 V1357" class="flow"/>
+
+  <rect x="450" y="1462" width="700" height="82" rx="18" fill="#fff" stroke="#bda8dc" stroke-width="3" filter="url(#shadow)"/>
+  <text x="800" y="1496" text-anchor="middle" class="node">補充必要測試</text><text x="800" y="1522" text-anchor="middle" class="small">涵蓋 API、元件、資料存取與錯誤情境</text>
+  <path d="M800 1544 V1622" class="flow"/>
+  <rect x="450" y="1622" width="700" height="82" rx="18" fill="#fff" stroke="#bda8dc" stroke-width="3" filter="url(#shadow)"/>
+  <text x="800" y="1656" text-anchor="middle" class="node">執行 lint、型別檢查、測試與 build</text><text x="800" y="1682" text-anchor="middle" class="small">通過品質閘門後才進入發布階段</text>
+  <path d="M800 1704 V1783" class="flow"/>
+
+  <rect x="450" y="1862" width="700" height="82" rx="18" fill="#fff" stroke="#9bcfc0" stroke-width="3" filter="url(#shadow)"/>
+  <text x="800" y="1896" text-anchor="middle" class="node">更新文件</text><text x="800" y="1922" text-anchor="middle" class="small">同步 schema、資料來源、維運與操作說明</text>
+  <path d="M800 1944 V2022" class="flow"/>
+  <rect x="450" y="2022" width="700" height="82" rx="18" fill="#fff" stroke="#9bcfc0" stroke-width="3" filter="url(#shadow)"/>
+  <text x="800" y="2056" text-anchor="middle" class="node">提交 Git commit 並推送 GitHub</text><text x="800" y="2082" text-anchor="middle" class="small">以版本紀錄保存可追溯的變更</text>
+  <path d="M1150 2063 H1300 V2140 H800" class="flow"/>
+  <ellipse cx="800" cy="2140" rx="250" ry="48" fill="#217a67" filter="url(#shadow)"/><text x="800" y="2149" text-anchor="middle" class="phase">Render 自動部署</text>
+
+  <text x="1420" y="2130" text-anchor="end" class="small">版本控制 → CI/CD → 線上健康檢查</text>
+</svg>
