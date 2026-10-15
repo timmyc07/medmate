@@ -17,6 +17,7 @@ describe("藥品卡片官方資訊", () => {
       licenseStatus: "有效",
       validUntil: "2099-01-01",
       sourceUpdatedAt: "2026-01-01",
+      appearance: null, price: null,
     }} />);
 
     fireEvent.click(screen.getByText("查看官方用藥與安全資料"));
@@ -34,6 +35,7 @@ describe("藥品卡片官方資訊", () => {
       id: "A2", licenseNumber: "A2", name: "沒有詳細資料的藥品", indications: null,
       usageDosage: null, ingredients: [], safetyCommunications: [],
       licenseStatus: "有效", validUntil: null, sourceUpdatedAt: null,
+      appearance: null, price: null,
     }} />);
 
     fireEvent.click(screen.getByText("查看官方用藥與安全資料"));

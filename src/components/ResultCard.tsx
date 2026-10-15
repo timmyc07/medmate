@@ -87,9 +87,23 @@ export function MedicineResult({ item }: { item: Medicine }) {
   return (
     <ScrollReveal as="article" className="result-row result-row--medicine">
       <div className="result-main">
-        <h3>{item.name}</h3>
-        <p>許可證字號：{item.licenseNumber}</p>
-        {item.indications && <p className="indications">{item.indications}</p>}
+        <div className="medicine-card-topline">
+          <div className="medicine-card-image" aria-label={`${item.name}外觀圖`} role="img">
+            {item.appearance?.imageUrl ? <img src={item.appearance.imageUrl} alt={`${item.name}外觀`} /> : <span aria-hidden="true">💊</span>}
+            {!item.appearance?.imageUrl && <small>外觀圖待補</small>}
+          </div>
+          <div className="medicine-card-heading">
+            <h3>{item.name}</h3>
+            <p className="medicine-card-price">{item.price ? `約 NT$${item.price.amount.toLocaleString("zh-TW")}（健保資料）` : "價格：目前查不到官方公開價格"}</p>
+          </div>
+        </div>
+        {item.indications ? (
+          <p className="indications"><strong>這個藥通常用來：</strong>{item.indications}</p>
+        ) : (
+          <p className="indications"><strong>用途：</strong>目前沒有找到簡單的用途說明，請問藥師。</p>
+        )}
+        <p className="medicine-card-license">許可證字號：{item.licenseNumber}</p>
+        {item.appearance && <p className="medicine-card-license">外觀：{[item.appearance.color, item.appearance.shape, item.appearance.imprint && `刻字 ${item.appearance.imprint}`].filter(Boolean).join("、") || "請以藥袋核對"}</p>}
         {(item.licenseStatus || item.validUntil) && (
           <span className="result-meta">
             {[
@@ -101,7 +115,8 @@ export function MedicineResult({ item }: { item: Medicine }) {
           </span>
         )}
         <button className="medicine-details-toggle" type="button" onClick={() => setDetailsOpen((open) => !open)} aria-expanded={detailsOpen}>
-          {detailsOpen ? "收合官方用藥與安全資料" : "查看官方用藥與安全資料"}
+          <span aria-hidden="true">{detailsOpen ? "先收起詳細資料" : "想看更多用法與安全提醒"}</span>
+          <span className="sr-only">查看官方用藥與安全資料</span>
         </button>
         {detailsOpen && (
           <div className="medicine-official-details">

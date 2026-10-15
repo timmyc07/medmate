@@ -26,6 +26,21 @@ export interface Medicine {
   licenseStatus: string | null;
   validUntil: string | null;
   sourceUpdatedAt: string | null;
+  appearance: MedicineAppearance | null;
+  price: MedicinePrice | null;
+}
+
+export interface MedicineAppearance {
+  shape: string;
+  color: string;
+  imprint: string;
+  imageUrl: string;
+}
+
+export interface MedicinePrice {
+  amount: number;
+  currency: string;
+  type: string;
 }
 
 export interface MedicineIngredient {

@@ -56,6 +56,14 @@
 
 `license_number` text · `shape` text · `color` text · `imprint` text · `image_url` text · `source_updated_at` timestamptz
 
+### `medicine_symptoms` — 可追溯的症狀搜尋詞
+
+`license_number` text · `symptom` text · `source_kind` text · `source_text` text · `source_url` text · `source_updated_at` timestamptz
+
+### `medicine_prices` — 精確配對的藥品價格
+
+`license_number` text nullable · `drug_code` text nullable · `price` numeric · `currency` text · `price_type` text · `source_url` text · `source_updated_at` timestamptz
+
 ## Schema 定義來源
 
 - `db/migrations/001_catalog.sql`

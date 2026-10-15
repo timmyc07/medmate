@@ -254,6 +254,7 @@ svg { display: block; }
 .search-form { display: grid; grid-template-columns: minmax(220px, 1.7fr) minmax(135px, .7fr) minmax(125px, .65fr) auto; gap: 9px; border: 1px solid var(--line); border-radius: 22px; padding: 14px; background: var(--surface); box-shadow: var(--shadow-soft); }
 .search-form:has(.city-field) { grid-template-columns: minmax(200px, 1.5fr) minmax(138px, .7fr) minmax(130px, .65fr) auto; }
 .search-form--medicines { grid-template-columns: minmax(0, 1fr) auto; }
+.search-friendly-hint { margin: -5px 0 12px; color: var(--muted); font-size: 12px; }
 .search-field, .city-field, .district-field { position: relative; display: flex; min-width: 0; align-items: center; }
 .search-field input, .city-field select, .district-field select { width: 100%; min-width: 0; min-height: 48px; border: 1px solid var(--line); border-radius: 999px; padding: 0 16px; color: var(--ink); background: var(--surface); font-size: 12px; }
 .search-field input { padding-left: 48px; }
@@ -335,6 +336,14 @@ svg { display: block; }
 .medicine-appearance-section { padding-bottom: 42px; }
 .appearance-source-note { margin: 12px 0 0; border-radius: 15px; padding: 12px 15px; color: var(--ink-soft); background: var(--surface-soft); font-size: 11px; line-height: 1.65; }
 .result-row--medicine { min-height: 136px; padding: 17px; }
+.medicine-card-topline { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+.medicine-card-image { display: grid; width: 68px; min-width: 68px; height: 68px; place-items: center; align-content: center; gap: 1px; border-radius: 16px; color: var(--forest); background: linear-gradient(140deg, var(--surface-low), var(--surface-soft)); }
+.medicine-card-image span { font-size: 27px; line-height: 1; }
+.medicine-card-image small { color: var(--muted); font-size: 8px; }
+.medicine-card-heading { min-width: 0; }
+.medicine-card-heading h3 { margin-bottom: 2px; }
+.medicine-card-price { margin: 0; color: var(--forest) !important; font-size: 11px !important; font-weight: 700; }
+.medicine-card-license { color: var(--muted) !important; font-size: 10px !important; }
 .result-main .indications { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 3; }
 .medicine-details-toggle { display: inline-flex; min-height: 36px; align-items: center; margin-top: 12px; border: 0; border-top: 1px solid var(--line); padding: 8px 0 0; color: var(--forest); background: transparent; font-size: 11px; font-weight: 800; cursor: pointer; }
 .medicine-details-toggle:hover { text-decoration: underline; text-underline-offset: 3px; }
@@ -512,6 +521,10 @@ svg { display: block; }
   .numbered-pagination button { min-width: 48px; min-height: 48px; padding-inline: 10px; }
   .usage-attribution { font-size: 9px; }
   .result-row--medicine { border-radius: 19px; padding: 14px; }
+  .search-friendly-hint { margin-top: -3px; font-size: 11px; }
+  .medicine-card-image { width: 58px; min-width: 58px; height: 58px; border-radius: 14px; }
+  .medicine-card-image span { font-size: 23px; }
+  .medicine-card-heading h3 { font-size: 14px; }
   .site-footer { padding: 26px 16px calc(99px + env(safe-area-inset-bottom)); }
   .site-footer-inner { grid-template-columns: 1fr; gap: 15px; }
   .site-footer-brand { font-size: 13px; }

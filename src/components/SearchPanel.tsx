@@ -181,8 +181,13 @@ export default function SearchPanel({
       aria-labelledby={`${kind}-title`}
     >
       <div className="section-heading">
-        <h2 id={`${kind}-title`}>{label}查詢</h2>
+        <h2 id={`${kind}-title`}>{kind === "medicines" ? "你哪裡不舒服？" : `${label}查詢`}</h2>
       </div>
+      {kind === "medicines" && (
+        <p className="search-friendly-hint">
+          輸入症狀或藥品名稱，例如「頭痛」、「鼻塞」、「普拿疼」。
+        </p>
+      )}
       {kind === "medicines" && showPillFeatureFinder && (
         <PillFeatureFinder onCompare={compareAppearance} />
       )}
@@ -197,7 +202,7 @@ export default function SearchPanel({
             placeholder={
               kind === "pharmacies"
                 ? "藥局名稱或地址"
-                : "輸入藥品名稱或許可證字號"
+                : "輸入症狀或藥品名稱"
             }
             maxLength={100}
             required={kind === "medicines"}

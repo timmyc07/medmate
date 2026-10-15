@@ -20,12 +20,13 @@ export default async function MedicinesPage({ searchParams }: PageProps) {
       </section>
       <section className="inner-hero">
         <h1>
-          藥品使用排行
+          找到適合你的藥品資訊
           <br />
-          <span>藥品資訊一覽</span>
+          <span>先從症狀開始查</span>
         </h1>
         <p>
-          依健保申報醫令量呈現藥品品項排名，搭配藥品外觀與許可資料，方便查閱。
+          輸入你現在的不舒服（例如頭痛、咳嗽、過敏），或直接輸入藥名，看看公開資料中這些藥通常用來處理什麼問題。
+          查到的內容僅供認識藥品，吃藥前請先問醫師或藥師。
         </p>
       </section>
       <SearchPanel

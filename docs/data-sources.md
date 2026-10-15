@@ -40,6 +40,8 @@ SHA-256 對應本機核對的官方檔案。36 與 43 來源是 ZIP 封裝，表
 
 ## 使用限制
 
+藥品頁目前以 TFDA 許可證與外觀資料提供症狀／用途及圖片。健保藥品目錄與使用量資料目前沒有已核實的藥證價格對照，因此卡片不填入推測金額；價格欄位僅保留給未來接上正式健保支付標準來源。搜尋症狀時只比對 TFDA 適應症與可追溯的 `medicine_symptoms` 詞彙，不代表診斷或保證療效。
+
 - 地址轉座標使用 Google Geocoding API 的即時結果，僅供使用者當次指定區域地圖呈現，不寫入資料庫或快取。依 [Google Geocoding API 政策](https://developers.google.com/maps/documentation/geocoding/policies)，未取得另行協議前不可儲存 Place ID 以外的地理編碼結果；地圖內容須使用 Google Map 並提供其標誌及歸屬資訊。
 
 - 查詢是一般公開資訊，不提供診斷或治療建議；用藥疑問請諮詢藥師或醫療人員。
