@@ -35,7 +35,7 @@
   <ellipse cx="800" cy="255" rx="190" ry="48" fill="#217a67" filter="url(#shadow)"/><text x="800" y="264" text-anchor="middle" class="phase">開始：需求確認</text>
   <path d="M800 303 V345" class="flow"/>
   <rect x="450" y="345" width="700" height="82" rx="18" fill="#fff" stroke="#9bcfc0" stroke-width="3" filter="url(#shadow)"/>
-  <text x="800" y="379" text-anchor="middle" class="node">閱讀 AGENTS.md、README 與既有文件</text><text x="800" y="405" text-anchor="middle" class="small">建立共同規範、限制與工作範圍</text>
+  <text x="800" y="379" text-anchor="middle" class="node">閱讀 README 與既有文件</text><text x="800" y="405" text-anchor="middle" class="small">建立共同規範、限制與工作範圍</text>
   <path d="M800 427 V505" class="flow"/>
 
   <rect x="450" y="610" width="700" height="82" rx="18" fill="#fff" stroke="#a8bce1" stroke-width="3" filter="url(#shadow)"/>
