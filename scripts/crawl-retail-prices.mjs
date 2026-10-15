@@ -32,8 +32,7 @@ async function main() {
   const now = new Date(); const rows = [];
   const pool = !dryRun ? new Pool({ connectionString, max: 1 }) : null;
   const client = pool ? await pool.connect() : null;
-  if (client) await client.query("BEGIN");
-  if (client) for (const source of SOURCES) await client.query("INSERT INTO medicine_price_sources (source_id,name,source_kind,base_url,terms_url,robots_checked_at,source_updated_at) VALUES ($1,$2,'ecommerce',$3,$4,$5,$5) ON CONFLICT (source_id) DO UPDATE SET source_updated_at=excluded.source_updated_at", [source.id, source.name, source.base, `${source.base}/robots.txt`, now]);
+  const nextStates = [];
   for (const source of SOURCES) {
     const index = await get(source.sitemap); const maps = xmlUrls(index).filter((url) => /sitemap/i.test(url));
     const state = client ? (await client.query("SELECT sitemap_index, product_offset FROM retail_crawl_state WHERE source_id=$1", [source.id])).rows[0] ?? { sitemap_index: 0, product_offset: 0 } : { sitemap_index: 0, product_offset: 0 };
@@ -47,14 +46,17 @@ async function main() {
         try { const parsed = htmlPrice(await get(productUrl), productUrl); if (parsed) rows.push({ source, ...parsed }); } catch (error) { console.warn(`略過商品：${error.message}`); }
         if (rows.length >= maxProducts) break;
       }
-      if (client) await client.query("INSERT INTO retail_crawl_state(source_id,sitemap_index,product_offset,updated_at) VALUES ($1,$2,$3,$4) ON CONFLICT (source_id) DO UPDATE SET sitemap_index=excluded.sitemap_index,product_offset=excluded.product_offset,updated_at=excluded.updated_at", [source.id, mapIndex, Math.min(start + maxProducts, products.length), now]);
+      nextStates.push({ sourceId: source.id, sitemapIndex: mapIndex, productOffset: Math.min(start + maxProducts, products.length) });
       if (rows.length >= maxProducts) break;
     }
     if (rows.length >= maxProducts) break;
   }
   if (dryRun) { console.log(JSON.stringify({ observations: rows.length, sources: SOURCES.map((source) => ({ name: source.name, count: rows.filter((row) => row.source.id === source.id).length })) })); return; }
   try {
+    await client.query("BEGIN");
+    for (const source of SOURCES) await client.query("INSERT INTO medicine_price_sources (source_id,name,source_kind,base_url,terms_url,robots_checked_at,source_updated_at) VALUES ($1,$2,'ecommerce',$3,$4,$5,$5) ON CONFLICT (source_id) DO UPDATE SET source_updated_at=excluded.source_updated_at", [source.id, source.name, source.base, `${source.base}/robots.txt`, now]);
     for (const row of rows) await client.query("INSERT INTO medicine_price_observations (observation_id,source_id,external_product_id,product_name,listed_price,sale_price,captured_at,captured_date,product_url,raw_payload_hash,parser_version) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,'91app-v1') ON CONFLICT DO NOTHING", [randomUUID(), row.source.id, row.id, row.name, row.listedPrice, row.salePrice, now, now.toISOString().slice(0, 10), row.url, sha256(JSON.stringify(row))]);
+    for (const state of nextStates) await client.query("INSERT INTO retail_crawl_state(source_id,sitemap_index,product_offset,updated_at) VALUES ($1,$2,$3,$4) ON CONFLICT (source_id) DO UPDATE SET sitemap_index=excluded.sitemap_index,product_offset=excluded.product_offset,updated_at=excluded.updated_at", [state.sourceId, state.sitemapIndex, state.productOffset, now]);
     await client.query("COMMIT"); console.log(JSON.stringify({ observations: rows.length }));
   } catch (error) { if (client) await client.query("ROLLBACK"); throw error; } finally { if (client) client.release(); if (pool) await pool.end(); }
 }
