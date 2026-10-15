@@ -65,9 +65,12 @@ export default function SearchPanel({
       query.set("lat", String(locationOverride.latitude));
       query.set("lng", String(locationOverride.longitude));
     }
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), 15000);
     try {
       const response = await fetch(`/api/${kind}?${query.toString()}`, {
         headers: { Accept: "application/json" },
+        signal: controller.signal,
       });
       const body = await response.json();
       if (!response.ok) {
@@ -93,11 +96,12 @@ export default function SearchPanel({
       } else if (kind === "pharmacies") {
         setMapPharmacies(null);
       }
-    } catch {
+    } catch (cause) {
       if (requestId !== requestIdRef.current) return;
-      setError("目前無法連線，請確認網路後再試。");
+      setError(cause instanceof DOMException && cause.name === "AbortError" ? "查詢花費太久，請稍後再試；服務剛喚醒時可能需要等待幾秒。" : "目前無法連線，請確認網路後再試。");
       setResult(null);
     } finally {
+      window.clearTimeout(timeout);
       if (requestId === requestIdRef.current) setLoading(false);
     }
   }, [city, district, kind, keyword, location]);
