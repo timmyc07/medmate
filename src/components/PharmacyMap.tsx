@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { Pharmacy } from "../types/catalog";
+import { getCurrentPharmacyHoursStatus } from "../lib/pharmacy-hours";
 
 type Point = { latitude: number; longitude: number };
 type GooglePoint = { lat: number; lng: number };
@@ -48,7 +49,8 @@ export default function PharmacyMap({ pharmacies, userLocation }: { pharmacies: 
           const position = { lat: point.latitude, lng: point.longitude };
           bounds.extend(position);
           const marker = new maps.Marker({ map, position, title: item.name });
-          const info = new maps.InfoWindow({ content: `<strong>${escapeHtml(item.name)}</strong><br>${escapeHtml(item.address ?? "地址未提供")}` });
+          const currentHours = getCurrentPharmacyHoursStatus(item.openingHours);
+          const info = new maps.InfoWindow({ content: `<strong>${escapeHtml(item.name)}</strong><br>${escapeHtml(item.address ?? "地址未提供")}<br>${escapeHtml(currentHours.label)}` });
           marker.addListener?.("click", () => info.open({ map, anchor: marker }));
           plotted.add(item.id);
         };

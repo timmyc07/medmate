@@ -57,4 +57,23 @@ describe("藥局地圖", () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(markerCount).toBe(1);
   });
+
+  it("標記資訊包含目前看診時段", async () => {
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(new Response(JSON.stringify({ enabled: true, key: "browser-key" }), { status: 200 }));
+    let infoContent = "";
+    window.google = { maps: {
+      Map: class { fitBounds() {} setCenter() {} },
+      LatLngBounds: class { extend() {} isEmpty() { return false; } },
+      Marker: class { addListener() {} },
+      InfoWindow: class { constructor(options: { content: string }) { infoContent = options.content; } open() {} },
+    } } as never;
+    const allHours = ["星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"]
+      .flatMap((day) => ["上午", "下午", "晚上"].map((period) => `${day}${period}看診`)).join("、");
+    await act(async () => { render(<PharmacyMap pharmacies={[{ id: "1", name: "安心藥局", address: "台北市中正區", openingHours: allHours, latitude: 25, longitude: 121 } as never]} userLocation={null} />); });
+
+    await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent("已標示 1 家藥局"));
+    expect(infoContent).toMatch(/星期.+(?:上午|下午|晚上)有看診安排/);
+    fetchMock.mockRestore();
+    vi.useRealTimers();
+  });
 });

@@ -1,12 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { Medicine, Pharmacy } from "../types/catalog";
 import { getCurrentPharmacyHoursStatus, parsePharmacyWeeklySchedule } from "../lib/pharmacy-hours";
 import ScrollReveal from "./ScrollReveal";
 
 export function PharmacyResult({ item }: { item: Pharmacy }) {
-  const currentHours = getCurrentPharmacyHoursStatus(item.openingHours);
+  const [currentHours, setCurrentHours] = useState<ReturnType<typeof getCurrentPharmacyHoursStatus> | null>(null);
+  useEffect(() => {
+    const update = () => setCurrentHours(getCurrentPharmacyHoursStatus(item.openingHours));
+    update();
+    const timer = window.setInterval(update, 60_000);
+    return () => window.clearInterval(timer);
+  }, [item.openingHours]);
   const weeklySchedule = parsePharmacyWeeklySchedule(item.openingHours);
   const mapUrl =
     item.latitude !== null && item.longitude !== null
@@ -52,7 +58,9 @@ export function PharmacyResult({ item }: { item: Pharmacy }) {
           </div>
         </div>
         <section className="pharmacy-hours pharmacy-card-hours" aria-label="政府登記看診時段">
-          <strong>{currentHours.label}</strong>
+            <strong className={currentHours ? `pharmacy-current-hours pharmacy-current-hours--${currentHours.status}` : "pharmacy-current-hours"} aria-live="polite">
+              {currentHours?.label ?? "正在判斷目前看診時段…"}
+            </strong>
           {weeklySchedule.length ? (
             <div className="pharmacy-hours-panel">
               <section className="pharmacy-calendar-scroll" aria-label="一週看診時間表">
@@ -75,7 +83,6 @@ export function PharmacyResult({ item }: { item: Pharmacy }) {
           ) : (
             <p>未提供固定看診時段</p>
           )}
-          <small>此為政府登記的看診安排，不代表即時營業狀態；出發前請先電話確認。</small>
         </section>
       </div>
     </ScrollReveal>

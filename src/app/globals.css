@@ -296,11 +296,12 @@ svg { display: block; }
 .call-link:hover { color: #fff; background: var(--forest); }
 .pharmacy-hours { border-radius: 17px; padding: 13px; background: var(--surface-low); }
 .pharmacy-hours > strong { display: block; margin-bottom: 7px; color: var(--forest); font-size: 11px; }
+.pharmacy-current-hours--not-listed, .pharmacy-current-hours--unavailable { color: var(--muted) !important; }
 .pharmacy-hours > p, .pharmacy-hours small { color: var(--muted); font-size: 11px; line-height: 1.55; }
 .pharmacy-hours small { display: block; margin-top: 8px; }
 .pharmacy-hours-panel { overflow: hidden; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
 .pharmacy-calendar-scroll { overflow-x: auto; }
-.pharmacy-calendar { width: 100%; min-width: 0; border-collapse: collapse; text-align: center; font-size: clamp(9px, .85vw, 11px); }
+.pharmacy-calendar { width: 100%; min-width: 360px; border-collapse: collapse; text-align: center; font-size: clamp(10px, .85vw, 11px); }
 .pharmacy-calendar th, .pharmacy-calendar td { padding: 6px 3px; border-bottom: 1px solid var(--line); }
 .pharmacy-calendar thead { color: var(--muted); background: var(--surface-soft); }
 .pharmacy-calendar th:first-child { min-width: 48px; text-align: left; padding-left: 9px; }
@@ -499,7 +500,7 @@ svg { display: block; }
   .pharmacy-card-info h3, .result-main h3 { font-size: 14px; }
   .pharmacy-card-info > p, .result-main > p { font-size: 11px; }
   .pharmacy-hours { padding: 10px; }
-  .pharmacy-calendar { font-size: 9px; }
+  .pharmacy-calendar { min-width: 360px; font-size: 10px; }
   .pharmacy-calendar th, .pharmacy-calendar td { padding: 5px 1px; }
   .pharmacy-card-actions .call-link { flex: 1 1 auto; }
   .pagination { margin: 8px 0 16px; }

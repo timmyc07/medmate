@@ -14,7 +14,6 @@ export default async function PharmaciesPage({ searchParams }: PageProps) {
       <PageHeader currentPath="/pharmacies" />
       <section className="data-status-bar" aria-label="資料狀態">
         <span className="data-status-detail">資料來源：中央健康保險署</span>
-        <span className="data-status-detail"><strong>固定看診時段不代表即時營業</strong></span>
       </section>
       <section className="inner-hero" aria-labelledby="pharmacy-page-title">
         <div className="page-title-row">

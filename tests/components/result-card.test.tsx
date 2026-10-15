@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { PharmacyResult } from "../../src/components/ResultCard";
 
 describe("藥局資訊卡", () => {
-  it("保留資料與操作連結，不渲染圖片區塊", () => {
+  it("保留資料與操作連結，不渲染圖片區塊", async () => {
     const { container } = render(
       <PharmacyResult
         item={{
@@ -23,7 +23,7 @@ describe("藥局資訊卡", () => {
 
     expect(screen.getByRole("heading", { name: "安心藥局" })).toBeInTheDocument();
     expect(screen.getByText("臺北市中正區忠孝東路 1 號")).toBeInTheDocument();
-    expect(screen.getByText(/此為政府登記的看診安排/)).toBeInTheDocument();
+    expect(await screen.findByText(/看診安排未提供|正在判斷目前看診時段/)).toBeInTheDocument();
     expect(screen.getByRole("table")).toBeInTheDocument();
     expect(screen.getByLabelText("週一上午看診")).toBeInTheDocument();
     expect(screen.getByLabelText("週一下午休診")).toBeInTheDocument();
