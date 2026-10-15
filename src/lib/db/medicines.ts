@@ -2,6 +2,7 @@ import "server-only";
 import { getPool } from "./pool";
 import type { SearchParams } from "../api/search-params";
 import type { Medicine, Page } from "../../types/catalog";
+import { expandMedicineSearchTerms } from "../medicine-symptoms";
 
 function escapeLike(value: string): string {
   return value.replace(/!/g, "!!").replace(/[%_]/g, "!$&");
@@ -9,11 +10,13 @@ function escapeLike(value: string): string {
 
 export async function searchMedicines(params: SearchParams): Promise<Page<Medicine>> {
   const pool = getPool();
-  const pattern = `%${escapeLike(params.keyword)}%`;
+  const terms = expandMedicineSearchTerms(params.keyword);
+  const patterns = terms.map((term) => `%${escapeLike(term)}%`);
   const eligibility = "cancellation_status = '' AND valid_until >= (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Taipei')::date";
   // 適應症欄位本身已是 TFDA 公開文字；直接比對可避免 migration 尚未套用時整個查詢失效。
-  const filter = `(${eligibility}) AND (medicine.name ILIKE $1 ESCAPE '!' OR medicine.license_number ILIKE $1 ESCAPE '!' OR medicine.indications ILIKE $1 ESCAPE '!')`;
-  const count = await pool.query<{ total: string }>(`SELECT COUNT(*)::text AS total FROM medicines AS medicine WHERE ${filter}`, [pattern]);
+  const termFilters = patterns.map((_, index) => `(medicine.name ILIKE $${index + 1} ESCAPE '!' OR medicine.license_number ILIKE $${index + 1} ESCAPE '!' OR medicine.indications ILIKE $${index + 1} ESCAPE '!')`).join(" OR ");
+  const filter = `(${eligibility}) AND (${termFilters})`;
+  const count = await pool.query<{ total: string }>(`SELECT COUNT(*)::text AS total FROM medicines AS medicine WHERE ${filter}`, patterns);
   const offset = (params.page - 1) * params.pageSize;
   const rows = await pool.query<{
     license_number: string; name: string; indications: string | null;
@@ -56,7 +59,7 @@ export async function searchMedicines(params: SearchParams): Promise<Page<Medici
     FROM medicines AS medicine
     LEFT JOIN medicine_appearances AS appearance ON appearance.license_number = medicine.license_number
     WHERE ${filter}
-    ORDER BY medicine.name, medicine.license_number LIMIT $2 OFFSET $3`, [pattern, params.pageSize, offset]);
+    ORDER BY medicine.name, medicine.license_number LIMIT $${patterns.length + 1} OFFSET $${patterns.length + 2}`, [...patterns, params.pageSize, offset]);
 
   return {
     items: rows.rows.map((row) => ({

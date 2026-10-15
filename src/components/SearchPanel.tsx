@@ -6,6 +6,7 @@ import type { Medicine, Page, Pharmacy } from "../types/catalog";
 import { MedicineResult, PharmacyResult } from "./ResultCard";
 import PharmacyMap from "./PharmacyMap";
 import PillFeatureFinder from "./PillFeatureFinder";
+import { MEDICINE_SYMPTOM_ALIASES } from "../lib/medicine-symptoms";
 import {
   TAIWAN_ADMINISTRATIVE_AREAS,
   TAIWAN_CITIES,
@@ -189,7 +190,8 @@ export default function SearchPanel({
       </div>
       {kind === "medicines" && (
         <p className="search-friendly-hint">
-          輸入症狀或藥品名稱，例如「頭痛」、「鼻塞」、「普拿疼」。
+          輸入症狀或藥品名稱，例如「頭痛」、「鼻塞」、「腳痛」、「普拿疼」。
+          可搜尋：{Object.keys(MEDICINE_SYMPTOM_ALIASES).join("、")}。
         </p>
       )}
       {kind === "medicines" && showPillFeatureFinder && (
