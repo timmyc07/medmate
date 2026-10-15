@@ -94,7 +94,15 @@ export function MedicineResult({ item }: { item: Medicine }) {
           </div>
           <div className="medicine-card-heading">
             <h3>{item.name}</h3>
-            <p className="medicine-card-price">{item.price ? `約 NT$${item.price.amount.toLocaleString("zh-TW")}（健保資料）` : "價格：目前查不到官方公開價格"}</p>
+            {item.price?.length ? (
+              <div className="medicine-card-price">
+                {item.price.map((price) => <p key={`${price.drugCode}-${price.effectiveFrom}`}>
+                  <strong>健保支付價參考：{price.amount.toLocaleString("zh-TW")} 點</strong>{price.specification ? `（規格：${price.specification}）` : ""}
+                  <br /><small>健保核定支付基準，不是一般藥局自費售價；自 {price.effectiveFrom} 起</small>
+                </p>)}
+                <a href={item.price[0].sourceUrl} target="_blank" rel="noreferrer">查看健保署官方資料</a>
+              </div>
+            ) : <p className="medicine-card-price">健保支付價：目前查不到精確對應的官方價格</p>}
           </div>
         </div>
         {item.indications ? (

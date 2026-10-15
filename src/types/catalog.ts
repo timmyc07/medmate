@@ -27,7 +27,7 @@ export interface Medicine {
   validUntil: string | null;
   sourceUpdatedAt: string | null;
   appearance: MedicineAppearance | null;
-  price: MedicinePrice | null;
+  price: MedicinePrice[] | null;
 }
 
 export interface MedicineAppearance {
@@ -41,6 +41,10 @@ export interface MedicinePrice {
   amount: number;
   currency: string;
   type: string;
+  drugCode: string;
+  specification: string;
+  effectiveFrom: string;
+  sourceUrl: string;
 }
 
 export interface MedicineIngredient {

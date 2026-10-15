@@ -43,4 +43,17 @@ describe("藥品卡片官方資訊", () => {
     expect(screen.getByText("目前沒有可用完整許可證字號精確配對的安全公告。", { exact: false })).toBeInTheDocument();
     expect(screen.getByText("副作用、禁忌與交互作用資料未由目前來源提供；請洽藥師或醫療人員。", { exact: false })).toBeInTheDocument();
   });
+
+  it("有精確健保價格時用口語顯示點數並提醒不是藥局售價", () => {
+    render(<MedicineResult item={{
+      id: "A3", licenseNumber: "A3", name: "有價格的藥品", indications: "緩解頭痛",
+      usageDosage: null, ingredients: [], safetyCommunications: [], licenseStatus: "有效",
+      validUntil: null, sourceUpdatedAt: null, appearance: null,
+      price: [{ amount: 12.5, currency: "TWD", type: "nhi-reimbursement", drugCode: "A000000100", specification: "10 毫克", effectiveFrom: "2026-01-01", sourceUrl: "https://info.nhi.gov.tw/" }],
+    }} />);
+
+    expect(screen.getByText(/健保支付價參考：12\.5 點/)).toBeInTheDocument();
+    expect(screen.getByText(/不是一般藥局自費售價/)).toBeInTheDocument();
+    expect(screen.queryByText(/NT\$/)).not.toBeInTheDocument();
+  });
 });

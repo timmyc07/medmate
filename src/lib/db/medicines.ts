@@ -21,7 +21,7 @@ export async function searchMedicines(params: SearchParams): Promise<Page<Medici
     ingredients: Medicine["ingredients"];
     safety_communications: Medicine["safetyCommunications"];
     appearance_shape: string | null; appearance_color: string | null; appearance_imprint: string | null; appearance_image_url: string | null;
-    valid_until: string; source_updated_at: string;
+    valid_until: string; source_updated_at: string; prices: Medicine["price"];
   }>(`SELECT medicine.license_number AS id, medicine.license_number, medicine.name,
       NULLIF(medicine.indications, '') AS indications, NULLIF(medicine.usage_dosage, '') AS usage_dosage,
       CASE WHEN medicine.cancellation_status = '' THEN '有效' ELSE medicine.cancellation_status END AS license_status,
@@ -43,7 +43,16 @@ export async function searchMedicines(params: SearchParams): Promise<Page<Medici
         WHERE safety_link.license_number = medicine.license_number), '[]'::json) AS safety_communications
       ,appearance.shape AS appearance_shape, appearance.color AS appearance_color,
       appearance.imprint AS appearance_imprint, appearance.image_url AS appearance_image_url,
-      NULL::text AS price, NULL::text AS price_currency, NULL::text AS price_type
+      COALESCE((SELECT json_agg(json_build_object(
+        'amount', price.price, 'currency', price.currency, 'type', price.price_type,
+        'drugCode', price.drug_code, 'specification', price.specification,
+        'effectiveFrom', price.effective_from::text, 'sourceUrl', price.source_url
+      ) ORDER BY price.drug_code) FROM medicine_prices AS price
+        WHERE price.license_number = medicine.license_number
+          AND price.price > 0
+          AND price.effective_from <= (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Taipei')::date
+          AND (price.effective_until IS NULL OR price.effective_until >= (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Taipei')::date)
+          AND price.change_status = ''), '[]'::json) AS prices
     FROM medicines AS medicine
     LEFT JOIN medicine_appearances AS appearance ON appearance.license_number = medicine.license_number
     WHERE ${filter}
@@ -64,7 +73,7 @@ export async function searchMedicines(params: SearchParams): Promise<Page<Medici
       appearance: row.appearance_image_url || row.appearance_shape || row.appearance_color ? {
         shape: row.appearance_shape ?? "", color: row.appearance_color ?? "", imprint: row.appearance_imprint ?? "", imageUrl: row.appearance_image_url ?? "",
       } : null,
-      price: null,
+      price: row.prices ?? null,
     })),
     page: params.page,
     pageSize: params.pageSize,

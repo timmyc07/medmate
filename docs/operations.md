@@ -72,6 +72,10 @@ Neon CLI 8.0.12 已登入本機帳號，專案 `lingering-sun-32547332` 已連�
 
 Render 必須設定 `DATABASE_URL` 為 Neon pooled URL。direct `DATABASE_URL_UNPOOLED` 僅供本機人工執行 `npm run db:migrate` / `npm run db:import`，不可加入 Render runtime。不要列印連線 URL、寫進 Git 或前端。Pool 上限每個服務程序 5 條連線；查詢錯誤不寫入日誌。`/api/ready` 檢查資料庫是否可查詢，`/api/health` 只用於程序存活。
 
+### 健保支付價匯入
+
+先在 Neon 建立隔離 branch，將 `DATABASE_URL_UNPOOLED` 指向該 branch，執行 `npm run db:migrate` 後，以 `npm run db:import-medicine-prices -- <官方 CSV 路徑> --dry-run` 檢查欄位、列數與 SHA-256，再移除 `--dry-run` 匯入。匯入器只保存健保藥品代號與支付價；健保 `licId` 尚未被證實等於 TFDA 完整許可證字號，因此沒有正式對照時 `license_number` 保持 NULL，藥品卡片不顯示未精確配對的金額。確認隔離 branch 的筆數、有效日期與 API 查詢後，才可對 production 重複 migration/import。支付價在畫面標示為「健保支付價參考」及「點」，不得改寫成藥局自費售價。
+
 首次 schema/import 驗證使用有到期時間的 Neon branch `medmate-import-test-20261008`。2026-10-08 已在驗證 branch 測試後，將 `001_catalog.sql` 套用 production 並從 `/Users/reikous/Downloads/藥品資料庫` 匯入三個受支援 CSV：FDA 藥局 9,155 原始列（去重後 9,153）、健保特約藥局 10,187 列、FDA 藥品許可證 72,074 原始列（去重後 66,510）；每個來源 SHA-256 與筆數寫入 `source_imports`。36/43/53 詳細藥品資料已於 2026-10-14 經隔離 branch 驗證後套用 production；37 及健保 B5/TXT 仍未接入產品。正式查詢與匯入帳號應分開管理並授予最小權限；Neon 預設 app connection 若仍使用 owner role，應另建唯讀角色。CSV 匯入命令和白名單/來源更新策略見[資料來源文件](data-sources.md)。原始 CSV 不應提交到 GitHub。
 
 ## Render

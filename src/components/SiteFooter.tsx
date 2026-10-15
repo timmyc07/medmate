@@ -18,6 +18,7 @@ export default function SiteFooter() {
             <li><Link href="https://data.gov.tw/dataset/39284" target="_blank" rel="noreferrer">健保特約醫事機構－藥局</Link></li>
             <li><Link href="https://data.gov.tw/dataset/9122" target="_blank" rel="noreferrer">全部藥品許可證資料</Link></li>
             <li><Link href="https://data.nhi.gov.tw/" target="_blank" rel="noreferrer">健保藥品使用量與目錄</Link></li>
+            <li><Link href="https://info.nhi.gov.tw/api/iode0000s01/Dataset?rId=A21030000I-E41001-001" target="_blank" rel="noreferrer">健保藥品支付價資料</Link></li>
             <li><Link href="https://mcp.fda.gov.tw/" target="_blank" rel="noreferrer">FDA 藥品外觀官方入口</Link></li>
           </ul>
         </section>

@@ -60,9 +60,11 @@
 
 `license_number` text · `symptom` text · `source_kind` text · `source_text` text · `source_url` text · `source_updated_at` timestamptz
 
-### `medicine_prices` — 精確配對的藥品價格
+### `medicine_prices` — 健保支付價
 
-`license_number` text nullable · `drug_code` text nullable · `price` numeric · `currency` text · `price_type` text · `source_url` text · `source_updated_at` timestamptz
+`drug_code` text · `license_number` text nullable · `drug_name` text · `specification` text · `price` numeric · `currency` text · `price_type` text · `effective_from` date · `effective_until` date nullable · `change_status` text · `source_url` text · `source_sha256` text · `source_updated_at` timestamptz
+
+價格以健保藥品代號為主要識別；只有正式核實的完整 TFDA 許可證對照才填入 `license_number`。查詢只取臺灣當日有效、正值且沒有異動的資料。
 
 ## Schema 定義來源
 
@@ -71,5 +73,7 @@
 - `db/migrations/003_pharmacy_opening_hours.sql`
 - `db/migrations/004_pharmacy_coordinate_candidates.sql`
 - `db/migrations/005_medicine_information.sql`
+- `db/migrations/006_medicine_public_search.sql`
+- `db/migrations/007_medicine_prices.sql`
 
 官方文件：[PostgreSQL 18 — Table Basics](https://www.postgresql.org/docs/current/ddl-basics.html)。

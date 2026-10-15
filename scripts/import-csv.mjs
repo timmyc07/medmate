@@ -249,12 +249,8 @@ export async function importMedicineCatalog(
     );
   for await (const row of catalogParser) {
     const code = row.藥品代號?.trim();
-    const sourceLicenseId =
-      /[?&]licId=([^&]+)/.exec(row.藥品代碼超連結 ?? "")?.[1] ?? null;
-    const licenseMatches = sourceLicenseId?.match(/^\d{8}$/)
-      ? [...(licenseNumbers.get(sourceLicenseId.slice(2)) ?? [])]
-      : [];
-    const licenseId = licenseMatches.length === 1 ? licenseMatches[0] : null;
+    // 健保 licId 與 TFDA 許可證字號不是同一個已核實欄位；未有正式對照前不猜測關聯。
+    const licenseId = null;
     if (!code || !/^[A-Z0-9]{6,12}$/.test(code)) continue;
     const existing = catalog.get(code);
     const entry = {

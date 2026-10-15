@@ -15,6 +15,7 @@
     "start": "next start --hostname 0.0.0.0",
     "db:import-medicines": "node scripts/import-medicine-usage.mjs",
     "db:import-medicine-information": "node scripts/import-medicine-information.mjs"
+    ,"db:import-medicine-prices": "node scripts/import-medicine-prices.mjs"
   },
   "license": "UNLICENSED",
   "type": "module",
