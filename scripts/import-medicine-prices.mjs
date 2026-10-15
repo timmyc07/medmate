@@ -73,12 +73,15 @@ async function main() {
     const sql = `INSERT INTO medicine_prices (drug_code,license_number,drug_name,specification,price,currency,price_type,effective_from,effective_until,change_status,source_url,source_sha256,source_updated_at) VALUES ($1,$2,$3,$4,$5,'TWD','nhi-reimbursement',$6,$7,$8,$9,$10,$11) ON CONFLICT (drug_code,effective_from,price_type) DO UPDATE SET license_number=excluded.license_number,drug_name=excluded.drug_name,specification=excluded.specification,price=excluded.price,effective_until=excluded.effective_until,change_status=excluded.change_status,source_url=excluded.source_url,source_sha256=excluded.source_sha256,source_updated_at=excluded.source_updated_at`;
     await client.query("CREATE TEMP TABLE medicine_prices_stage (drug_code text, license_number text, drug_name text, specification text, price numeric, effective_from date, effective_until date, change_status text, source_url text, source_sha256 text, source_updated_at timestamptz) ON COMMIT DROP");
     const copy = client.query(copyFrom("COPY medicine_prices_stage FROM STDIN WITH (FORMAT csv, DELIMITER E'\\t', NULL '\\N')"));
-    for (const record of parsed.records) {
-      const fields = [record.drugCode, mapping.get(record.drugCode) ?? "\\N", record.drugName, record.specification, record.price, record.effectiveFrom, record.effectiveUntil ?? "\\N", record.changeStatus, record.sourceUrl, record.sourceSha256, record.retrievedAt];
-      copy.write(`${fields.map((field) => field === "\\N" ? field : String(field).replaceAll("\\", "\\\\").replaceAll("\t", " ").replaceAll("\n", " ")).join("\t")}\n`);
-    }
-    copy.end();
-    await copy;
+    await new Promise((resolve, reject) => {
+      copy.once("finish", resolve);
+      copy.once("error", reject);
+      for (const record of parsed.records) {
+        const fields = [record.drugCode, mapping.get(record.drugCode) ?? "\\N", record.drugName, record.specification, record.price, record.effectiveFrom, record.effectiveUntil ?? "\\N", record.changeStatus, record.sourceUrl, record.sourceSha256, record.retrievedAt];
+        copy.write(`${fields.map((field) => field === "\\N" ? field : String(field).replaceAll("\\", "\\\\").replaceAll("\t", " ").replaceAll("\n", " ")).join("\t")}\n`);
+      }
+      copy.end();
+    });
     await client.query("INSERT INTO medicine_prices (drug_code,license_number,drug_name,specification,price,currency,price_type,effective_from,effective_until,change_status,source_url,source_sha256,source_updated_at) SELECT drug_code,license_number,drug_name,specification,price,'TWD','nhi-reimbursement',effective_from,effective_until,change_status,source_url,source_sha256,source_updated_at FROM medicine_prices_stage ON CONFLICT (drug_code,effective_from,price_type) DO UPDATE SET license_number=excluded.license_number,drug_name=excluded.drug_name,specification=excluded.specification,price=excluded.price,effective_until=excluded.effective_until,change_status=excluded.change_status,source_url=excluded.source_url,source_sha256=excluded.source_sha256,source_updated_at=excluded.source_updated_at");
     await client.query("INSERT INTO source_imports(dataset_key,source_url,retrieved_at,source_sha256,row_count,batch_id) VALUES ($1,$2,$3,$4,$5,$6) ON CONFLICT (dataset_key) DO UPDATE SET source_url=excluded.source_url,retrieved_at=excluded.retrieved_at,source_sha256=excluded.source_sha256,row_count=excluded.row_count,batch_id=excluded.batch_id", ["nhi_medicine_prices", PRICE_SOURCE_URL, parsed.records[0]?.retrievedAt ?? new Date().toISOString(), parsed.sourceSha256, parsed.sourceRows, batchId]);
     await client.query("COMMIT");
