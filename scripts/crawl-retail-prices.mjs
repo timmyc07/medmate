@@ -30,25 +30,32 @@ async function main() {
   const connectionString = process.env.DATABASE_URL_UNPOOLED;
   if (!dryRun && !connectionString) throw new Error("需要 DATABASE_URL_UNPOOLED");
   const now = new Date(); const rows = [];
+  const pool = !dryRun ? new Pool({ connectionString, max: 1 }) : null;
+  const client = pool ? await pool.connect() : null;
+  if (client) await client.query("BEGIN");
+  if (client) for (const source of SOURCES) await client.query("INSERT INTO medicine_price_sources (source_id,name,source_kind,base_url,terms_url,robots_checked_at,source_updated_at) VALUES ($1,$2,'ecommerce',$3,$4,$5,$5) ON CONFLICT (source_id) DO UPDATE SET source_updated_at=excluded.source_updated_at", [source.id, source.name, source.base, `${source.base}/robots.txt`, now]);
   for (const source of SOURCES) {
     const index = await get(source.sitemap); const maps = xmlUrls(index).filter((url) => /sitemap/i.test(url));
-    for (const mapUrl of maps) {
+    const state = client ? (await client.query("SELECT sitemap_index, product_offset FROM retail_crawl_state WHERE source_id=$1", [source.id])).rows[0] ?? { sitemap_index: 0, product_offset: 0 } : { sitemap_index: 0, product_offset: 0 };
+    for (let mapIndex = state.sitemap_index; mapIndex < maps.length; mapIndex += 1) {
+      const mapUrl = maps[mapIndex];
       const sitemap = await get(mapUrl);
-      for (const productUrl of xmlUrls(sitemap).filter((url) => /\/SalePage\/Index\//i.test(url)).slice(0, maxProducts - rows.length)) {
+      const products = xmlUrls(sitemap).filter((url) => /\/SalePage\/Index\//i.test(url));
+      const start = mapIndex === state.sitemap_index ? state.product_offset : 0;
+      for (const productUrl of products.slice(start, start + maxProducts - rows.length)) {
         await sleep(2500);
         try { const parsed = htmlPrice(await get(productUrl), productUrl); if (parsed) rows.push({ source, ...parsed }); } catch (error) { console.warn(`略過商品：${error.message}`); }
         if (rows.length >= maxProducts) break;
       }
+      if (client) await client.query("INSERT INTO retail_crawl_state(source_id,sitemap_index,product_offset,updated_at) VALUES ($1,$2,$3,$4) ON CONFLICT (source_id) DO UPDATE SET sitemap_index=excluded.sitemap_index,product_offset=excluded.product_offset,updated_at=excluded.updated_at", [source.id, mapIndex, Math.min(start + maxProducts, products.length), now]);
       if (rows.length >= maxProducts) break;
     }
     if (rows.length >= maxProducts) break;
   }
   if (dryRun) { console.log(JSON.stringify({ observations: rows.length, sources: SOURCES.map((source) => ({ name: source.name, count: rows.filter((row) => row.source.id === source.id).length })) })); return; }
-  const pool = new Pool({ connectionString, max: 1 }); const client = await pool.connect();
-  try { await client.query("BEGIN");
-    for (const source of SOURCES) await client.query("INSERT INTO medicine_price_sources (source_id,name,source_kind,base_url,terms_url,robots_checked_at,source_updated_at) VALUES ($1,$2,'ecommerce',$3,$4,$5,$5) ON CONFLICT (source_id) DO UPDATE SET source_updated_at=excluded.source_updated_at", [source.id, source.name, source.base, `${source.base}/robots.txt`, now]);
+  try {
     for (const row of rows) await client.query("INSERT INTO medicine_price_observations (observation_id,source_id,external_product_id,product_name,listed_price,sale_price,captured_at,captured_date,product_url,raw_payload_hash,parser_version) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,'91app-v1') ON CONFLICT DO NOTHING", [randomUUID(), row.source.id, row.id, row.name, row.listedPrice, row.salePrice, now, now.toISOString().slice(0, 10), row.url, sha256(JSON.stringify(row))]);
     await client.query("COMMIT"); console.log(JSON.stringify({ observations: rows.length }));
-  } catch (error) { await client.query("ROLLBACK"); throw error; } finally { client.release(); await pool.end(); }
+  } catch (error) { if (client) await client.query("ROLLBACK"); throw error; } finally { if (client) client.release(); if (pool) await pool.end(); }
 }
 main().catch((error) => { console.error(error.message); process.exitCode = 1; });

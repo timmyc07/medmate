@@ -70,6 +70,10 @@
 
 自費線上價格來源、商品價格觀測與人工精確配對審核。觀測保存原價、促銷價、規格、來源網址、抓取時間、內容 hash 與 parser 版本；未核准配對不會顯示在藥品卡片。`medicine_price_90d_stats` 提供近 90 日已核准樣本的平均、中位數、最低、最高、樣本數與來源數。
 
+### `retail_crawl_state` — 自費價格爬取游標
+
+每個來源的 sitemap 分頁與商品 offset。GitHub Actions 每批更新後寫入，讓排程工作可從中斷位置繼續。
+
 ## Schema 定義來源
 
 - `db/migrations/001_catalog.sql`
@@ -80,5 +84,6 @@
 - `db/migrations/006_medicine_public_search.sql`
 - `db/migrations/007_medicine_prices.sql`
 - `db/migrations/008_retail_price_observations.sql`
+- `db/migrations/009_retail_crawl_state.sql`
 
 官方文件：[PostgreSQL 18 — Table Basics](https://www.postgresql.org/docs/current/ddl-basics.html)。

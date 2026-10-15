@@ -80,6 +80,8 @@ Render 必須設定 `DATABASE_URL` 為 Neon pooled URL。direct `DATABASE_URL_UN
 
 `npm run db:crawl-retail-prices -- --dry-run` 會以每站至少 2.5 秒間隔讀取 robots 允許的公開商品 sitemap/頁面；正式抓取可用 `CRAWL_MAX_PRODUCTS=500 npm run db:crawl-retail-prices`，建議排程每日或每週執行並使用快取。資料寫入 `medicine_price_observations`，只有在 `medicine_price_matches` 標記 `approved` 且同規格、可售、近 90 日的樣本才會計算平均/中位數。畫面應稱「目前蒐集來源的近 90 日自費售價平均」，不可宣稱所有藥品或全台平均。
 
+GitHub Actions `更新線上自費價格` 每 2 小時執行一批 100 個商品，游標保存在 `retail_crawl_state`，網站服務重啟不會遺失進度。需要在 GitHub Actions Secrets 設定 `DATABASE_URL_UNPOOLED`；此為資料庫 direct connection，只能給排程工作使用，不能放入前端或 Render runtime。排程會在每批完成後繼續下一批，直到各來源 sitemap 走完，再從第一頁重新觀測新價格。
+
 首次 schema/import 驗證使用有到期時間的 Neon branch `medmate-import-test-20261008`。2026-10-08 已在驗證 branch 測試後，將 `001_catalog.sql` 套用 production 並從 `/Users/reikous/Downloads/藥品資料庫` 匯入三個受支援 CSV：FDA 藥局 9,155 原始列（去重後 9,153）、健保特約藥局 10,187 列、FDA 藥品許可證 72,074 原始列（去重後 66,510）；每個來源 SHA-256 與筆數寫入 `source_imports`。36/43/53 詳細藥品資料已於 2026-10-14 經隔離 branch 驗證後套用 production；37 及健保 B5/TXT 仍未接入產品。正式查詢與匯入帳號應分開管理並授予最小權限；Neon 預設 app connection 若仍使用 owner role，應另建唯讀角色。CSV 匯入命令和白名單/來源更新策略見[資料來源文件](data-sources.md)。原始 CSV 不應提交到 GitHub。
 
 ## Render
