@@ -27,7 +27,7 @@ async function get(url) {
 async function main() {
   const dryRun = process.argv.includes("--dry-run");
   const maxProducts = Number(process.env.CRAWL_MAX_PRODUCTS ?? (dryRun ? 10 : 500));
-  const connectionString = process.env.DATABASE_URL_UNPOOLED;
+  const connectionString = process.env.DATABASE_URL_UNPOOLED ?? process.env.DATABASE_URL;
   if (!dryRun && !connectionString) throw new Error("需要 DATABASE_URL_UNPOOLED");
   const now = new Date(); const rows = [];
   const pool = !dryRun ? new Pool({ connectionString, max: 1 }) : null;

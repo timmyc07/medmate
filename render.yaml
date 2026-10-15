@@ -6,6 +6,6 @@ services:
     region: singapore
     branch: main
     buildCommand: npm ci && npm run build
-    startCommand: npm start
+    startCommand: sh -c 'node scripts/retail-price-daemon.mjs >/tmp/retail-price-daemon.log 2>&1 & exec npm start'
     healthCheckPath: /api/health
     autoDeployTrigger: commit
