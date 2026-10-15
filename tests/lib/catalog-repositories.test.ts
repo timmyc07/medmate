@@ -59,6 +59,8 @@ describe("Neon 公開資料查詢", () => {
     expect(query.mock.calls[0][0]).toContain("cancellation_status = ''");
     expect(query.mock.calls[1][0]).toContain("medicine_safety_license_links");
     expect(query.mock.calls[1][0]).toContain("medicine_ingredients");
+    expect(query.mock.calls[1][0]).not.toContain("medicine_symptoms");
+    expect(query.mock.calls[1][0]).not.toContain("medicine_prices");
     expect(query.mock.calls[0][0]).toContain(
       "valid_until >= (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Taipei')::date",
     );

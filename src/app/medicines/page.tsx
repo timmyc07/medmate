@@ -1,5 +1,3 @@
-import MedicineUsageCatalog from "../../components/MedicineUsageCatalog";
-import MedicineAppearanceSection from "../../components/MedicineAppearanceSection";
 import PageHeader from "../../components/PageHeader";
 import SearchPanel from "../../components/SearchPanel";
 
@@ -34,8 +32,6 @@ export default async function MedicinesPage({ searchParams }: PageProps) {
         initialQuery={query}
         showPillFeatureFinder={false}
       />
-      <MedicineUsageCatalog />
-      <MedicineAppearanceSection />
     </main>
   );
 }
