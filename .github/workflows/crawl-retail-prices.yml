@@ -2,7 +2,7 @@ name: 更新線上自費價格
 
 on:
   schedule:
-    - cron: "17 */2 * * *"
+    - cron: "7,27,47 * * * *"
   workflow_dispatch:
 
 concurrency:

@@ -12,6 +12,23 @@ const USER_AGENT = "MediMatePublicPriceBot/1.0 (+https://medmate-53s1.onrender.c
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 let lastRequestAt = 0;
 
+export function retryAfterMs(value, now = Date.now()) {
+  const text = value?.trim() || "";
+  const until = /^\d+$/.test(text) ? now + Number(text) * 1000 : Date.parse(text);
+  return Number.isFinite(new Date(until).getTime()) ? Math.max(0, until - now) : 0;
+}
+
+export function backoffMs(error) {
+  let minimum = 0;
+  if (error.status === 403) minimum = 24 * 60 * 60_000;
+  else if (error.status === 429 || error.status >= 500 || ["TimeoutError", "AbortError", "TypeError"].includes(error.name)) minimum = 30 * 60_000;
+  return Math.max(minimum, error.retryAfterMs || 0);
+}
+
+async function pauseSource(client, sourceId, delay) {
+  await client.query("UPDATE medicine_price_sources SET crawl_not_before=GREATEST(COALESCE(crawl_not_before,now()),clock_timestamp()+$2*interval '1 millisecond') WHERE source_id=$1", [sourceId, delay]);
+}
+
 export function xmlUrls(xml) {
   return [...xml.matchAll(/<(?:\w+:)?loc\b[^>]*>\s*(?:<!\[CDATA\[)?(.*?)(?:\]\]>)?\s*<\/(?:\w+:)?loc>/gis)]
     .map((match) => match[1].trim().replaceAll("&amp;", "&"));
@@ -35,7 +52,7 @@ export async function get(url) {
     headers: { "user-agent": USER_AGENT, accept: "text/html,application/xml" },
     signal: AbortSignal.timeout(15_000),
   });
-  if (!response.ok) throw Object.assign(new Error(`HTTP ${response.status} ${url}`), { status: response.status });
+  if (!response.ok) throw Object.assign(new Error(`HTTP ${response.status} ${url}`), { status: response.status, retryAfterMs: retryAfterMs(response.headers.get("retry-after")) });
   const bytes = Buffer.from(await response.arrayBuffer());
   return (bytes[0] === 0x1f && bytes[1] === 0x8b ? gunzipSync(bytes) : bytes).toString("utf8");
 }
@@ -66,6 +83,7 @@ export async function collectProducts(source, read = get) {
 }
 
 export async function ensureRound(client, sources = SOURCES, read = get) {
+  let fetchingSource;
   await client.query("BEGIN");
   try {
     // Serialize manifest replacement; product workers use row locks instead.
@@ -76,7 +94,13 @@ export async function ensureRound(client, sources = SOURCES, read = get) {
       return pending.rows[0].round_id;
     }
     const manifests = [];
-    for (const source of sources) manifests.push({ source, urls: await collectProducts(source, read) });
+    for (const source of sources) {
+      const paused = await client.query("SELECT crawl_not_before FROM medicine_price_sources WHERE source_id=$1 AND crawl_not_before>now()", [source.id]);
+      if (paused.rowCount) throw new Error(`${source.name} 暫停至 ${paused.rows[0].crawl_not_before.toISOString()}`);
+      fetchingSource = source;
+      manifests.push({ source, urls: await collectProducts(source, read) });
+      fetchingSource = undefined;
+    }
     const roundId = randomUUID();
     await client.query("DELETE FROM retail_crawl_queue");
     for (const { source, urls } of manifests) {
@@ -88,20 +112,22 @@ export async function ensureRound(client, sources = SOURCES, read = get) {
     return roundId;
   } catch (error) {
     await client.query("ROLLBACK");
+    if (fetchingSource && backoffMs(error)) await pauseSource(client, fetchingSource.id, backoffMs(error));
     throw error;
   }
 }
 
-export async function crawlBatch(client, { roundId, sources = SOURCES, limit = 100, read = get, deadline = Date.now() + 10 * 60_000 }) {
+export async function crawlBatch(client, { roundId, sources = SOURCES, limit = 150, read = get, deadline = Date.now() + 10 * 60_000 }) {
   const startedAt = new Date();
   const result = { attempted: 0, observations: 0, unavailable: 0, failed: 0 };
   const exhausted = new Set();
+  const failures = new Map();
   for (let i = 0; result.attempted < limit && exhausted.size < sources.length && Date.now() < deadline; i += 1) {
     const source = sources[i % sources.length];
     if (exhausted.has(source.id)) continue;
     await client.query("BEGIN");
     try {
-      const selected = await client.query("SELECT product_url FROM retail_crawl_queue WHERE round_id=$1 AND source_id=$2 AND status='pending' AND (last_attempt_at IS NULL OR last_attempt_at<$3) ORDER BY last_attempt_at NULLS FIRST,product_index FOR UPDATE SKIP LOCKED LIMIT 1", [roundId, source.id, startedAt]);
+      const selected = await client.query("SELECT q.product_url FROM retail_crawl_queue q JOIN medicine_price_sources s USING(source_id) WHERE q.round_id=$1 AND q.source_id=$2 AND q.status='pending' AND (q.last_attempt_at IS NULL OR q.last_attempt_at<$3) AND (s.crawl_not_before IS NULL OR s.crawl_not_before<=clock_timestamp()) ORDER BY q.last_attempt_at NULLS FIRST,q.product_index FOR UPDATE OF q SKIP LOCKED LIMIT 1", [roundId, source.id, startedAt]);
       if (!selected.rowCount) {
         exhausted.add(source.id);
         await client.query("COMMIT");
@@ -111,13 +137,23 @@ export async function crawlBatch(client, { roundId, sources = SOURCES, limit = 1
       let row;
       let status = "succeeded";
       let lastError = null;
+      let delay = 0;
       try {
         row = htmlPrice(await read(url), url);
         if (!row) throw new Error("頁面沒有可解析的正值價格");
       } catch (error) {
         status = [404, 410].includes(error.status) ? "unavailable" : "pending";
         lastError = error.message;
+        if (status === "pending") delay = backoffMs(error);
         console.warn(`${status === "unavailable" ? "已下架" : "保留重試"}：${url} ${lastError}`);
+      }
+      const consecutive = status === "pending" ? (failures.get(source.id) || 0) + 1 : 0;
+      failures.set(source.id, consecutive);
+      if (consecutive >= 3) delay = Math.max(delay, 30 * 60_000);
+      if (delay) {
+        await pauseSource(client, source.id, delay);
+        exhausted.add(source.id);
+        console.warn(`來源暫停：${source.name} 至少 ${Math.ceil(delay / 60_000)} 分鐘`);
       }
       if (row) {
         const now = new Date();
@@ -139,12 +175,12 @@ export async function crawlBatch(client, { roundId, sources = SOURCES, limit = 1
 }
 
 export async function progress(client) {
-  return (await client.query("SELECT q.round_id,s.name,count(*)::int AS total,count(*) FILTER (WHERE q.status='pending')::int AS pending,count(*) FILTER (WHERE q.status='succeeded')::int AS succeeded,count(*) FILTER (WHERE q.status='unavailable')::int AS unavailable FROM retail_crawl_queue q JOIN medicine_price_sources s USING(source_id) GROUP BY q.round_id,s.name ORDER BY s.name")).rows;
+  return (await client.query("SELECT q.round_id,s.name,s.crawl_not_before,count(*)::int AS total,count(*) FILTER (WHERE q.status='pending')::int AS pending,count(*) FILTER (WHERE q.status='succeeded')::int AS succeeded,count(*) FILTER (WHERE q.status='unavailable')::int AS unavailable FROM retail_crawl_queue q JOIN medicine_price_sources s USING(source_id) GROUP BY q.round_id,s.name,s.crawl_not_before ORDER BY s.name")).rows;
 }
 
 async function main() {
   const { values } = parseArgs({ options: { "dry-run": { type: "boolean" }, limit: { type: "string" } } });
-  const limit = Number(values.limit ?? (values["dry-run"] ? 10 : 100));
+  const limit = Number(values.limit ?? (values["dry-run"] ? 10 : 150));
   if (!Number.isSafeInteger(limit) || limit <= 0) throw new Error("--limit 必須是正整數");
   if (values["dry-run"]) {
     const urls = [];

@@ -3,7 +3,7 @@ import { randomUUID } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { Pool, type PoolClient } from "pg";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
-import { collectProducts, crawlBatch, ensureRound, htmlPrice, progress, xmlUrls } from "../../scripts/crawl-retail-prices.mjs";
+import { backoffMs, collectProducts, crawlBatch, ensureRound, get, htmlPrice, progress, retryAfterMs, xmlUrls } from "../../scripts/crawl-retail-prices.mjs";
 
 const sources = [
   { id: "00000000-0000-4000-8000-000000000001", name: "Test A", base: "https://a.test", sitemap: "https://a.test/index.xml" },
@@ -21,6 +21,41 @@ const manifest = (countA = 4, countB = 3) => vi.fn(async (url: string) => {
 afterEach(() => vi.restoreAllMocks());
 
 describe("商品清單與價格解析", () => {
+  it("解析 Retry-After 秒數與 HTTP 日期，限流及逾時採用較長冷卻", () => {
+    const now = Date.parse("2026-10-16T00:00:00Z");
+    expect(retryAfterMs("120", now)).toBe(120000);
+    expect(retryAfterMs("Fri, 16 Oct 2026 02:00:00 GMT", now)).toBe(7200000);
+    for (const value of [null, "invalid", "0", "9".repeat(400)]) expect(retryAfterMs(value, now)).toBe(0);
+    expect(backoffMs({ status: 429, retryAfterMs: 7200000 })).toBe(7200000);
+    expect(backoffMs({ status: 503 })).toBe(1800000);
+    expect(backoffMs({ name: "TimeoutError" })).toBe(1800000);
+    expect(backoffMs({ status: 403 })).toBe(86400000);
+    expect(backoffMs({ status: 404 })).toBe(0);
+  });
+
+  it("加快排程仍保留 2.5 秒請求間隔，並帶回 Retry-After", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-10-16T00:00:00Z"));
+    const fetcher = vi.fn()
+      .mockResolvedValueOnce(new Response("ok"))
+      .mockResolvedValueOnce(new Response("busy", { status: 429, headers: { "Retry-After": "7200" } }));
+    vi.stubGlobal("fetch", fetcher);
+    try {
+      const first = get("https://a.test/one");
+      await vi.runAllTimersAsync();
+      expect(await first).toBe("ok");
+      const second = get("https://a.test/two").catch(error => error);
+      await vi.advanceTimersByTimeAsync(2499);
+      expect(fetcher).toHaveBeenCalledTimes(1);
+      await vi.advanceTimersByTimeAsync(1);
+      expect(await second).toMatchObject({ status: 429, retryAfterMs: 7200000 });
+      expect(fetcher).toHaveBeenCalledTimes(2);
+    } finally {
+      vi.useRealTimers();
+      vi.unstubAllGlobals();
+    }
+  });
+
   it("支援 namespace、CDATA 與 XML escaping", () => {
     expect(xmlUrls('<sm:loc><![CDATA[https://a.test/a?x=1&y=2]]></sm:loc><loc>https://a.test/b?x=1&amp;y=2</loc>')).toEqual([
       "https://a.test/a?x=1&y=2", "https://a.test/b?x=1&y=2",
@@ -73,7 +108,7 @@ describe.skipIf(!process.env.DATABASE_URL_UNPOOLED)("Postgres 爬取進度整合
       await connection.query(`CREATE SCHEMA "${schema}"`);
       await connection.query(`SET search_path TO "${schema}"`);
       await connection.query("CREATE TABLE medicines (license_number text PRIMARY KEY)");
-      for (const name of ["008_retail_price_observations.sql", "009_retail_crawl_state.sql", "010_retail_crawl_queue.sql"]) {
+      for (const name of ["008_retail_price_observations.sql", "009_retail_crawl_state.sql", "010_retail_crawl_queue.sql", "011_retail_crawl_backoff.sql"]) {
         await connection.query(await readFile(new URL(`../../db/migrations/${name}`, import.meta.url), "utf8"));
       }
     } finally { connection.release(); }
@@ -83,6 +118,7 @@ describe.skipIf(!process.env.DATABASE_URL_UNPOOLED)("Postgres 爬取進度整合
     client = await connect();
     await client.query("DELETE FROM retail_crawl_queue");
     await client.query("DELETE FROM medicine_price_observations");
+    await client.query("UPDATE medicine_price_sources SET crawl_not_before=NULL");
     vi.spyOn(console, "log").mockImplementation(() => {});
     vi.spyOn(console, "warn").mockImplementation(() => {});
   });
@@ -115,10 +151,10 @@ describe.skipIf(!process.env.DATABASE_URL_UNPOOLED)("Postgres 爬取進度整合
     expect((await client.query("SELECT sale_price FROM medicine_price_observations WHERE source_id=$1 AND external_product_id='1'", [sources[0].id])).rows[0].sale_price).toBe("13.00");
   }, 30000);
 
-  it("503、解析失敗保留重試；404/410 記錄下架；單批每個 URL 最多嘗試一次", async () => {
+  it("解析失敗保留重試；404/410 記錄下架；單批每個 URL 最多嘗試一次", async () => {
     const roundId = await ensureRound(client, sources, manifest(3, 3));
     const read = vi.fn(async (url: string) => {
-      if (url === product(sources[0], 1)) throw Object.assign(new Error("HTTP 503"), { status: 503 });
+      if (url === product(sources[0], 1)) return "<html>loading</html>";
       if (url === product(sources[0], 2)) return "<html>loading</html>";
       if (url === product(sources[1], 1)) throw Object.assign(new Error("HTTP 404"), { status: 404 });
       if (url === product(sources[1], 2)) throw Object.assign(new Error("HTTP 410"), { status: 410 });
@@ -133,6 +169,44 @@ describe.skipIf(!process.env.DATABASE_URL_UNPOOLED)("Postgres 爬取進度整合
     const rows = (await client.query("SELECT product_url,status,attempts FROM retail_crawl_queue ORDER BY source_id,product_index")).rows;
     expect(rows.filter(row => row.attempts === 2)).toHaveLength(2);
     expect(rows.filter(row => row.status === "pending")).toHaveLength(0);
+  }, 30000);
+
+  it.each([429, 503, 403])("HTTP %s 停止該來源，跨批次保留冷卻；其他來源照常接續", async (status) => {
+    const roundId = await ensureRound(client, sources, manifest(3, 2));
+    const read = vi.fn(async (url: string) => {
+      if (url.startsWith(sources[0].base)) throw Object.assign(new Error(`HTTP ${status}`), { status, retryAfterMs: 7200000 });
+      return html;
+    });
+    expect(await crawlBatch(client, { roundId, sources, read })).toMatchObject({ attempted: 3, observations: 2, failed: 1 });
+    expect(read.mock.calls.filter(([url]) => url.startsWith(sources[0].base))).toHaveLength(1);
+    const remaining = (await client.query("SELECT extract(epoch FROM crawl_not_before-now())::float8 AS seconds FROM medicine_price_sources WHERE source_id=$1", [sources[0].id])).rows[0].seconds;
+    expect(remaining).toBeGreaterThan((status === 403 ? 86400 : 7200) - 20);
+    const nextRead = vi.fn(async (_url: string) => html);
+    expect(await crawlBatch(client, { roundId, sources, read: nextRead })).toMatchObject({ attempted: 0 });
+    expect(nextRead).not.toHaveBeenCalled();
+    await client.query("UPDATE medicine_price_sources SET crawl_not_before=now()-interval '1 second'");
+    expect(await crawlBatch(client, { roundId, sources, read: nextRead })).toMatchObject({ attempted: 3, observations: 3 });
+    expect(nextRead.mock.calls.map(([url]) => url)).toEqual([product(sources[0], 2), product(sources[0], 3), product(sources[0], 1)]);
+  }, 30000);
+
+  it("連續三筆解析失敗後暫停來源，避免整批請求失效頁面", async () => {
+    const roundId = await ensureRound(client, sources, manifest(5, 1));
+    const read = vi.fn(async (url: string) => url.startsWith(sources[0].base) ? "<html>loading</html>" : html);
+    expect(await crawlBatch(client, { roundId, sources, read })).toMatchObject({ attempted: 4, failed: 3, observations: 1 });
+    expect(read).toHaveBeenCalledTimes(4);
+    expect((await client.query("SELECT count(*)::int AS count FROM retail_crawl_queue WHERE source_id=$1 AND attempts=0", [sources[0].id])).rows[0].count).toBe(2);
+  }, 30000);
+
+  it("sitemap 限流也保留來源冷卻，下一次不提早重試", async () => {
+    const roundId = await ensureRound(client, sources, manifest(1, 1));
+    await crawlBatch(client, { roundId, sources, read: async () => html });
+    const read = vi.fn(async () => { throw Object.assign(new Error("HTTP 429"), { status: 429, retryAfterMs: 7200000 }); });
+    await expect(ensureRound(client, sources, read)).rejects.toThrow("HTTP 429");
+    expect(read).toHaveBeenCalledTimes(1);
+    const next = manifest();
+    await expect(ensureRound(client, sources, next)).rejects.toThrow("暫停至");
+    expect(next).not.toHaveBeenCalled();
+    expect((await client.query("SELECT count(*)::int AS count FROM retail_crawl_queue")).rows[0].count).toBe(2);
   }, 30000);
 
   it("未完成一輪時不受 sitemap 插入、刪除或重排影響", async () => {
