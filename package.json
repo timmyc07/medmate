@@ -8,6 +8,8 @@
     "typecheck": "tsc --noEmit",
     "lint": "biome lint .",
     "build": "next build",
+    "keep-alive": "node scripts/keep-alive.mjs",
+    "keep-alive:once": "node scripts/keep-alive.mjs --once",
     "db:migrate": "node scripts/migrate.mjs",
     "db:import": "node scripts/import-csv.mjs",
     "tgos:export": "node scripts/tgos-pharmacy-coordinates.mjs export",
