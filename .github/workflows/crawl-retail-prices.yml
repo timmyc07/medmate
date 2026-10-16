@@ -13,7 +13,17 @@ jobs:
   crawl:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    env:
+      DATABASE_URL_UNPOOLED: ${{ secrets.DATABASE_URL_UNPOOLED }}
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
     steps:
+      - name: 檢查資料庫連線 Secret
+        shell: bash
+        run: |
+          if [[ -z "$DATABASE_URL_UNPOOLED" && -z "$DATABASE_URL" ]]; then
+            echo "::error::請在 Settings → Secrets and variables → Actions 設定 DATABASE_URL_UNPOOLED 或 DATABASE_URL。"
+            exit 1
+          fi
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
@@ -21,5 +31,3 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run db:crawl-retail-prices:batch
-        env:
-          DATABASE_URL_UNPOOLED: ${{ secrets.DATABASE_URL_UNPOOLED }}

@@ -80,7 +80,7 @@ Render 必須設定 `DATABASE_URL` 為 Neon pooled URL。direct `DATABASE_URL_UN
 
 `npm run db:crawl-retail-prices -- --dry-run` 會以每站至少 2.5 秒間隔讀取 robots 允許的公開商品 sitemap/頁面；正式抓取可用 `CRAWL_MAX_PRODUCTS=500 npm run db:crawl-retail-prices`，建議排程每日或每週執行並使用快取。資料寫入 `medicine_price_observations`，只有在 `medicine_price_matches` 標記 `approved` 且同規格、可售、近 90 日的樣本才會計算平均/中位數。畫面應稱「目前蒐集來源的近 90 日自費售價平均」，不可宣稱所有藥品或全台平均。
 
-GitHub Actions `更新線上自費價格` 每 2 小時執行一批 100 個商品，游標保存在 `retail_crawl_state`，網站服務重啟不會遺失進度。需要在 GitHub Actions Secrets 設定 `DATABASE_URL_UNPOOLED`；此為資料庫 direct connection，只能給排程工作使用，不能放入前端或 Render runtime。排程會在每批完成後繼續下一批，直到各來源 sitemap 走完，再從第一頁重新觀測新價格。
+GitHub Actions `更新線上自費價格` 每 2 小時執行一批 100 個商品，游標保存在 `retail_crawl_state`，網站服務重啟不會遺失進度。在專案 Settings → Secrets and variables → Actions → New repository secret 設定 `DATABASE_URL_UNPOOLED`（direct connection），或設定 `DATABASE_URL`（pooled connection）；爬蟲優先使用非空的 direct URL。Render 的環境變數不會自動提供給 GitHub Actions。兩個 Secret 都未設定時，工作會在安裝依賴前明確報錯；補好後可到 Actions → 更新線上自費價格 → Run workflow 手動確認。連線字串不能放入前端或 Git；direct URL 不放入 Render runtime。排程會在每批完成後繼續下一批，直到各來源 sitemap 走完，再從第一頁重新觀測新價格。
 
 Render Web Service 同時啟動 `retail-price-daemon.mjs` 背景程序，每 2 小時執行一批 100 筆，並以 `DATABASE_URL_UNPOOLED` 或 `DATABASE_URL` 寫入資料庫；網頁程序與爬蟲分離，查詢請求不會等待爬蟲。Render 重新部署或休眠後，daemon 會重新啟動並依 `retail_crawl_state` 繼續。若日後改用 GitHub Actions 或 Render Cron，應停用此 daemon，避免兩個排程同時抓取。
 
