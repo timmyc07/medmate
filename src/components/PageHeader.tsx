@@ -24,6 +24,7 @@ export default function PageHeader({ currentPath }: { currentPath: PagePath }) {
             <span className="brand-mark"><Image src="/health-insurance-emblem.svg" alt="全民健康保險標誌" width={42} height={42} priority /></span>
             <span className="brand-copy">
               <span className="brand-name-row"><span>MediMate</span></span>
+              <small>藥局・藥品・公開資料</small>
             </span>
           </Link>
         </div>

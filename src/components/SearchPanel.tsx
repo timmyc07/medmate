@@ -196,140 +196,149 @@ export default function SearchPanel({
       id={kind}
       aria-labelledby={`${kind}-title`}
     >
-      <div className="section-heading">
-        <h2 id={`${kind}-title`}>{kind === "medicines" ? "藥品查詢" : `${label}查詢`}</h2>
-      </div>
-      {kind === "medicines" && (
-        <>
-          <fieldset className="medicine-search-modes">
-            <legend className="sr-only">藥品查詢方式</legend>
-            <button className={medicineSearchMode === "symptom" ? "is-active" : ""} type="button" aria-pressed={medicineSearchMode === "symptom"} onClick={() => selectMedicineSearchMode("symptom")}>依症狀搜尋</button>
-            <button className={medicineSearchMode === "medicine" ? "is-active" : ""} type="button" aria-pressed={medicineSearchMode === "medicine"} onClick={() => selectMedicineSearchMode("medicine")}>依藥品搜尋</button>
-          </fieldset>
-          <p className="search-friendly-hint">
-            {medicineSearchMode === "symptom"
-              ? `輸入不適症狀，例如「頭痛」、「鼻塞」、「腳痛」。可搜尋：${Object.keys(MEDICINE_SYMPTOM_ALIASES).join("、")}。`
-              : "輸入藥品名稱或許可證字號，例如「普拿疼」或「衛署藥製字」。"}
-          </p>
-        </>
-      )}
-      {kind === "medicines" && showPillFeatureFinder && (
-        <PillFeatureFinder onCompare={compareAppearance} />
-      )}
-      <form className={`search-form search-form--${kind}`} onSubmit={submitSearch}>
-        <label className="search-field">
-          <Search className="input-icon" aria-hidden="true" />
-          <span className="sr-only">{kind === "medicines" && medicineSearchMode === "symptom" ? "搜尋症狀" : `搜尋${label}名稱或相關文字`}</span>
-          <input
-            type="search"
-            value={keyword}
-            onChange={(event) => setKeyword(event.target.value)}
-            placeholder={
-              kind === "pharmacies"
-                ? "藥局名稱或地址"
-                : medicineSearchMode === "symptom"
-                  ? "輸入症狀"
-                  : "輸入藥品名稱或許可證字號"
-            }
-            maxLength={100}
-            required={kind === "medicines"}
-            disabled={!enabled}
-          />
-        </label>
-        {kind === "pharmacies" && (
+      <div className="search-controls">
+        <div className="section-heading">
+          <h2 id={`${kind}-title`}>{kind === "medicines" ? "藥品查詢" : `${label}查詢`}</h2>
+        </div>
+        {kind === "medicines" && (
           <>
-            <label className="city-field">
-              <span className="sr-only">縣市</span>
-              <select
-                value={city}
-                onChange={(event) => {
-                  locationRequestIdRef.current += 1;
-                  requestIdRef.current += 1;
-                  setLoading(false);
-                  setCity(event.target.value);
-                  setDistrict("");
-                  setLocation(null);
-                }}
-                disabled={!enabled}
-              >
-                <option value="">選擇縣市</option>
-                {TAIWAN_CITIES.map((name) => (
-                  <option key={name} value={name}>
-                    {name}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="district-field">
-              <span className="sr-only">區域</span>
-              <select
-                value={district}
-                onChange={(event) => {
-                  locationRequestIdRef.current += 1;
-                  requestIdRef.current += 1;
-                  setLoading(false);
-                  setDistrict(event.target.value);
-                  setLocation(null);
-                }}
-                disabled={!enabled || !city}
-              >
-                <option value="">全部區域</option>
-                {(TAIWAN_ADMINISTRATIVE_AREAS[city] ?? []).map((name) => (
-                  <option key={name} value={name}>
-                    {name}
-                  </option>
-                ))}
-              </select>
-            </label>
+            <fieldset className="medicine-search-modes">
+              <legend className="sr-only">藥品查詢方式</legend>
+              <button className={medicineSearchMode === "symptom" ? "is-active" : ""} type="button" aria-pressed={medicineSearchMode === "symptom"} onClick={() => selectMedicineSearchMode("symptom")}>依症狀搜尋</button>
+              <button className={medicineSearchMode === "medicine" ? "is-active" : ""} type="button" aria-pressed={medicineSearchMode === "medicine"} onClick={() => selectMedicineSearchMode("medicine")}>依藥品搜尋</button>
+            </fieldset>
+            <p className="search-friendly-hint">
+              {medicineSearchMode === "symptom"
+                ? "輸入不適症狀，例如「頭痛」、「鼻塞」、「腳痛」，查閱藥品的官方適應症。"
+                : "輸入藥品名稱或許可證字號，例如「普拿疼」或「衛署藥製字」。"}
+            </p>
+            {medicineSearchMode === "symptom" && (
+              <details className="symptom-examples">
+                <summary>查看支援的口語症狀</summary>
+                <p>{Object.keys(MEDICINE_SYMPTOM_ALIASES).join("、")}。</p>
+              </details>
+            )}
           </>
         )}
-        <button
-          className="search-button"
-          type="submit"
-          aria-label={!enabled ? "資料尚未開放" : loading ? "查詢中…" : "搜尋"}
-          disabled={!enabled || loading}
-        >
-          <Search className="action-icon" aria-hidden="true" />
-        </button>
-      </form>
-      {kind === "pharmacies" && (
-        <button
-          className="location-button"
-          id="location-search"
-          type="button"
-          onClick={useMyLocation}
-          disabled={!enabled || loading}
-        >
-          <LocateFixed className="action-icon" aria-hidden="true" />
-          使用目前位置找附近藥局
-        </button>
-      )}
-      {kind === "pharmacies" && (
-        <fieldset className="search-filters">
-          <legend className="search-filters-label">快速縣市篩選</legend>
+        {kind === "medicines" && showPillFeatureFinder && (
+          <PillFeatureFinder onCompare={compareAppearance} />
+        )}
+        <form className={`search-form search-form--${kind}`} onSubmit={submitSearch}>
+          <label className="search-field">
+            <Search className="input-icon" aria-hidden="true" />
+            <span className="sr-only">{kind === "medicines" && medicineSearchMode === "symptom" ? "搜尋症狀" : `搜尋${label}名稱或相關文字`}</span>
+            <input
+              type="search"
+              value={keyword}
+              onChange={(event) => setKeyword(event.target.value)}
+              placeholder={
+                kind === "pharmacies"
+                  ? "藥局名稱或地址"
+                  : medicineSearchMode === "symptom"
+                    ? "輸入症狀"
+                    : "輸入藥品名稱或許可證字號"
+              }
+              maxLength={100}
+              required={kind === "medicines"}
+              disabled={!enabled}
+            />
+          </label>
+          {kind === "pharmacies" && (
+            <>
+              <label className="city-field">
+                <span className="sr-only">縣市</span>
+                <select
+                  value={city}
+                  onChange={(event) => {
+                    locationRequestIdRef.current += 1;
+                    requestIdRef.current += 1;
+                    setLoading(false);
+                    setCity(event.target.value);
+                    setDistrict("");
+                    setLocation(null);
+                  }}
+                  disabled={!enabled}
+                >
+                  <option value="">選擇縣市</option>
+                  {TAIWAN_CITIES.map((name) => (
+                    <option key={name} value={name}>
+                      {name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="district-field">
+                <span className="sr-only">區域</span>
+                <select
+                  value={district}
+                  onChange={(event) => {
+                    locationRequestIdRef.current += 1;
+                    requestIdRef.current += 1;
+                    setLoading(false);
+                    setDistrict(event.target.value);
+                    setLocation(null);
+                  }}
+                  disabled={!enabled || !city}
+                >
+                  <option value="">全部區域</option>
+                  {(TAIWAN_ADMINISTRATIVE_AREAS[city] ?? []).map((name) => (
+                    <option key={name} value={name}>
+                      {name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </>
+          )}
           <button
-            className={`filter-chip ${!city && !location ? "is-active" : ""}`}
-            type="button"
-            onClick={() => applyCityFilter("")}
-            aria-pressed={!city && !location}
+            className="search-button"
+            type="submit"
+            aria-label={!enabled ? "資料尚未開放" : loading ? "查詢中…" : "搜尋"}
             disabled={!enabled || loading}
           >
-            全部縣市
+            <Search className="action-icon" aria-hidden="true" />
+            <span>搜尋</span>
           </button>
-          {quickCities.map((name) => (
+        </form>
+        {kind === "pharmacies" && (
+          <button
+            className="location-button"
+            id="location-search"
+            type="button"
+            onClick={useMyLocation}
+            disabled={!enabled || loading}
+          >
+            <LocateFixed className="action-icon" aria-hidden="true" />
+            使用目前位置找附近藥局
+          </button>
+        )}
+        {kind === "pharmacies" && (
+          <fieldset className="search-filters">
+            <legend className="search-filters-label">快速縣市篩選</legend>
             <button
-              className={`filter-chip ${city === name && !location ? "is-active" : ""}`}
-              key={name}
+              className={`filter-chip ${!city && !location ? "is-active" : ""}`}
               type="button"
-              onClick={() => applyCityFilter(name)}
-              aria-pressed={city === name && !location}
+              onClick={() => applyCityFilter("")}
+              aria-pressed={!city && !location}
               disabled={!enabled || loading}
             >
-              {name}
+              全部縣市
             </button>
-          ))}
-        </fieldset>
-      )}
+            {quickCities.map((name) => (
+              <button
+                className={`filter-chip ${city === name && !location ? "is-active" : ""}`}
+                key={name}
+                type="button"
+                onClick={() => applyCityFilter(name)}
+                aria-pressed={city === name && !location}
+                disabled={!enabled || loading}
+              >
+                {name}
+              </button>
+            ))}
+          </fieldset>
+        )}
+      </div>
       {!enabled && (
         <p className="state-message" role="status">
           資料查詢目前暫停，請稍後再試。

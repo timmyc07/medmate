@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BarChart3, Database, FileText, Image as ImageIcon, MapPinned, Pill } from "lucide-react";
+import { ArrowRight, BarChart3, Database, FileText, HeartPulse, Image as ImageIcon, MapPinned, Pill, ShieldCheck } from "lucide-react";
 import PageHeader from "../components/PageHeader";
 import ScrollReveal from "../components/ScrollReveal";
 
@@ -61,18 +61,37 @@ export default function HomePage() {
       <section className="home-hero" aria-labelledby="welcome-title">
         <div className="home-hero-inner">
           <div className="home-hero-copy">
-            <h1 id="welcome-title"><span>藥局與藥品，</span>一站安心查。</h1>
+            <p className="eyebrow"><HeartPulse aria-hidden="true" /> 你的日常健康查詢夥伴</p>
+            <h1 id="welcome-title">藥局與藥品，<br /><span>一站安心查。</span></h1>
             <p className="hero-description">
               從附近藥局到藥品資訊，把查詢內容整理成清楚、可核對的日常工具。
             </p>
             <div className="hero-actions">
               <Link className="button button--primary" href="/pharmacies">
-                探索藥局 <span aria-hidden="true">↗</span>
+                探索藥局 <ArrowRight aria-hidden="true" />
               </Link>
               <Link className="button button--secondary" href="/medicines">
                 查詢藥品
               </Link>
             </div>
+            <p className="hero-source-note"><ShieldCheck aria-hidden="true" /> 整理政府公開資料，讓每次查詢都有依據。</p>
+          </div>
+          <div className="home-entry-panel">
+            <div className="home-entry-heading">
+              <span className="home-entry-symbol" aria-hidden="true"><HeartPulse /></span>
+              <div><p className="eyebrow">從你需要的資訊開始</p><h2>今天，想先了解什麼？</h2></div>
+            </div>
+            <Link className="home-entry-card" href="/pharmacies">
+              <span className="home-entry-icon"><MapPinned aria-hidden="true" /></span>
+              <span><strong>找到身邊的藥局</strong><small>查地址、電話與政府登記看診時段</small></span>
+              <ArrowRight className="home-entry-arrow" aria-hidden="true" />
+            </Link>
+            <Link className="home-entry-card" href="/medicines">
+              <span className="home-entry-icon"><Pill aria-hidden="true" /></span>
+              <span><strong>認識藥品用途</strong><small>從症狀、藥名或許可證字號開始查</small></span>
+              <ArrowRight className="home-entry-arrow" aria-hidden="true" />
+            </Link>
+            <p className="home-entry-note">先查清楚，再與醫師或藥師討論用藥。</p>
           </div>
         </div>
       </section>
@@ -81,7 +100,7 @@ export default function HomePage() {
         <div className="home-source-inner">
           <div className="source-heading">
             <div>
-            <p className="eyebrow">來源與限制</p>
+              <p className="eyebrow">公開透明・安心查詢</p>
               <h2 id="data-status-title">每筆資訊，都有來源可查。</h2>
             </div>
             <p>來源資料擷取於 2026-10-08；後續更新時間依各發布機關公告為準。</p>

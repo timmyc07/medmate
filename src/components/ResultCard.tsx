@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { ChevronDown, Pill } from "lucide-react";
 import type { Medicine, Pharmacy } from "../types/catalog";
 import { getCurrentPharmacyHoursStatus, parsePharmacyWeeklySchedule } from "../lib/pharmacy-hours";
 import ScrollReveal from "./ScrollReveal";
@@ -96,7 +97,7 @@ export function MedicineResult({ item }: { item: Medicine }) {
       <div className="result-main">
         <div className="medicine-card-topline">
           <div className="medicine-card-image" aria-label={`${item.name}外觀圖`} role="img">
-            {item.appearance?.imageUrl ? <img src={item.appearance.imageUrl} alt={`${item.name}外觀`} /> : <span aria-hidden="true">💊</span>}
+            {item.appearance?.imageUrl ? <img src={item.appearance.imageUrl} alt={`${item.name}外觀`} /> : <Pill aria-hidden="true" />}
             {!item.appearance?.imageUrl && <small>外觀圖待補</small>}
           </div>
           <div className="medicine-card-heading">
@@ -132,6 +133,7 @@ export function MedicineResult({ item }: { item: Medicine }) {
         <button className="medicine-details-toggle" type="button" onClick={() => setDetailsOpen((open) => !open)} aria-expanded={detailsOpen}>
           <span aria-hidden="true">{detailsOpen ? "先收起詳細資料" : "想看更多用法與安全提醒"}</span>
           <span className="sr-only">查看官方用藥與安全資料</span>
+          <ChevronDown aria-hidden="true" />
         </button>
         {detailsOpen && (
           <div className="medicine-official-details">

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 
 export default function SiteFooter() {
   return (
@@ -7,7 +8,7 @@ export default function SiteFooter() {
         <section aria-labelledby="footer-brand-title">
           <h2 id="footer-brand-title" className="sr-only">資料來源與授權</h2>
           <div className="site-footer-brand">
-            <img src="/health-insurance-emblem.svg" alt="全民健康保險標誌" width="48" height="48" loading="lazy" />
+            <Image src="/health-insurance-emblem.svg" alt="全民健康保險標誌" width={48} height={48} />
             <span>MediMate</span>
           </div>
           <p>整理藥局與藥品資訊，方便查詢並回到原始來源核對。</p>

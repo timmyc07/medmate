@@ -18,7 +18,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="zh-Hant" className={`${displayFont.variable} ${bodyFont.variable}`}>
+    <html lang="zh-Hant" data-scroll-behavior="smooth" className={`${displayFont.variable} ${bodyFont.variable}`}>
       <body>
         {children}
         <SiteFooter />
