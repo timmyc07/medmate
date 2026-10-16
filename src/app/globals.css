@@ -17,6 +17,9 @@
   --danger: #a53630;
   --shadow-soft: 0 8px 28px rgba(31, 60, 45, 0.07), 0 2px 6px rgba(31, 60, 45, 0.035);
   --shadow-pill: 0 5px 16px rgba(0, 108, 75, 0.18);
+  --scrollbar-track: color-mix(in srgb, var(--surface-low) 82%, transparent);
+  --scrollbar-thumb: color-mix(in srgb, var(--forest) 46%, var(--line));
+  --scrollbar-thumb-hover: color-mix(in srgb, var(--forest) 72%, var(--mint));
   --font-stack-display: var(--font-display), "Noto Sans TC", system-ui, sans-serif;
   --font-stack-body: var(--font-body), "Noto Sans TC", system-ui, sans-serif;
 }
@@ -42,7 +45,17 @@
   --shadow-pill: 0 5px 16px rgba(0, 0, 0, 0.22);
 }
 
-* { box-sizing: border-box; }
+* {
+  box-sizing: border-box;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+  scrollbar-width: thin;
+}
+*::-webkit-scrollbar { width: 10px; height: 10px; }
+*::-webkit-scrollbar-track { background: var(--scrollbar-track); }
+*::-webkit-scrollbar-thumb { min-width: 44px; min-height: 44px; border: 2px solid transparent; border-radius: 999px; background: var(--scrollbar-thumb); background-clip: padding-box; }
+*::-webkit-scrollbar-thumb:hover { background-color: var(--scrollbar-thumb-hover); }
+*::-webkit-scrollbar-corner { background: var(--scrollbar-track); }
+*::-webkit-scrollbar-button { width: 0; height: 0; }
 html { min-width: 320px; scroll-behavior: smooth; background: var(--canvas); }
 body {
   margin: 0;
