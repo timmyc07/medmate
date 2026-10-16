@@ -22,10 +22,10 @@ export function htmlPrice(html, url) {
   const id = url.match(/\/SalePage\/Index\/(\d+)/i)?.[1];
   const listed = html.match(/"(?:MaxPrice|Price)"\s*:\s*([0-9]+(?:\.[0-9]+)?)/i)?.[1];
   const sale = html.match(/"(?:MinPrice|Price)"\s*:\s*([0-9]+(?:\.[0-9]+)?)/i)?.[1];
-  if (!id || !sale || !(Number(sale) > 0) || !Number.isFinite(Number(sale))) return null;
+  const salePrice = Number(sale);
   const listedPrice = Number(listed || sale);
-  if (!(listedPrice > 0) || !Number.isFinite(listedPrice)) return null;
-  return { id, name: title.replace(/\s+/g, " "), listedPrice, salePrice: Number(sale), url };
+  if (!id || !sale || ![salePrice, listedPrice].every(price => Number.isFinite(price) && price >= 0.01 && price <= 9_999_999_999.99)) return null;
+  return { id, name: title.replace(/\s+/g, " "), listedPrice, salePrice, url };
 }
 
 export async function get(url) {

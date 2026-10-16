@@ -46,10 +46,12 @@ describe("商品清單與價格解析", () => {
     }
   });
 
-  it("沒有價格或零價不視為成功", () => {
+  it("沒有價格、零價或超出資料庫範圍的價格不視為成功", () => {
     expect(htmlPrice(html, product(sources[0], 1))).toMatchObject({ salePrice: 12, listedPrice: 15 });
     expect(htmlPrice("<html>loading</html>", product(sources[0], 1))).toBeNull();
-    expect(htmlPrice('{"Price":0}', product(sources[0], 1))).toBeNull();
+    for (const price of [0, 0.001, 10_000_000_000]) {
+      expect(htmlPrice(JSON.stringify({ Price: price }), product(sources[0], 1))).toBeNull();
+    }
   });
 });
 
