@@ -20,9 +20,24 @@ describe("搜尋面板", () => {
   it("資料啟用後允許搜尋輸入", () => {
     const { container } = render(<SearchPanel kind="medicines" enabled />);
     expect(screen.getByRole("searchbox")).toBeEnabled();
+    expect(screen.getByRole("button", { name: "依症狀搜尋" })).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByRole("searchbox", { name: "搜尋症狀" })).toHaveAttribute("placeholder", "輸入症狀");
     expect(screen.getByRole("button", { name: "搜尋" })).toBeEnabled();
     expect(container.querySelector(".search-button svg")).toBeInTheDocument();
     expect(container.querySelector(".material-symbols-outlined")).toBeNull();
+  });
+
+  it("可切換為藥品名稱或許可證字號搜尋", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response(JSON.stringify({ items: [], page: 1, pageSize: 20, total: 0 }), { status: 200 }));
+    render(<SearchPanel kind="medicines" enabled />);
+
+    fireEvent.click(screen.getByRole("button", { name: "依藥品搜尋" }));
+    const input = screen.getByRole("searchbox", { name: "搜尋藥品名稱或相關文字" });
+    expect(input).toHaveAttribute("placeholder", "輸入藥品名稱或許可證字號");
+    fireEvent.change(input, { target: { value: "普拿疼" } });
+    fireEvent.click(screen.getByRole("button", { name: "搜尋" }));
+
+    await waitFor(() => expect(globalThis.fetch).toHaveBeenCalledWith(expect.stringContaining("q=%E6%99%AE%E6%8B%BF%E7%96%BC"), expect.anything()));
   });
 
   it("包含全台 22 個縣市與 368 個鄉鎮市區", () => {

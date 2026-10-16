@@ -13,6 +13,7 @@ import {
 } from "../lib/taiwan-administrative-areas";
 
 type Kind = "pharmacies" | "medicines";
+type MedicineSearchMode = "symptom" | "medicine";
 
 export default function SearchPanel({
   kind,
@@ -26,6 +27,7 @@ export default function SearchPanel({
   showPillFeatureFinder?: boolean;
 }) {
   const [keyword, setKeyword] = useState(initialQuery);
+  const [medicineSearchMode, setMedicineSearchMode] = useState<MedicineSearchMode>("symptom");
   const [city, setCity] = useState("");
   const [district, setDistrict] = useState("");
   const [location, setLocation] = useState<{
@@ -177,6 +179,15 @@ export default function SearchPanel({
     void search(undefined, 1, null, marking, { city: "", district: "" });
   }
 
+  function selectMedicineSearchMode(mode: MedicineSearchMode) {
+    requestIdRef.current += 1;
+    setMedicineSearchMode(mode);
+    setKeyword("");
+    setResult(null);
+    setError("");
+    setLoading(false);
+  }
+
   const quickCities = Array.from(new Set([...(city ? [city] : []), ...TAIWAN_CITIES.slice(0, 5)]));
 
   return (
@@ -186,13 +197,21 @@ export default function SearchPanel({
       aria-labelledby={`${kind}-title`}
     >
       <div className="section-heading">
-        <h2 id={`${kind}-title`}>{kind === "medicines" ? "你哪裡不舒服？" : `${label}查詢`}</h2>
+        <h2 id={`${kind}-title`}>{kind === "medicines" ? "藥品查詢" : `${label}查詢`}</h2>
       </div>
       {kind === "medicines" && (
-        <p className="search-friendly-hint">
-          輸入症狀或藥品名稱，例如「頭痛」、「鼻塞」、「腳痛」、「普拿疼」。
-          可搜尋：{Object.keys(MEDICINE_SYMPTOM_ALIASES).join("、")}。
-        </p>
+        <>
+          <fieldset className="medicine-search-modes">
+            <legend className="sr-only">藥品查詢方式</legend>
+            <button className={medicineSearchMode === "symptom" ? "is-active" : ""} type="button" aria-pressed={medicineSearchMode === "symptom"} onClick={() => selectMedicineSearchMode("symptom")}>依症狀搜尋</button>
+            <button className={medicineSearchMode === "medicine" ? "is-active" : ""} type="button" aria-pressed={medicineSearchMode === "medicine"} onClick={() => selectMedicineSearchMode("medicine")}>依藥品搜尋</button>
+          </fieldset>
+          <p className="search-friendly-hint">
+            {medicineSearchMode === "symptom"
+              ? `輸入不適症狀，例如「頭痛」、「鼻塞」、「腳痛」。可搜尋：${Object.keys(MEDICINE_SYMPTOM_ALIASES).join("、")}。`
+              : "輸入藥品名稱或許可證字號，例如「普拿疼」或「衛署藥製字」。"}
+          </p>
+        </>
       )}
       {kind === "medicines" && showPillFeatureFinder && (
         <PillFeatureFinder onCompare={compareAppearance} />
@@ -200,7 +219,7 @@ export default function SearchPanel({
       <form className={`search-form search-form--${kind}`} onSubmit={submitSearch}>
         <label className="search-field">
           <Search className="input-icon" aria-hidden="true" />
-          <span className="sr-only">搜尋{label}名稱或相關文字</span>
+          <span className="sr-only">{kind === "medicines" && medicineSearchMode === "symptom" ? "搜尋症狀" : `搜尋${label}名稱或相關文字`}</span>
           <input
             type="search"
             value={keyword}
@@ -208,7 +227,9 @@ export default function SearchPanel({
             placeholder={
               kind === "pharmacies"
                 ? "藥局名稱或地址"
-                : "輸入症狀或藥品名稱"
+                : medicineSearchMode === "symptom"
+                  ? "輸入症狀"
+                  : "輸入藥品名稱或許可證字號"
             }
             maxLength={100}
             required={kind === "medicines"}
