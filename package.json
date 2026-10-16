@@ -19,7 +19,7 @@
     "db:import-medicine-information": "node scripts/import-medicine-information.mjs"
     ,"db:import-medicine-prices": "node scripts/import-medicine-prices.mjs"
     ,"db:crawl-retail-prices": "node scripts/crawl-retail-prices.mjs"
-    ,"db:crawl-retail-prices:batch": "CRAWL_MAX_PRODUCTS=100 node scripts/crawl-retail-prices.mjs"
+    ,"db:crawl-retail-prices:batch": "node scripts/crawl-retail-prices.mjs"
   },
   "license": "UNLICENSED",
   "type": "module",

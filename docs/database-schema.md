@@ -70,9 +70,9 @@
 
 自費線上價格來源、商品價格觀測與人工精確配對審核。觀測保存原價、促銷價、規格、來源網址、抓取時間、內容 hash 與 parser 版本；未核准配對不會顯示在藥品卡片。`medicine_price_90d_stats` 提供近 90 日已核准樣本的平均、中位數、最低、最高、樣本數與來源數。
 
-### `retail_crawl_state` — 自費價格爬取游標
+### `retail_crawl_queue` — 自費價格爬取進度
 
-每個來源的 sitemap 分頁與商品 offset。GitHub Actions 每批更新後寫入，讓排程工作可從中斷位置繼續。
+每輪固定保存兩個來源所有 sitemap 的唯一商品網址，包含 `round_id`、`product_index`、`status`、`attempts`、`last_attempt_at` 與 `last_error`。主鍵為來源及商品網址。商品價格與完成狀態逐筆在同一交易提交；待重試商品保持 `pending`，404/410 記為 `unavailable`。僅當整輪沒有 pending 商品時，下一批才重新讀取所有 sitemap 建立新一輪。010 migration 取代舊分頁 offset；既有價格觀測不刪除。
 
 ## Schema 定義來源
 
@@ -85,5 +85,6 @@
 - `db/migrations/007_medicine_prices.sql`
 - `db/migrations/008_retail_price_observations.sql`
 - `db/migrations/009_retail_crawl_state.sql`
+- `db/migrations/010_retail_crawl_queue.sql`
 
 官方文件：[PostgreSQL 18 — Table Basics](https://www.postgresql.org/docs/current/ddl-basics.html)。

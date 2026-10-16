@@ -78,11 +78,29 @@ Render 必須設定 `DATABASE_URL` 為 Neon pooled URL。direct `DATABASE_URL_UN
 
 ### 線上自費價格觀測
 
-`npm run db:crawl-retail-prices -- --dry-run` 會以每站至少 2.5 秒間隔讀取 robots 允許的公開商品 sitemap/頁面；正式抓取可用 `CRAWL_MAX_PRODUCTS=500 npm run db:crawl-retail-prices`，建議排程每日或每週執行並使用快取。資料寫入 `medicine_price_observations`，只有在 `medicine_price_matches` 標記 `approved` 且同規格、可售、近 90 日的樣本才會計算平均/中位數。畫面應稱「目前蒐集來源的近 90 日自費售價平均」，不可宣稱所有藥品或全台平均。
+`npm run db:crawl-retail-prices -- --dry-run --limit 2` 會讀取康是美及杏一的全部 sitemap、列出各來源商品數，再各試抓一筆價格，不寫入資料庫。HTTP 請求至少間隔 2.5 秒，每次請求最多 15 秒。正式批次預設最多嘗試 100 個商品、10 分鐘；手動小量驗證可用 `node --env-file=.env scripts/crawl-retail-prices.mjs --limit 2`。不以成功價格筆數計算上限，避免錯誤頁讓工作超時。資料寫入 `medicine_price_observations`，只有在 `medicine_price_matches` 標記 `approved` 且同規格、可售、近 90 日的樣本才會計算平均/中位數。畫面應稱「目前蒐集來源的近 90 日自費售價平均」，不可宣稱所有藥品或全台平均。
 
-GitHub Actions `更新線上自費價格` 每 2 小時執行一批 100 個商品，游標保存在 `retail_crawl_state`，網站服務重啟不會遺失進度。在專案 Settings → Secrets and variables → Actions → New repository secret 設定 `DATABASE_URL_UNPOOLED`（direct connection），或設定 `DATABASE_URL`（pooled connection）；爬蟲優先使用非空的 direct URL。Render 的環境變數不會自動提供給 GitHub Actions。兩個 Secret 都未設定時，工作會在安裝依賴前明確報錯；補好後可到 Actions → 更新線上自費價格 → Run workflow 手動確認。連線字串不能放入前端或 Git；direct URL 不放入 Render runtime。排程會在每批完成後繼續下一批，直到各來源 sitemap 走完，再從第一頁重新觀測新價格。
+GitHub Actions `更新線上自費價格` 每 2 小時執行一批，進度保存在 `retail_crawl_queue`。兩個來源輪流取一筆，來源沒有可處理商品時由另一來源用完剩餘額度。在專案 Settings → Secrets and variables → Actions → New repository secret 設定 `DATABASE_URL_UNPOOLED`（direct connection），或設定 `DATABASE_URL`（pooled connection）；爬蟲優先使用非空的 direct URL。Render 的環境變數不會自動提供給 GitHub Actions。兩個 Secret 都未設定時，工作會在安裝依賴前明確報錯。連線字串不能放入前端或 Git；direct URL 不放入 Render runtime。
 
-Render Web Service 同時啟動 `retail-price-daemon.mjs` 背景程序，每 2 小時執行一批 100 筆，並以 `DATABASE_URL_UNPOOLED` 或 `DATABASE_URL` 寫入資料庫；網頁程序與爬蟲分離，查詢請求不會等待爬蟲。Render 重新部署或休眠後，daemon 會重新啟動並依 `retail_crawl_state` 繼續。若日後改用 GitHub Actions 或 Render Cron，應停用此 daemon，避免兩個排程同時抓取。
+每輪先固定兩個來源的完整 URL 清單，跨 sitemap 去重並移除追蹤參數；本輪中來源 sitemap 的重排、增刪不會挪動待抓商品，新商品下一輪納入。價格及該筆進度在同一交易提交，程序中斷後已提交的商品不重抓，尚未提交的當筆可能重新下載，但不會漏掉未保存的價格。同日同來源同商品更新既有觀測，不增加重複列。
+
+404/410 會保留明確的下架紀錄；連線逾時、429/5xx、缺少有效價格則保留 pending 及錯誤原因，同一批最多嘗試一次。未嘗試過的商品優先於重試商品，因此錯誤商品不會占滿每批或阻擋其他商品。若本批有暫時失敗，Actions 標記失敗但已成功商品的進度仍保存；排程下一次自動接續。只有整輪所有商品成功或明確下架，才會建立下一輪；永久解析失敗必須修復解析器，不能把 pending 清空冒充完成。
+
+Render 的 start command 為 `npm start`，僅由 GitHub Actions 排程，不再啟動背景爬蟲。升級時先停用舊 daemon，套用 `010_retail_crawl_queue.sql`，再啟用新腳本。舊游標可能已漏抓，故新版本會從完整清單重新開始一輪；既有價格與配對審核保留。初始化由 transaction advisory lock 保護，商品由 `FOR UPDATE SKIP LOCKED` 保護，即使手動工作並行也不會同時取得相同商品。
+
+每次工作最後會輸出各來源的 total / pending / succeeded / unavailable；可用下列 SQL 檢查整輪進度：
+
+```sql
+SELECT s.name, q.round_id, q.status, count(*)
+FROM retail_crawl_queue q JOIN medicine_price_sources s USING (source_id)
+GROUP BY s.name, q.round_id, q.status ORDER BY s.name, q.status;
+
+SELECT s.name, q.product_url, q.attempts, q.last_error
+FROM retail_crawl_queue q JOIN medicine_price_sources s USING (source_id)
+WHERE q.status = 'pending' AND q.attempts > 0;
+```
+
+整合測試用 `node --env-file=<隔離分支環境檔> node_modules/vitest/vitest.mjs run tests/scripts/crawl-retail-prices.test.ts` 執行。測試在獨立暫存 schema 建立 fixture，涵蓋續抓、整輪重置、失敗重試、交易回滾與並行鎖；沒有資料庫環境變數時只執行純解析測試。
 
 首次 schema/import 驗證使用有到期時間的 Neon branch `medmate-import-test-20261008`。2026-10-08 已在驗證 branch 測試後，將 `001_catalog.sql` 套用 production 並從 `/Users/reikous/Downloads/藥品資料庫` 匯入三個受支援 CSV：FDA 藥局 9,155 原始列（去重後 9,153）、健保特約藥局 10,187 列、FDA 藥品許可證 72,074 原始列（去重後 66,510）；每個來源 SHA-256 與筆數寫入 `source_imports`。36/43/53 詳細藥品資料已於 2026-10-14 經隔離 branch 驗證後套用 production；37 及健保 B5/TXT 仍未接入產品。正式查詢與匯入帳號應分開管理並授予最小權限；Neon 預設 app connection 若仍使用 owner role，應另建唯讀角色。CSV 匯入命令和白名單/來源更新策略見[資料來源文件](data-sources.md)。原始 CSV 不應提交到 GitHub。
 
