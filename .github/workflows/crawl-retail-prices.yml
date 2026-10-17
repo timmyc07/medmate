@@ -4,14 +4,13 @@ on:
   push:
     branches: [main]
     paths:
-      - .github/workflows/crawl-retail-prices.yml
       - scripts/crawl-retail-prices.mjs
       - scripts/retail-price-verification.mjs
       - scripts/cyberbiz-price-verification.mjs
       - scripts/refresh-retail-licenses.mjs
       - package-lock.json
   schedule:
-    - cron: "7,27,47 * * * *"
+    - cron: "11,31,51 * * * *"
   workflow_dispatch:
 
 concurrency:

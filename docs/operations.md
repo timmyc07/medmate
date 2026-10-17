@@ -88,9 +88,11 @@ TFDA 的「包裝」目前只列玻璃瓶、塑膠瓶等材質，不能證明 19
 
 `npm run db:crawl-retail-prices -- --dry-run --limit 2` 只解析限定商品頁，不寫資料庫，也不代表已通過官方藥證核實。正式工作需先在隔離 Neon branch 套用 migration，再以該分支連線執行爬蟲；驗證後才對 production 套用 `012_verified_retail_prices.sql` 並執行批次。HTTP 請求至少間隔 2.5 秒、每次最多 15 秒，逐筆請求，不提高並行數。批次最多嘗試 150 個商品、10 分鐘，按嘗試數而非成功數計算上限。
 
-GitHub Actions `更新已核實藥品自費價格` 每小時第 7、27、47 分執行一批，concurrency group 不允許重疊。需在 Repository Actions Secrets 設定 `DATABASE_URL_UNPOOLED`（優先）或 `DATABASE_URL`；Render 環境不會自動提供給 Actions。連線字串不得提交 Git 或送至瀏覽器，direct URL 不放入 Render runtime。排程延遲、來源冷卻或外部服務故障可能使價格超過時效而隱藏，不能保證每 20 分鐘必定更新成功。
+GitHub Actions `更新已核實藥品自費價格` 每小時第 11、31、51 分執行一批，concurrency group 不允許重疊。需在 Repository Actions Secrets 設定 `DATABASE_URL_UNPOOLED`（優先）或 `DATABASE_URL`；Render 環境不會自動提供給 Actions。連線字串不得提交 Git 或送至瀏覽器，direct URL 不放入 Render runtime。排程延遲、來源冷卻或外部服務故障可能使價格超過時效而隱藏，不能保證每 20 分鐘必定更新成功。
 
-價格腳本、來源清單、工作流程或依賴鎖檔更新至 `main` 時，也會以 `push` 事件自動執行相同工作；分支推送不執行正式爬蟲。每次工作在抓取前先跑純解析規則測試，不在 production 執行資料庫整合 fixture。Cyberbiz 商品頁及其公開 `.json` 各算一次 HTTP 請求，兩者仍共用至少 2.5 秒間隔、逾時與限流冷卻；JSON 失敗不能保存 HTML 的起價。
+價格腳本、來源清單或依賴鎖檔更新至 `main` 時，也會以 `push` 事件自動執行相同工作；分支推送或僅調整定時設定不重複抓價。每次工作在抓取前先跑純解析規則測試，不在 production 執行資料庫整合 fixture。Cyberbiz 商品頁及其公開 `.json` 各算一次 HTTP 請求，兩者仍共用至少 2.5 秒間隔、逾時與限流冷卻；JSON 失敗不能保存 HTML 的起價。
+
+2026-10-17 已確認 `b205275` 的 [push 自動工作](https://github.com/timmyc07/medmate/actions/runs/39007503502)於台灣時間 13:46–13:48 成功，新增兩來源原先在 production 不存在，工作後寫入 4 筆核實報價，線上 API 可查得。當時最新 `schedule` 仍為舊提交，因此未把 push 成功冒稱為定時成功；另依 [GitHub 官方排錯說明](https://docs.github.com/en/actions/how-tos/troubleshoot-workflows)重寫 cron 登記，頻率不變。這不證明根因是 actor 問題；仍須觀察新的 schedule 事件及更新時間。
 
 確認更新時須同時核對 Actions 的 commit、事件（`schedule` 或 `push`）、完成狀態及爬蟲 JSON 輸出的各來源進度，再比對 `medicine_price_observations.captured_at` 與搜尋 API。手動成功不能冒稱定時事件成功；`active` 只表示工作流程啟用，不代表已執行。最新時間可查：
 
