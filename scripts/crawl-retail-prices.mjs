@@ -4,6 +4,7 @@ import { pathToFileURL } from "node:url";
 import { Pool } from "pg";
 import { parseRetailProduct } from "./retail-price-verification.mjs";
 import { refreshRetailLicenses } from "./refresh-retail-licenses.mjs";
+import { parseCyberbizProduct } from "./cyberbiz-price-verification.mjs";
 
 export const SOURCES = [
   {
@@ -11,6 +12,22 @@ export const SOURCES = [
     catalog: "https://www.medfirst.com.tw/v2/official/SalePageCategory/410434",
     // 限定已核對專區的商品；新增品項先審查來源，不自動納入全商城推薦商品。
     productIds: [10792109,10792107,10792105,10617941,10613828,10613827,10613807,10610545,10517760,10517631,10415240,10415220,10275408,10223532,10223530,10223526,9957785,9957742,8493827,7559100,7559083,7554845],
+  },
+  {
+    id: "084fc0a0-86ae-4e57-9f9e-f77d385c32a1", name: "赫爾藥局｜乙類成藥", base: "https://www.healpharma.tw", platform: "cyberbiz",
+    catalog: "https://www.healpharma.tw/pages/item",
+    products: [
+      { path: "/products/唐鑫-75酒精隨身瓶", name: "唐鑫 75% 酒精隨身瓶 - 99ml <乙類成藥>", productId: 69219973, variantId: 84332341, sku: "2023000", licenseNumber: "衛署成製字第014632號", specification: "99mL" },
+      { path: "/products/麥迪森-口樂漱口液", name: "麥迪森 口樂漱口液 -250ml", productId: 66153047, variantId: 80229427, sku: "2010067", licenseNumber: "衛部成製字第016842號", specification: "250mL" },
+    ],
+  },
+  {
+    id: "e4ec3c11-4fab-4962-ac19-bd1843dd650b", name: "漁人生醫｜乙類成藥", base: "https://www.fmbiomed.com.tw", platform: "cyberbiz",
+    catalog: "https://www.fmbiomed.com.tw/zh-TW/products/alcohol-500ml",
+    products: [
+      { path: "/zh-TW/products/alcohol-500ml", name: "派頓 潔康75％藥用酒精 500ml", productId: 33923399, variantId: 37697592, sku: "ALC-500ML", licenseNumber: "衛署成製字第013214號", specification: "500mL" },
+      { path: "/zh-TW/products/alcohol-4000ml", name: "派頓 潔康75％藥用酒精 (4L/桶)", productId: 33923263, variantId: 37697188, sku: "ALC-4L", licenseNumber: "衛署成製字第013214號", specification: "4000mL" },
+    ],
   },
 ];
 const USER_AGENT = "MediMatePublicPriceBot/1.0 (+https://medmate-53s1.onrender.com/medicines)";
@@ -47,8 +64,21 @@ export async function get(url) {
 }
 
 export async function collectProducts(source) {
+  if (source.platform === "cyberbiz") {
+    if (!source.products?.length) throw new Error("藥品來源清單無效");
+    const urls = source.products.map(product => new URL(product.path, source.base));
+    if (urls.some(url => url.origin !== source.base || !/^\/(?:zh-TW\/)?products\/[^/]+$/.test(url.pathname) || url.search || url.hash)) throw new Error("藥品來源商品網址無效");
+    return [...new Set(urls.map(url => url.href))];
+  }
   if (!source.productIds?.length || source.productIds.some(id => !Number.isSafeInteger(id) || id <= 0)) throw new Error("藥品來源清單無效");
   return [...new Set(source.productIds)].map(id => `${source.base}/SalePage/Index/${id}`);
+}
+
+export async function readRetailProduct(url, source, read = get) {
+  const html = await read(url);
+  if (source.platform !== "cyberbiz") return parseRetailProduct(html, url, source);
+  const jsonUrl = new URL(`/products/${new URL(url).pathname.split("/").at(-1)}.json`, source.base).href;
+  return parseCyberbizProduct(html, JSON.parse(await read(jsonUrl)), url, source);
 }
 
 export async function ensureRound(client, sources = SOURCES, collect = collectProducts) {
@@ -111,7 +141,7 @@ export async function crawlBatch(client, { roundId, sources = SOURCES, limit = 1
       let lastError = null;
       let delay = 0;
       try {
-        row = parseRetailProduct(await read(url), url, source);
+        row = await readRetailProduct(url, source, read);
         if (!row.excluded) {
           const license = await client.query("SELECT source_sha256 FROM medicine_retail_license_verifications WHERE license_number=$1 AND drug_category='乙類成藥' AND NOT cancelled AND valid_until >= (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Taipei')::date AND verified_at > now()-interval '7 days'", [row.licenseNumber]);
           licenseHash = license.rows[0]?.source_sha256;
@@ -135,7 +165,7 @@ export async function crawlBatch(client, { roundId, sources = SOURCES, limit = 1
       }
       if (row) {
         const now = new Date();
-        const observation = await client.query("INSERT INTO medicine_price_observations (observation_id,source_id,external_product_id,product_name,specification_raw,listed_price,sale_price,captured_at,captured_date,product_url,raw_payload_hash,parser_version,sku_id,license_number,match_method,match_confidence,availability) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,($8::timestamptz AT TIME ZONE 'Asia/Taipei')::date,$9,$10,'91app-exact-sku-v2',$11,$12,'exact-license',1,'unknown') ON CONFLICT (source_id,external_product_id,captured_date) DO UPDATE SET product_name=excluded.product_name,specification_raw=excluded.specification_raw,listed_price=excluded.listed_price,sale_price=excluded.sale_price,captured_at=excluded.captured_at,product_url=excluded.product_url,raw_payload_hash=excluded.raw_payload_hash,parser_version=excluded.parser_version,sku_id=excluded.sku_id,license_number=excluded.license_number,match_method=excluded.match_method,match_confidence=excluded.match_confidence RETURNING observation_id", [randomUUID(), source.id, row.id, row.name, row.specification, row.listedPrice, row.salePrice, now, row.url, createHash("sha256").update(JSON.stringify(row.evidence)).digest("hex"), row.skuId, row.licenseNumber]);
+        const observation = await client.query("INSERT INTO medicine_price_observations (observation_id,source_id,external_product_id,product_name,specification_raw,listed_price,sale_price,captured_at,captured_date,product_url,raw_payload_hash,parser_version,sku_id,license_number,match_method,match_confidence,availability) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,($8::timestamptz AT TIME ZONE 'Asia/Taipei')::date,$9,$10,$13,$11,$12,'exact-license',1,'unknown') ON CONFLICT (source_id,external_product_id,captured_date) DO UPDATE SET product_name=excluded.product_name,specification_raw=excluded.specification_raw,listed_price=excluded.listed_price,sale_price=excluded.sale_price,captured_at=excluded.captured_at,product_url=excluded.product_url,raw_payload_hash=excluded.raw_payload_hash,parser_version=excluded.parser_version,sku_id=excluded.sku_id,license_number=excluded.license_number,match_method=excluded.match_method,match_confidence=excluded.match_confidence RETURNING observation_id", [randomUUID(), source.id, row.id, row.name, row.specification, row.listedPrice, row.salePrice, now, row.url, createHash("sha256").update(JSON.stringify(row.evidence)).digest("hex"), row.skuId, row.licenseNumber, row.parserVersion]);
         await client.query("INSERT INTO medicine_price_matches(observation_id,license_number,match_method,status,evidence_url,reviewed_at,reviewed_by,specification,evidence,license_source_sha256) VALUES ($1,$2,'exact-license','approved',$3,$4,'automated-exact-license-single-sku-v2',$5,$6,$7) ON CONFLICT(observation_id) DO UPDATE SET license_number=excluded.license_number,status=excluded.status,evidence_url=excluded.evidence_url,reviewed_at=excluded.reviewed_at,reviewed_by=excluded.reviewed_by,specification=excluded.specification,evidence=excluded.evidence,license_source_sha256=excluded.license_source_sha256", [observation.rows[0].observation_id, row.licenseNumber, row.url, now, row.specification, row.evidence, licenseHash]);
       }
       await client.query("UPDATE retail_crawl_queue SET status=$3,last_attempt_at=clock_timestamp(),attempts=attempts+1,last_error=$4 WHERE source_id=$1 AND product_url=$2", [source.id, url, status, lastError]);
@@ -171,7 +201,7 @@ async function main() {
     for (let i = 0; attempted < limit && urls.some((products) => products.length); i += 1) {
       const url = urls[i % SOURCES.length].shift();
       if (!url) continue;
-      console.log(JSON.stringify({ url, product: parseRetailProduct(await get(url), url, SOURCES[i % SOURCES.length]) }));
+      console.log(JSON.stringify({ url, product: await readRetailProduct(url, SOURCES[i % SOURCES.length]) }));
       attempted += 1;
     }
     return;

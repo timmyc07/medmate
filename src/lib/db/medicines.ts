@@ -69,7 +69,7 @@ export async function searchMedicines(params: SearchParams): Promise<Page<Medici
       JOIN retail_crawl_queue AS queue ON queue.source_id=observation.source_id AND queue.product_url=observation.product_url
       WHERE observation.license_number=medicine.license_number AND matched.license_number=medicine.license_number
         AND matched.status='approved' AND source.active AND queue.status NOT IN ('unavailable','excluded')
-        AND observation.parser_version='91app-exact-sku-v2' AND observation.currency='TWD' AND observation.sale_price>0
+        AND observation.parser_version IN ('91app-exact-sku-v2','cyberbiz-exact-sku-v1') AND observation.currency='TWD' AND observation.sale_price>0
         AND observation.captured_at > now()-interval '7 days' AND observation.captured_at<=now()
         AND verified.drug_category='乙類成藥' AND NOT verified.cancelled
         AND verified.valid_until >= (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Taipei')::date

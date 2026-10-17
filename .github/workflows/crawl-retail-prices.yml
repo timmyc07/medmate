@@ -1,6 +1,15 @@
 name: 更新已核實藥品自費價格
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/crawl-retail-prices.yml
+      - scripts/crawl-retail-prices.mjs
+      - scripts/retail-price-verification.mjs
+      - scripts/cyberbiz-price-verification.mjs
+      - scripts/refresh-retail-licenses.mjs
+      - package-lock.json
   schedule:
     - cron: "7,27,47 * * * *"
   workflow_dispatch:
@@ -30,4 +39,6 @@ jobs:
           node-version-file: .node-version
           cache: npm
       - run: npm ci
+      - name: 驗證價格與規格解析規則
+        run: node node_modules/vitest/vitest.mjs run tests/scripts/retail-price-verification.test.ts tests/scripts/cyberbiz-price-verification.test.ts
       - run: npm run db:crawl-retail-prices:batch

@@ -78,7 +78,7 @@ Render 必須設定 `DATABASE_URL` 為 Neon pooled URL。direct `DATABASE_URL_UN
 
 ### 線上自費價格觀測
 
-2026-10-17 起，來源改為[杏一乙類成藥專區](https://www.medfirst.com.tw/v2/official/SalePageCategory/410434)已人工核對的 22 個商品 ID 清單。不再掃描康是美或杏一全商城 sitemap，舊來源停用但保留觀測供稽核。新增商品須先核對專區及公開頁面，再更新 `SOURCES.productIds`；不自動納入推薦商品、書籍、保健食品或醫材。這是有限線上通路樣本，不是全台藥局報價。
+2026-10-17 起，來源為杏一 22 個、赫爾藥局 2 個、漁人生醫 2 個已人工審查商品，共 3 通路 26 個頁面。不掃描全商城 sitemap，舊來源停用但保留觀測供稽核。新增商品須先審查業者身分、robots、藥證及公開頁面，再更新 `SOURCES` 的商品 ID 或包含商品／變體／商家 SKU／藥證／容量的 `products` 清單；不納入推薦商品、書籍、保健食品或醫材。通路核對依據見[資料來源文件](data-sources.md#線上自費價格觀測)，這是有限樣本，不是全台藥局報價。
 
 每次批次先檢查 TFDA `36/csv` 藥證核實快照，超過 7 日即下載更新。官方壓縮檔的大小、CSV 欄位、列數、同藥證衝突均檢查通過後，才在單一交易替換 `medicine_retail_license_verifications` 並更新來源 hash。只核准官方尚未註銷、未過期的乙類成藥完整許可證。商品主要資料的完整藥證、單一無規格選項 SKU、標題中的唯一數量／單位／容器，以及 SKU、頁面、JSON-LD 三處一致的 TWD 價格都必須成立；價格區間、組合、加購、APP 限定或歧義規格均排除。
 
@@ -89,6 +89,16 @@ TFDA 的「包裝」目前只列玻璃瓶、塑膠瓶等材質，不能證明 19
 `npm run db:crawl-retail-prices -- --dry-run --limit 2` 只解析限定商品頁，不寫資料庫，也不代表已通過官方藥證核實。正式工作需先在隔離 Neon branch 套用 migration，再以該分支連線執行爬蟲；驗證後才對 production 套用 `012_verified_retail_prices.sql` 並執行批次。HTTP 請求至少間隔 2.5 秒、每次最多 15 秒，逐筆請求，不提高並行數。批次最多嘗試 150 個商品、10 分鐘，按嘗試數而非成功數計算上限。
 
 GitHub Actions `更新已核實藥品自費價格` 每小時第 7、27、47 分執行一批，concurrency group 不允許重疊。需在 Repository Actions Secrets 設定 `DATABASE_URL_UNPOOLED`（優先）或 `DATABASE_URL`；Render 環境不會自動提供給 Actions。連線字串不得提交 Git 或送至瀏覽器，direct URL 不放入 Render runtime。排程延遲、來源冷卻或外部服務故障可能使價格超過時效而隱藏，不能保證每 20 分鐘必定更新成功。
+
+價格腳本、來源清單、工作流程或依賴鎖檔更新至 `main` 時，也會以 `push` 事件自動執行相同工作；分支推送不執行正式爬蟲。每次工作在抓取前先跑純解析規則測試，不在 production 執行資料庫整合 fixture。Cyberbiz 商品頁及其公開 `.json` 各算一次 HTTP 請求，兩者仍共用至少 2.5 秒間隔、逾時與限流冷卻；JSON 失敗不能保存 HTML 的起價。
+
+確認更新時須同時核對 Actions 的 commit、事件（`schedule` 或 `push`）、完成狀態及爬蟲 JSON 輸出的各來源進度，再比對 `medicine_price_observations.captured_at` 與搜尋 API。手動成功不能冒稱定時事件成功；`active` 只表示工作流程啟用，不代表已執行。最新時間可查：
+
+```sql
+SELECT s.name, max(o.captured_at) AS latest_capture, count(*) AS observations
+FROM medicine_price_sources s JOIN medicine_price_observations o USING(source_id)
+WHERE s.active GROUP BY s.name;
+```
 
 每輪固定清單並去重，價格、核准證據及完成狀態同一交易提交；同日同來源同 SKU 更新既有觀測。404/410 記為 `unavailable`；書籍、缺藥證或歧義規格等記為 `excluded` 並保存原因，不無限重試。缺主要商品資料、無效價格或網路錯誤仍保留 `pending`，本批每個 URL 最多嘗試一次。429、5xx、逾時或網路失敗立即停止來源至少 30 分鐘，403 至少 24 小時，遵守更長的 `Retry-After`；連續三筆解析失敗也暫停 30 分鐘。冷卻期限跨重啟保存，不能繞過。未嘗試商品優先；暫時失敗使 Actions 標記失敗，但已提交進度保留。
 
@@ -111,7 +121,7 @@ WHERE crawl_not_before > now();
 
 整合測試用 `node --env-file=<隔離分支環境檔> node_modules/vitest/vitest.mjs run tests/scripts/crawl-retail-prices.test.ts` 執行。測試在獨立暫存 schema 建立 fixture，涵蓋續抓、整輪重置、失敗重試、交易回滾與並行鎖；沒有資料庫環境變數時只執行純解析測試。
 
-2026-10-17 在 24 小時到期的隔離 Neon branch 完成 128 項測試，包含官方快照更新、核實證據、過期／下架／新 SKU 篩選與健保價分離。真實來源首輪 22 個商品有 13 筆報價通過、涵蓋 5 張藥證；9 筆因藥證或規格證據不足排除。Firefox 153 / Windows WebKit 26.5 在 1440、390、320px 驗證自費價格、來源、更新時間、搜尋、地圖與滾動欄；WebKit 不是 macOS／iOS Safari 實機測試。數量是當日樣本，不是固定覆蓋率。
+2026-10-17 已在 24 小時到期的隔離 Neon branch 驗證多通路交易、官方快照、核實證據、過期／下架／新 SKU 篩選、JSON 限流與原通路接續及健保價分離。3 通路 26 個商品中有 17 筆報價通過、涵蓋 8 張藥證；9 筆因藥證或規格證據不足排除。Firefox 153 / Windows WebKit 26.5 在 1440、390、320px 驗證自費價格、來源、更新時間、搜尋、地圖與滾動欄；WebKit 不是 macOS／iOS Safari 實機測試。數量是當日樣本，不是固定覆蓋率。
 
 首次 schema/import 驗證使用有到期時間的 Neon branch `medmate-import-test-20261008`。2026-10-08 已在驗證 branch 測試後，將 `001_catalog.sql` 套用 production 並從 `/Users/reikous/Downloads/藥品資料庫` 匯入三個受支援 CSV：FDA 藥局 9,155 原始列（去重後 9,153）、健保特約藥局 10,187 列、FDA 藥品許可證 72,074 原始列（去重後 66,510）；每個來源 SHA-256 與筆數寫入 `source_imports`。36/43/53 詳細藥品資料已於 2026-10-14 經隔離 branch 驗證後套用 production；37 及健保 B5/TXT 仍未接入產品。正式查詢與匯入帳號應分開管理並授予最小權限；Neon 預設 app connection 若仍使用 owner role，應另建唯讀角色。CSV 匯入命令和白名單/來源更新策略見[資料來源文件](data-sources.md)。原始 CSV 不應提交到 GitHub。
 

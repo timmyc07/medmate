@@ -133,6 +133,13 @@ for (const engine of [firefox, webkit]) {
       await checkLayout(page);
     }
     await page.setViewportSize({ width: 390, height: 844 });
+    await search(page, "衛部成製字第016842號");
+    assert.match(await page.getByRole("region", { name: "已核實的自費價格" }).innerText(), /250mL[\s\S]*赫爾藥局/);
+    await search(page, "衛署成製字第013214號");
+    const alcoholPrices = await page.getByRole("region", { name: "已核實的自費價格" }).innerText();
+    assert.match(alcoholPrices, /500mL/);
+    assert.match(alcoholPrices, /4000mL/);
+    assert.match(alcoholPrices, /漁人生醫/);
     if (screenshotDirectory) {
       await page.evaluate(() => window.scrollTo(0, 0));
       await page.screenshot({ path: join(screenshotDirectory, `${engine.name()}-medicines.png`) });

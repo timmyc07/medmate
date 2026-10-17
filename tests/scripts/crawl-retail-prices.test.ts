@@ -8,6 +8,7 @@ import { retailHtml as html, retailLicense } from "../fixtures/retail-product";
 import { searchMedicines } from "../../src/lib/db/medicines";
 import { refreshRetailLicenses } from "../../scripts/refresh-retail-licenses.mjs";
 import { strToU8, zipSync } from "fflate";
+import { cyberbizFixture, cyberbizSource, cyberbizUrl } from "../fixtures/cyberbiz-product";
 
 const query = vi.fn();
 vi.mock("../../src/lib/db/pool", () => ({ getPool: () => ({ query }) }));
@@ -174,6 +175,32 @@ describe.skipIf(!process.env.DATABASE_URL_UNPOOLED)("Postgres 爬取進度整合
     const rows = (await client.query("SELECT o.specification_raw,o.sku_id,m.status,m.specification,m.license_source_sha256,m.evidence FROM medicine_price_observations o JOIN medicine_price_matches m USING(observation_id)")).rows;
     expect(rows).toHaveLength(1);
     expect(rows[0]).toMatchObject({ specification_raw: "19g/罐", sku_id: "1001", status: "approved", specification: "19g/罐", license_source_sha256: "a".repeat(64), evidence: { licenseNumber: retailLicense, price: 12, skuId: "1001" } });
+  });
+
+  it("新增 Cyberbiz 通路沿用同一交易與搜尋核實條件，原通路不受影響", async () => {
+    const allSources = [...sources, cyberbizSource];
+    const roundId = await ensureRound(client, allSources);
+    const fixture = cyberbizFixture();
+    const read = async (url: string) => url.startsWith(cyberbizSource.base) ? url.endsWith(".json") ? JSON.stringify(fixture.model) : fixture.html : html(url);
+    expect(await crawlBatch(client, { roundId, sources: allSources, limit: 3, read })).toMatchObject({ observations: 3, failed: 0 });
+    const item = (await searchMedicines({ keyword: "虎標", page: 1, pageSize: 10 })).items[0];
+    expect(item.retailPrices).toHaveLength(3);
+    expect(item.retailPrices).toContainEqual(expect.objectContaining({ amount: 80, specification: "500mL", sourceName: cyberbizSource.name, sourceUrl: cyberbizUrl }));
+    expect((await client.query("SELECT parser_version FROM medicine_price_observations WHERE source_id=$1", [cyberbizSource.id])).rows[0].parser_version).toBe("cyberbiz-exact-sku-v1");
+  });
+
+  it("公開 SKU JSON 取得失敗時不寫入價格，遵守來源冷卻且原通路繼續", async () => {
+    const allSources = [...sources, cyberbizSource];
+    const roundId = await ensureRound(client, allSources);
+    const fixture = cyberbizFixture();
+    const read = vi.fn(async (url: string) => {
+      if (url.endsWith(".json")) throw Object.assign(new Error("HTTP 429"), { status: 429 });
+      return url.startsWith(cyberbizSource.base) ? fixture.html : html(url);
+    });
+    expect(await crawlBatch(client, { roundId, sources: allSources, read })).toMatchObject({ observations: 7, failed: 1 });
+    expect((await client.query("SELECT count(*)::int AS count FROM medicine_price_observations WHERE source_id=$1", [cyberbizSource.id])).rows[0].count).toBe(0);
+    expect((await client.query("SELECT status,last_error FROM retail_crawl_queue WHERE source_id=$1", [cyberbizSource.id])).rows[0]).toEqual({ status: "pending", last_error: "HTTP 429" });
+    expect((await client.query("SELECT crawl_not_before>now() AS paused FROM medicine_price_sources WHERE source_id=$1", [cyberbizSource.id])).rows[0].paused).toBe(true);
   });
 
   it("搜尋端只回傳最新核實售價，不混合 19g 與 30g 包裝", async () => {

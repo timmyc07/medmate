@@ -8,6 +8,10 @@ export function normalizeRetailPackage(value) {
   return `${Number(match[1])}${unit}/${match[3]}`;
 }
 
+export function isRetailPrice(price) {
+  return Number.isFinite(price) && price > 0 && price <= 9_999_999_999.99 && /^\d+(?:\.\d{1,2})?$/.test(String(price));
+}
+
 export function parseRetailProduct(html, url, source) {
   const data = html.match(/window\.ServerRenderData\["SalePageIndexViewModel"\]\s*=\s*(\{[^\r\n]*\});/);
   if (!data) throw new Error("主要商品資料未載入");
@@ -22,7 +26,7 @@ export function parseRetailProduct(html, url, source) {
   if (packs.length !== 1 || model.HasSKU !== false || !Array.isArray(sku) || sku.length !== 1 || sku[0].PropertyNameSet !== "-1:-1:-1:-1" || !Number.isSafeInteger(sku[0].SaleProductSKUId) || sku[0].SaleProductSKUId <= 0 || model.SaleProductSKUIdList?.length !== 1 || sku[0].SaleProductSKUId !== model.SaleProductSKUIdList[0]) return { excluded: "無法核實單一 SKU 與包裝規格" };
   if (model.IsSalePageBundle || model.IsPurchaseExtra || model.IsAPPOnly || model.IsRestricted || model.IsComingSoon !== false || sku[0].IsShow === false || model.StatusDef !== "Normal" || model.SalePageKindDef !== "Normal") return { excluded: "非一般單品公開售價" };
   const price = model.Price;
-  if (!Number.isFinite(price) || price <= 0 || price > 9_999_999_999.99 || !/^\d+(?:\.\d{1,2})?$/.test(String(price))) throw new Error("無效自費售價");
+  if (!isRetailPrice(price)) throw new Error("無效自費售價");
   if (![model.MinPrice, model.MaxPrice, sku[0].Price].every(amount => amount === price)) return { excluded: "SKU 與頁面價格不一致或為價格區間" };
   const schemas = [...html.matchAll(/<script\b[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)].map(match => JSON.parse(match[1]));
   const schema = schemas.find(item => item["@type"] === "Product" && item.name === model.Title);
@@ -31,7 +35,8 @@ export function parseRetailProduct(html, url, source) {
   return {
     id: `${productId}:${sku[0].SaleProductSKUId}`, name: model.Title, licenseNumber: licenses[0],
     specification: packs[0], skuId: String(sku[0].SaleProductSKUId),
-    listedPrice: Number.isFinite(model.SuggestPrice) && model.SuggestPrice > 0 && model.SuggestPrice <= 9_999_999_999.99 && /^\d+(?:\.\d{1,2})?$/.test(String(model.SuggestPrice)) ? model.SuggestPrice : null, salePrice: price,
+    listedPrice: isRetailPrice(model.SuggestPrice) ? model.SuggestPrice : null, salePrice: price,
+    parserVersion: "91app-exact-sku-v2",
     availability: "unknown", url,
     evidence: { productId, skuId: String(sku[0].SaleProductSKUId), title: model.Title, specification: packs[0], price, currency: "TWD", licenseNumber: licenses[0] },
   };
