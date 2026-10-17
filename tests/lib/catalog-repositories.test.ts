@@ -50,6 +50,7 @@ describe("Neon 公開資料查詢", () => {
           safetyCommunications: [{ publicationDate: "2026-01-02", ingredient: "成分甲", scopeText: "藥品（衛部藥製字第000001號）", indications: "", mechanism: "", reason: "安全資訊", safetyAnalysis: "公告原文", tfdaCommunication: "", sourceUrl: "https://data.fda.gov.tw/data/opendata/export/53/csv" }],
           appearance: null,
           price: null,
+          retailPrices: [],
         },
       ],
       page: 2,

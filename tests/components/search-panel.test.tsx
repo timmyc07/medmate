@@ -124,7 +124,7 @@ describe("搜尋面板", () => {
   });
 
   it("URL 清除 q 時清除舊結果與輸入值", async () => {
-    vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response(JSON.stringify({ items: [{ id: "m1", licenseNumber: "A", name: "舊藥品", indications: null, licenseStatus: null, validUntil: null, sourceUpdatedAt: null }], page: 1, pageSize: 20, total: 1 }), { status: 200 }));
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response(JSON.stringify({ items: [{ id: "m1", licenseNumber: "A", name: "舊藥品", indications: null, licenseStatus: null, validUntil: null, sourceUpdatedAt: null, retailPrices: [] }], page: 1, pageSize: 20, total: 1 }), { status: 200 }));
     const view = render(<SearchPanel kind="medicines" enabled initialQuery="舊藥品" />);
     await waitFor(() => expect(screen.getByText("舊藥品")).toBeInTheDocument());
 

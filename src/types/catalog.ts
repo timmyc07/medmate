@@ -28,6 +28,17 @@ export interface Medicine {
   sourceUpdatedAt: string | null;
   appearance: MedicineAppearance | null;
   price: MedicinePrice[] | null;
+  retailPrices: MedicineRetailPrice[];
+}
+
+export interface MedicineRetailPrice {
+  amount: number;
+  currency: string;
+  productName: string;
+  specification: string;
+  sourceName: string;
+  sourceUrl: string;
+  capturedAt: string;
 }
 
 export interface MedicineAppearance {

@@ -78,23 +78,23 @@ Render 必須設定 `DATABASE_URL` 為 Neon pooled URL。direct `DATABASE_URL_UN
 
 ### 線上自費價格觀測
 
-目前爬蟲只保存商城商品觀測，尚未完成藥品許可證／包裝規格配對及審核；`searchMedicines` 只讀取 `medicine_prices` 的精確健保支付價，沒有讀取商城觀測或 90 日統計 view。因此「抓到商品價格」不等於「藥品已有可展示售價」。2026-10-17 唯讀核對時，觀測共 561 筆、approved 配對 0 筆、健保價格 0 筆；商城樣本包含書籍與營養品，不能以商品名稱模糊比對後直接當藥品售價。真正接入自費標價前，需核實藥品身分、包裝規格、來源與可售狀態，再完成 API／畫面串接；不能用健保支付點數冒充自費價格。
+2026-10-17 起，來源改為[杏一乙類成藥專區](https://www.medfirst.com.tw/v2/official/SalePageCategory/410434)已人工核對的 22 個商品 ID 清單。不再掃描康是美或杏一全商城 sitemap，舊來源停用但保留觀測供稽核。新增商品須先核對專區及公開頁面，再更新 `SOURCES.productIds`；不自動納入推薦商品、書籍、保健食品或醫材。這是有限線上通路樣本，不是全台藥局報價。
 
-`npm run db:crawl-retail-prices -- --dry-run --limit 2` 會讀取康是美及杏一的全部 sitemap、列出各來源商品數，再各試抓一筆價格，不寫入資料庫。HTTP 請求至少間隔 2.5 秒，每次請求最多 15 秒；整個工作只逐筆發送請求，不提高並行數。正式批次預設最多嘗試 150 個商品、10 分鐘；手動小量驗證可用 `node --env-file=.env scripts/crawl-retail-prices.mjs --limit 2`。不以成功價格筆數計算上限，避免錯誤頁讓工作超時。資料寫入 `medicine_price_observations`，只有在 `medicine_price_matches` 標記 `approved` 且同規格、可售、近 90 日的樣本才會計算平均/中位數。畫面應稱「目前蒐集來源的近 90 日自費售價平均」，不可宣稱所有藥品或全台平均。
+每次批次先檢查 TFDA `36/csv` 藥證核實快照，超過 7 日即下載更新。官方壓縮檔的大小、CSV 欄位、列數、同藥證衝突均檢查通過後，才在單一交易替換 `medicine_retail_license_verifications` 並更新來源 hash。只核准官方尚未註銷、未過期的乙類成藥完整許可證。商品主要資料的完整藥證、單一無規格選項 SKU、標題中的唯一數量／單位／容器，以及 SKU、頁面、JSON-LD 三處一致的 TWD 價格都必須成立；價格區間、組合、加購、APP 限定或歧義規格均排除。
 
-GitHub Actions `更新線上自費價格` 在每小時第 7、27、47 分執行一批（每 20 分鐘），進度保存在 `retail_crawl_queue`。工作 concurrency group 不允許重疊；兩個來源輪流取一筆，來源沒有可處理商品或正在冷卻時由另一來源用完剩餘額度。在專案 Settings → Secrets and variables → Actions → New repository secret 設定 `DATABASE_URL_UNPOOLED`（direct connection），或設定 `DATABASE_URL`（pooled connection）；爬蟲優先使用非空的 direct URL。Render 的環境變數不會自動提供給 GitHub Actions。兩個 Secret 都未設定時，工作會在安裝依賴前明確報錯。連線字串不能放入前端或 Git；direct URL 不放入 Render runtime。
+TFDA 的「包裝」目前只列玻璃瓶、塑膠瓶等材質，不能證明 19g／30g 等數量規格。數量規格核實依據為同商品單一 SKU 的公開頁面，並非宣稱 TFDA 已核准該零售容量；無法唯一確認即不展示。庫存欄位互相不一致時不推測現貨，畫面提醒庫存、運費及結帳價以來源為準。保留原始包裝、SKU、藥證、價格、網址、擷取時間及核實 hash 證據；自動核准明確標記為自動規則，不冒稱人工審核。
 
-2026-10-16 的完整清單為康是美 141,777、杏一 2,090，共 143,867 個商品。每天 72 批、每批 150 筆的理論容量為 10,800 筆，約 14 天一輪；以每批實際 100 筆估算約 20 天。加速來自縮短批次間空檔，不縮短請求間隔。Github 排程延遲、來源冷卻、失敗重試及新增商品會拉長時間；一個月是目標，不在網站過載時強行追趕。
+`searchMedicines` 的 `retailPrices` 只回傳同商品網址最新、近 7 日且證據一致的核准觀測，另要求官方快照仍有效、hash 相同、來源啟用及商品未下架／排除。舊 SKU、不符規格、過期報價或新觀測未核准時，不回退顯示舊價。不同包裝分列售價、來源連結與台灣時間的更新時間，不混算平均；已移除混合包裝的 `medicine_price_90d_stats`。`price` 仍獨立代表健保支付點數，不可當自費售價。
 
-每輪先固定兩個來源的完整 URL 清單，跨 sitemap 去重並移除追蹤參數；本輪中來源 sitemap 的重排、增刪不會挪動待抓商品，新商品下一輪納入。價格及該筆進度在同一交易提交，程序中斷後已提交的商品不重抓，尚未提交的當筆可能重新下載，但不會漏掉未保存的價格。同日同來源同商品更新既有觀測，不增加重複列。
+`npm run db:crawl-retail-prices -- --dry-run --limit 2` 只解析限定商品頁，不寫資料庫，也不代表已通過官方藥證核實。正式工作需先在隔離 Neon branch 套用 migration，再以該分支連線執行爬蟲；驗證後才對 production 套用 `012_verified_retail_prices.sql` 並執行批次。HTTP 請求至少間隔 2.5 秒、每次最多 15 秒，逐筆請求，不提高並行數。批次最多嘗試 150 個商品、10 分鐘，按嘗試數而非成功數計算上限。
 
-404/410 會保留明確的下架紀錄；連線逾時、429/5xx、缺少有效價格則保留 pending 及錯誤原因，同一批最多嘗試一次。429、5xx、連線逾時或網路失敗會立即停止該來源至少 30 分鐘，403 至少暫停 24 小時；若回應的 `Retry-After`（秒數或 HTTP 日期）較長則遵守該時間。連續三筆解析／其他失敗也會暫停該來源 30 分鐘。冷卻期限保存在 `medicine_price_sources.crawl_not_before`，程序重啟或下一批排程不會繞過它；其他來源仍可接續。sitemap 初始化遇到上述錯誤也會保存既有來源的冷卻期限。升級時先套用 `011_retail_crawl_backoff.sql`，此 migration 不重置目前輪次或商品清單。
+GitHub Actions `更新已核實藥品自費價格` 每小時第 7、27、47 分執行一批，concurrency group 不允許重疊。需在 Repository Actions Secrets 設定 `DATABASE_URL_UNPOOLED`（優先）或 `DATABASE_URL`；Render 環境不會自動提供給 Actions。連線字串不得提交 Git 或送至瀏覽器，direct URL 不放入 Render runtime。排程延遲、來源冷卻或外部服務故障可能使價格超過時效而隱藏，不能保證每 20 分鐘必定更新成功。
 
-未嘗試過的商品優先於重試商品。若本批有暫時失敗，Actions 標記失敗但已成功商品的進度仍保存；排程下一次自動接續。只有整輪所有商品成功或明確下架，才會建立下一輪；永久解析失敗必須修復解析器，不能把 pending 清空冒充完成。
+每輪固定清單並去重，價格、核准證據及完成狀態同一交易提交；同日同來源同 SKU 更新既有觀測。404/410 記為 `unavailable`；書籍、缺藥證或歧義規格等記為 `excluded` 並保存原因，不無限重試。缺主要商品資料、無效價格或網路錯誤仍保留 `pending`，本批每個 URL 最多嘗試一次。429、5xx、逾時或網路失敗立即停止來源至少 30 分鐘，403 至少 24 小時，遵守更長的 `Retry-After`；連續三筆解析失敗也暫停 30 分鐘。冷卻期限跨重啟保存，不能繞過。未嘗試商品優先；暫時失敗使 Actions 標記失敗，但已提交進度保留。
 
-Render 的 start command 為 `npm start`，僅由 GitHub Actions 排程，不再啟動背景爬蟲。升級時先停用舊 daemon，套用 `010_retail_crawl_queue.sql`，再啟用新腳本。舊游標可能已漏抓，故新版本會從完整清單重新開始一輪；既有價格與配對審核保留。初始化由 transaction advisory lock 保護，商品由 `FOR UPDATE SKIP LOCKED` 保護，即使手動工作並行也不會同時取得相同商品。
+Render 只執行 `npm start`，爬蟲由 Actions 排程。初始化由 transaction advisory lock 保護，商品由 `FOR UPDATE SKIP LOCKED` 保護。整輪無 pending 才建立下一輪；新限定來源第一次執行會替換舊全商城的進度清單，但不刪除歷史價格。永久解析失敗須修復解析器，不能清空 pending 冒充完成。
 
-每次工作最後會輸出各來源的 total / pending / succeeded / unavailable / crawl_not_before；可用下列 SQL 檢查整輪進度：
+每次工作最後會輸出 total / pending / succeeded / unavailable / excluded / crawl_not_before；可用下列 SQL 檢查進度及排除原因：
 
 ```sql
 SELECT s.name, q.round_id, q.status, count(*)
@@ -103,13 +103,15 @@ GROUP BY s.name, q.round_id, q.status ORDER BY s.name, q.status;
 
 SELECT s.name, q.product_url, q.attempts, q.last_error
 FROM retail_crawl_queue q JOIN medicine_price_sources s USING (source_id)
-WHERE q.status = 'pending' AND q.attempts > 0;
+WHERE q.status IN ('pending','excluded','unavailable') AND q.attempts > 0;
 
 SELECT name, crawl_not_before FROM medicine_price_sources
 WHERE crawl_not_before > now();
 ```
 
 整合測試用 `node --env-file=<隔離分支環境檔> node_modules/vitest/vitest.mjs run tests/scripts/crawl-retail-prices.test.ts` 執行。測試在獨立暫存 schema 建立 fixture，涵蓋續抓、整輪重置、失敗重試、交易回滾與並行鎖；沒有資料庫環境變數時只執行純解析測試。
+
+2026-10-17 在 24 小時到期的隔離 Neon branch 完成 128 項測試，包含官方快照更新、核實證據、過期／下架／新 SKU 篩選與健保價分離。真實來源首輪 22 個商品有 13 筆報價通過、涵蓋 5 張藥證；9 筆因藥證或規格證據不足排除。Firefox 153 / Windows WebKit 26.5 在 1440、390、320px 驗證自費價格、來源、更新時間、搜尋、地圖與滾動欄；WebKit 不是 macOS／iOS Safari 實機測試。數量是當日樣本，不是固定覆蓋率。
 
 首次 schema/import 驗證使用有到期時間的 Neon branch `medmate-import-test-20261008`。2026-10-08 已在驗證 branch 測試後，將 `001_catalog.sql` 套用 production 並從 `/Users/reikous/Downloads/藥品資料庫` 匯入三個受支援 CSV：FDA 藥局 9,155 原始列（去重後 9,153）、健保特約藥局 10,187 列、FDA 藥品許可證 72,074 原始列（去重後 66,510）；每個來源 SHA-256 與筆數寫入 `source_imports`。36/43/53 詳細藥品資料已於 2026-10-14 經隔離 branch 驗證後套用 production；37 及健保 B5/TXT 仍未接入產品。正式查詢與匯入帳號應分開管理並授予最小權限；Neon 預設 app connection 若仍使用 owner role，應另建唯讀角色。CSV 匯入命令和白名單/來源更新策略見[資料來源文件](data-sources.md)。原始 CSV 不應提交到 GitHub。
 

@@ -110,9 +110,25 @@ export function MedicineResult({ item }: { item: Medicine }) {
                 </p>)}
                 <a href={item.price[0].sourceUrl} target="_blank" rel="noreferrer">查看健保署官方資料</a>
               </div>
-            ) : <p className="medicine-card-price">尚無可核實的價格；實際售價請洽藥局。</p>}
+            ) : !item.retailPrices.length && <p className="medicine-card-price">尚無可核實的自費價格；實際售價請洽藥局。</p>}
           </div>
         </div>
+        {item.retailPrices.length > 0 && (
+          <section className="medicine-retail-prices" aria-label="已核實的自費價格">
+            <h4>公開自費售價</h4>
+            <ul className="retail-price-list">
+              {item.retailPrices.map((price) => (
+                <li key={`${price.sourceUrl}-${price.specification}`}>
+                  <strong>NT${price.amount.toLocaleString("zh-TW", { maximumFractionDigits: 2 })}</strong>／{price.specification}
+                  <small>{price.productName}</small>
+                  <small><a href={price.sourceUrl} target="_blank" rel="noreferrer">{price.sourceName}・查看價格來源</a></small>
+                  <small>價格更新時間：<time dateTime={price.capturedAt}>{new Intl.DateTimeFormat("zh-TW", { timeZone: "Asia/Taipei", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(new Date(price.capturedAt))}</time></small>
+                </li>
+              ))}
+            </ul>
+            <p>不同包裝分別列價，不混算平均。庫存、運費與實際結帳金額以來源為準；不是健保支付價，也不代表全台藥局售價。</p>
+          </section>
+        )}
         {item.indications ? (
           <p className="indications"><strong>這個藥通常用來：</strong>{item.indications}</p>
         ) : (

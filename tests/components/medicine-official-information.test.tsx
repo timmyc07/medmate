@@ -17,7 +17,7 @@ describe("藥品卡片官方資訊", () => {
       licenseStatus: "有效",
       validUntil: "2099-01-01",
       sourceUpdatedAt: "2026-01-01",
-      appearance: null, price: null,
+      appearance: null, price: null, retailPrices: [],
     }} />);
 
     fireEvent.click(screen.getByText("查看官方用藥與安全資料"));
@@ -35,11 +35,11 @@ describe("藥品卡片官方資訊", () => {
       id: "A2", licenseNumber: "A2", name: "沒有詳細資料的藥品", indications: null,
       usageDosage: null, ingredients: [], safetyCommunications: [],
       licenseStatus: "有效", validUntil: null, sourceUpdatedAt: null,
-      appearance: null, price: null,
+      appearance: null, price: null, retailPrices: [],
     }} />);
 
     fireEvent.click(screen.getByText("查看官方用藥與安全資料"));
-    expect(screen.getByText("尚無可核實的價格；實際售價請洽藥局。")).toBeInTheDocument();
+    expect(screen.getByText("尚無可核實的自費價格；實際售價請洽藥局。")).toBeInTheDocument();
     expect(screen.getByText("官方資料未提供此藥品的用法用量。", { exact: false })).toBeInTheDocument();
     expect(screen.getByText("目前沒有可用完整許可證字號精確配對的安全公告。", { exact: false })).toBeInTheDocument();
     expect(screen.getByText("副作用、禁忌與交互作用資料未由目前來源提供；請洽藥師或醫療人員。", { exact: false })).toBeInTheDocument();
@@ -49,12 +49,31 @@ describe("藥品卡片官方資訊", () => {
     render(<MedicineResult item={{
       id: "A3", licenseNumber: "A3", name: "有價格的藥品", indications: "緩解頭痛",
       usageDosage: null, ingredients: [], safetyCommunications: [], licenseStatus: "有效",
-      validUntil: null, sourceUpdatedAt: null, appearance: null,
+      validUntil: null, sourceUpdatedAt: null, appearance: null, retailPrices: [],
       price: [{ amount: 12.5, currency: "TWD", type: "nhi-reimbursement", drugCode: "A000000100", specification: "10 毫克", effectiveFrom: "2026-01-01", sourceUrl: "https://info.nhi.gov.tw/" }],
     }} />);
 
     expect(screen.getByText(/健保支付價參考：12\.5 點/)).toBeInTheDocument();
     expect(screen.getByText(/不是一般藥局自費售價/)).toBeInTheDocument();
     expect(screen.queryByText(/NT\$/)).not.toBeInTheDocument();
+  });
+
+  it("自費售價依包裝分列來源與台灣擷取時間，健保點數保持分開", () => {
+    render(<MedicineResult item={{
+      id: "A4", licenseNumber: "A4", name: "虎標萬金油", indications: null,
+      usageDosage: null, ingredients: [], safetyCommunications: [], licenseStatus: "有效",
+      validUntil: null, sourceUpdatedAt: null, appearance: null,
+      price: [{ amount: 12.5, currency: "TWD", type: "nhi-reimbursement", drugCode: "A000000100", specification: "10 毫克", effectiveFrom: "2026-01-01", sourceUrl: "https://info.nhi.gov.tw/" }],
+      retailPrices: [19, 30].map((size, i) => ({ amount: i ? 168 : 109, currency: "TWD", productName: `虎標萬金油 ${size}g`, specification: `${size}g/罐`, sourceName: "杏一", sourceUrl: `https://www.medfirst.com.tw/SalePage/Index/${i + 1}`, capturedAt: "2026-10-17T04:30:00Z" })),
+    }} />);
+    expect(screen.getByText("NT$109")).toBeInTheDocument();
+    expect(screen.getByText("NT$168")).toBeInTheDocument();
+    expect(screen.getByText("虎標萬金油 19g")).toBeInTheDocument();
+    expect(screen.getByText(/／19g\/罐/)).toBeInTheDocument();
+    expect(screen.getByText(/／30g\/罐/)).toBeInTheDocument();
+    expect(screen.getAllByText("2026/10/17 12:30")).toHaveLength(2);
+    expect(screen.getAllByRole("link", { name: "杏一・查看價格來源" })[0]).toHaveAttribute("href", "https://www.medfirst.com.tw/SalePage/Index/1");
+    expect(screen.getByText(/健保支付價參考：12\.5 點/)).toBeInTheDocument();
+    expect(screen.getByText(/不同包裝分別列價，不混算平均/)).toBeInTheDocument();
   });
 });

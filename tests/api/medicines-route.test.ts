@@ -29,6 +29,7 @@ describe("藥品搜尋 API", () => {
     );
 
     expect(response.status).toBe(200);
+    expect(response.headers.get("Cache-Control")).toBe("no-store");
     expect(searchMedicines).toHaveBeenCalledWith({
       keyword: "普拿疼",
       page: 2,

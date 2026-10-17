@@ -102,8 +102,8 @@ for (const engine of [firefox, webkit]) {
     assert.match(await page.locator(".result-row--medicine h3").first().innerText(), /普拿疼/);
     await page.getByRole("button", { name: "查看官方用藥與安全資料" }).first().click();
     await page.getByRole("heading", { name: "官方用法用量" }).first().waitFor();
-    await page.getByText("為什麼藥品沒有標價？", { exact: true }).click();
-    assert(await page.getByText(/商城爬蟲價格尚未完成/).isVisible());
+    await page.getByText("為什麼有些藥品沒有價格？", { exact: true }).click();
+    assert(await page.getByText(/自費價格只採已核對 TFDA/).isVisible());
     await page.getByRole("button", { name: "依症狀搜尋" }).click();
     await search(page, "頭痛");
     const pagination = page.getByRole("navigation", { name: "藥品結果分頁" });
@@ -119,6 +119,20 @@ for (const engine of [firefox, webkit]) {
       await page.waitForFunction(() => document.querySelector(".search-button")?.disabled === false);
       await pagination.getByText(`第 ${number} 頁`, { exact: true }).waitFor();
     }
+    await search(page, "衛署成製字第015702號");
+    const quotes = page.getByRole("region", { name: "已核實的自費價格" });
+    await quotes.waitFor();
+    assert.match(await quotes.innerText(), /NT\$\d/);
+    assert.match(await quotes.innerText(), /19g\/罐/);
+    assert.match(await quotes.innerText(), /虎標.*白色軟膏/);
+    assert.match(await quotes.innerText(), /價格更新時間：\d{4}\/\d{2}\/\d{2}/);
+    const sourceLink = quotes.getByRole("link", { name: /查看價格來源/ }).first();
+    assert.match(await sourceLink.getAttribute("href"), /^https:\/\/www\.medfirst\.com\.tw\/SalePage\/Index\/\d+$/);
+    for (const width of [320, 390, 1440]) {
+      await page.setViewportSize({ width, height: 900 });
+      await checkLayout(page);
+    }
+    await page.setViewportSize({ width: 390, height: 844 });
     if (screenshotDirectory) {
       await page.evaluate(() => window.scrollTo(0, 0));
       await page.screenshot({ path: join(screenshotDirectory, `${engine.name()}-medicines.png`) });
@@ -156,7 +170,7 @@ for (const engine of [firefox, webkit]) {
     assert((await (await nearbyResponse).json()).total > 0, "定位搜尋無結果");
     await page.locator(".map-status").filter({ hasText: /^已標示 \d+ 家藥局$/ }).waitFor();
     assert.deepEqual(errors, [], "瀏覽器未捕捉的 JavaScript 錯誤");
-    console.log(`${engine.name()} ${browser.version()}：症狀／藥名搜尋、詳細資料、分頁、地圖、定位、雙向捲動及主題滾動欄通過`);
+    console.log(`${engine.name()} ${browser.version()}：症狀／藥名搜尋、自費價格／規格／來源／更新時間、詳細資料、分頁、地圖、定位、雙向捲動及主題滾動欄通過`);
     if (engine === firefox && !headed) console.log("Firefox 無頭模式：未檢查原生滾動欄寬度，請加 --headed 重跑。");
   } finally {
     await browser.close();

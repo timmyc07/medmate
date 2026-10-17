@@ -1,14 +1,19 @@
 import { createHash, randomUUID } from "node:crypto";
 import { parseArgs } from "node:util";
 import { pathToFileURL } from "node:url";
-import { gunzipSync } from "node:zlib";
 import { Pool } from "pg";
+import { parseRetailProduct } from "./retail-price-verification.mjs";
+import { refreshRetailLicenses } from "./refresh-retail-licenses.mjs";
 
 export const SOURCES = [
-  { id: "f7c48f30-3c3c-4b09-9b0d-0d6e0e10ad01", name: "康是美網購 eShop", base: "https://shop.cosmed.com.tw", sitemap: "https://shop.cosmed.com.tw/Sitemap/2131/Sitemap_Index.xml" },
-  { id: "48d8bf3d-3c42-40d0-a94f-37d91b00f6a2", name: "杏一健康生活館", base: "https://www.medfirst.com.tw", sitemap: "https://www.medfirst.com.tw/Sitemap/41218/Sitemap_Index.xml" },
+  {
+    id: "fc160e83-8127-4a53-9344-7116cdad0071", name: "杏一健康生活館｜乙類成藥", base: "https://www.medfirst.com.tw", shopId: 41218, categoryId: 410434,
+    catalog: "https://www.medfirst.com.tw/v2/official/SalePageCategory/410434",
+    // 限定已核對專區的商品；新增品項先審查來源，不自動納入全商城推薦商品。
+    productIds: [10792109,10792107,10792105,10617941,10613828,10613827,10613807,10610545,10517760,10517631,10415240,10415220,10275408,10223532,10223530,10223526,9957785,9957742,8493827,7559100,7559083,7554845],
+  },
 ];
-const USER_AGENT = "MediMatePublicPriceBot/1.0 (+https://medmate-53s1.onrender.com/data-status)";
+const USER_AGENT = "MediMatePublicPriceBot/1.0 (+https://medmate-53s1.onrender.com/medicines)";
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 let lastRequestAt = 0;
 
@@ -29,66 +34,30 @@ async function pauseSource(client, sourceId, delay) {
   await client.query("UPDATE medicine_price_sources SET crawl_not_before=GREATEST(COALESCE(crawl_not_before,now()),clock_timestamp()+$2*interval '1 millisecond') WHERE source_id=$1", [sourceId, delay]);
 }
 
-export function xmlUrls(xml) {
-  return [...xml.matchAll(/<(?:\w+:)?loc\b[^>]*>\s*(?:<!\[CDATA\[)?(.*?)(?:\]\]>)?\s*<\/(?:\w+:)?loc>/gis)]
-    .map((match) => match[1].trim().replaceAll("&amp;", "&"));
-}
-
-export function htmlPrice(html, url) {
-  const title = html.match(/<title[^>]*>([^<]+)<\/title>/i)?.[1]?.trim() || "";
-  const id = url.match(/\/SalePage\/Index\/(\d+)/i)?.[1];
-  const listed = html.match(/"(?:MaxPrice|Price)"\s*:\s*([0-9]+(?:\.[0-9]+)?)/i)?.[1];
-  const sale = html.match(/"(?:MinPrice|Price)"\s*:\s*([0-9]+(?:\.[0-9]+)?)/i)?.[1];
-  const salePrice = Number(sale);
-  const listedPrice = Number(listed || sale);
-  if (!id || !sale || ![salePrice, listedPrice].every(price => Number.isFinite(price) && price >= 0.01 && price <= 9_999_999_999.99)) return null;
-  return { id, name: title.replace(/\s+/g, " "), listedPrice, salePrice, url };
-}
-
 export async function get(url) {
   await sleep(Math.max(0, 2500 - (Date.now() - lastRequestAt)));
   lastRequestAt = Date.now();
   const response = await fetch(url, {
-    headers: { "user-agent": USER_AGENT, accept: "text/html,application/xml" },
+    headers: { "user-agent": USER_AGENT, accept: "text/html" },
+    redirect: "error",
     signal: AbortSignal.timeout(15_000),
   });
   if (!response.ok) throw Object.assign(new Error(`HTTP ${response.status} ${url}`), { status: response.status, retryAfterMs: retryAfterMs(response.headers.get("retry-after")) });
-  const bytes = Buffer.from(await response.arrayBuffer());
-  return (bytes[0] === 0x1f && bytes[1] === 0x8b ? gunzipSync(bytes) : bytes).toString("utf8");
+  return response.text();
 }
 
-export async function collectProducts(source, read = get) {
-  const maps = [source.sitemap];
-  const visited = new Set();
-  const products = new Set();
-  for (let i = 0; i < maps.length; i += 1) {
-    const url = maps[i];
-    if (visited.has(url)) continue;
-    visited.add(url);
-    const xml = await read(url);
-    if (!/<(?:\w+:)?(?:sitemapindex|urlset)\b/i.test(xml)) throw new Error(`無效 sitemap：${url}`);
-    const index = /<(?:\w+:)?sitemapindex\b/i.test(xml);
-    for (const location of xmlUrls(xml)) {
-      const entry = new URL(location);
-      if (entry.origin !== source.base) throw new Error(`sitemap 包含其他網域：${url}`);
-      if (index) maps.push(entry.href);
-      else {
-        const productId = entry.pathname.match(/^\/SalePage\/Index\/(\d+)\/?$/i)?.[1];
-        if (productId) products.add(`${source.base}/SalePage/Index/${productId}`);
-      }
-    }
-  }
-  if (!products.size) throw new Error(`${source.name} sitemap 沒有商品，保留目前清單`);
-  return [...products];
+export async function collectProducts(source) {
+  if (!source.productIds?.length || source.productIds.some(id => !Number.isSafeInteger(id) || id <= 0)) throw new Error("藥品來源清單無效");
+  return [...new Set(source.productIds)].map(id => `${source.base}/SalePage/Index/${id}`);
 }
 
-export async function ensureRound(client, sources = SOURCES, read = get) {
+export async function ensureRound(client, sources = SOURCES, collect = collectProducts) {
   let fetchingSource;
   await client.query("BEGIN");
   try {
     // Serialize manifest replacement; product workers use row locks instead.
     await client.query("SELECT pg_advisory_xact_lock('retail_crawl_queue'::regclass::oid::bigint)");
-    const pending = await client.query("SELECT round_id FROM retail_crawl_queue WHERE status='pending' LIMIT 1");
+    const pending = await client.query("SELECT q.round_id FROM retail_crawl_queue q JOIN medicine_price_sources s USING(source_id) WHERE q.status='pending' AND s.active AND q.source_id=ANY($1::uuid[]) LIMIT 1", [sources.map(source => source.id)]);
     if (pending.rowCount) {
       await client.query("COMMIT");
       return pending.rows[0].round_id;
@@ -98,13 +67,15 @@ export async function ensureRound(client, sources = SOURCES, read = get) {
       const paused = await client.query("SELECT crawl_not_before FROM medicine_price_sources WHERE source_id=$1 AND crawl_not_before>now()", [source.id]);
       if (paused.rowCount) throw new Error(`${source.name} 暫停至 ${paused.rows[0].crawl_not_before.toISOString()}`);
       fetchingSource = source;
-      manifests.push({ source, urls: await collectProducts(source, read) });
+      const urls = await collect(source);
+      if (!urls.length || urls.some(url => new URL(url).origin !== source.base)) throw new Error("藥品清單為空或包含其他網域");
+      manifests.push({ source, urls });
       fetchingSource = undefined;
     }
     const roundId = randomUUID();
     await client.query("DELETE FROM retail_crawl_queue");
     for (const { source, urls } of manifests) {
-      await client.query("INSERT INTO medicine_price_sources (source_id,name,source_kind,base_url,terms_url,robots_checked_at,source_updated_at) VALUES ($1,$2,'ecommerce',$3,$4,now(),now()) ON CONFLICT (source_id) DO UPDATE SET source_updated_at=excluded.source_updated_at", [source.id, source.name, source.base, `${source.base}/robots.txt`]);
+      await client.query("INSERT INTO medicine_price_sources (source_id,name,source_kind,base_url,terms_url,robots_checked_at,source_updated_at) VALUES ($1,$2,'ecommerce',$3,$4,now(),now()) ON CONFLICT (source_id) DO UPDATE SET active=true,source_updated_at=excluded.source_updated_at", [source.id, source.name, source.base, `${source.base}/robots.txt`]);
       await client.query("INSERT INTO retail_crawl_queue (source_id,product_url,round_id,product_index) SELECT $1,url,$2,ordinality FROM unnest($3::text[]) WITH ORDINALITY AS products(url,ordinality)", [source.id, roundId, urls]);
     }
     await client.query("COMMIT");
@@ -118,8 +89,8 @@ export async function ensureRound(client, sources = SOURCES, read = get) {
 }
 
 export async function crawlBatch(client, { roundId, sources = SOURCES, limit = 150, read = get, deadline = Date.now() + 10 * 60_000 }) {
-  const startedAt = new Date();
-  const result = { attempted: 0, observations: 0, unavailable: 0, failed: 0 };
+  const attemptedUrls = new Set();
+  const result = { attempted: 0, observations: 0, unavailable: 0, excluded: 0, failed: 0 };
   const exhausted = new Set();
   const failures = new Map();
   for (let i = 0; result.attempted < limit && exhausted.size < sources.length && Date.now() < deadline; i += 1) {
@@ -127,7 +98,7 @@ export async function crawlBatch(client, { roundId, sources = SOURCES, limit = 1
     if (exhausted.has(source.id)) continue;
     await client.query("BEGIN");
     try {
-      const selected = await client.query("SELECT q.product_url FROM retail_crawl_queue q JOIN medicine_price_sources s USING(source_id) WHERE q.round_id=$1 AND q.source_id=$2 AND q.status='pending' AND (q.last_attempt_at IS NULL OR q.last_attempt_at<$3) AND (s.crawl_not_before IS NULL OR s.crawl_not_before<=clock_timestamp()) ORDER BY q.last_attempt_at NULLS FIRST,q.product_index FOR UPDATE OF q SKIP LOCKED LIMIT 1", [roundId, source.id, startedAt]);
+      const selected = await client.query("SELECT q.product_url FROM retail_crawl_queue q JOIN medicine_price_sources s USING(source_id) WHERE q.round_id=$1 AND q.source_id=$2 AND s.active AND q.status='pending' AND NOT(q.product_url=ANY($3::text[])) AND (s.crawl_not_before IS NULL OR s.crawl_not_before<=clock_timestamp()) ORDER BY q.last_attempt_at NULLS FIRST,q.product_index FOR UPDATE OF q SKIP LOCKED LIMIT 1", [roundId, source.id, [...attemptedUrls]]);
       if (!selected.rowCount) {
         exhausted.add(source.id);
         await client.query("COMMIT");
@@ -135,13 +106,20 @@ export async function crawlBatch(client, { roundId, sources = SOURCES, limit = 1
       }
       const url = selected.rows[0].product_url;
       let row;
+      let licenseHash;
       let status = "succeeded";
       let lastError = null;
       let delay = 0;
       try {
-        row = htmlPrice(await read(url), url);
-        if (!row) throw new Error("頁面沒有可解析的正值價格");
+        row = parseRetailProduct(await read(url), url, source);
+        if (!row.excluded) {
+          const license = await client.query("SELECT source_sha256 FROM medicine_retail_license_verifications WHERE license_number=$1 AND drug_category='乙類成藥' AND NOT cancelled AND valid_until >= (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Taipei')::date AND verified_at > now()-interval '7 days'", [row.licenseNumber]);
+          licenseHash = license.rows[0]?.source_sha256;
+          if (!licenseHash) row = { excluded: "沒有新近、有效的 TFDA 乙類成藥完整藥證配對" };
+        }
+        if (row.excluded) { status = "excluded"; lastError = row.excluded; row = null; }
       } catch (error) {
+        row = null;
         status = [404, 410].includes(error.status) ? "unavailable" : "pending";
         lastError = error.message;
         if (status === "pending") delay = backoffMs(error);
@@ -157,14 +135,17 @@ export async function crawlBatch(client, { roundId, sources = SOURCES, limit = 1
       }
       if (row) {
         const now = new Date();
-        await client.query("INSERT INTO medicine_price_observations (observation_id,source_id,external_product_id,product_name,listed_price,sale_price,captured_at,captured_date,product_url,raw_payload_hash,parser_version) VALUES ($1,$2,$3,$4,$5,$6,$7,($7::timestamptz AT TIME ZONE 'Asia/Taipei')::date,$8,$9,'91app-v1') ON CONFLICT (source_id,external_product_id,captured_date) DO UPDATE SET product_name=excluded.product_name,listed_price=excluded.listed_price,sale_price=excluded.sale_price,captured_at=excluded.captured_at,product_url=excluded.product_url,raw_payload_hash=excluded.raw_payload_hash", [randomUUID(), source.id, row.id, row.name, row.listedPrice, row.salePrice, now, row.url, createHash("sha256").update(JSON.stringify(row)).digest("hex")]);
+        const observation = await client.query("INSERT INTO medicine_price_observations (observation_id,source_id,external_product_id,product_name,specification_raw,listed_price,sale_price,captured_at,captured_date,product_url,raw_payload_hash,parser_version,sku_id,license_number,match_method,match_confidence,availability) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,($8::timestamptz AT TIME ZONE 'Asia/Taipei')::date,$9,$10,'91app-exact-sku-v2',$11,$12,'exact-license',1,'unknown') ON CONFLICT (source_id,external_product_id,captured_date) DO UPDATE SET product_name=excluded.product_name,specification_raw=excluded.specification_raw,listed_price=excluded.listed_price,sale_price=excluded.sale_price,captured_at=excluded.captured_at,product_url=excluded.product_url,raw_payload_hash=excluded.raw_payload_hash,parser_version=excluded.parser_version,sku_id=excluded.sku_id,license_number=excluded.license_number,match_method=excluded.match_method,match_confidence=excluded.match_confidence RETURNING observation_id", [randomUUID(), source.id, row.id, row.name, row.specification, row.listedPrice, row.salePrice, now, row.url, createHash("sha256").update(JSON.stringify(row.evidence)).digest("hex"), row.skuId, row.licenseNumber]);
+        await client.query("INSERT INTO medicine_price_matches(observation_id,license_number,match_method,status,evidence_url,reviewed_at,reviewed_by,specification,evidence,license_source_sha256) VALUES ($1,$2,'exact-license','approved',$3,$4,'automated-exact-license-single-sku-v2',$5,$6,$7) ON CONFLICT(observation_id) DO UPDATE SET license_number=excluded.license_number,status=excluded.status,evidence_url=excluded.evidence_url,reviewed_at=excluded.reviewed_at,reviewed_by=excluded.reviewed_by,specification=excluded.specification,evidence=excluded.evidence,license_source_sha256=excluded.license_source_sha256", [observation.rows[0].observation_id, row.licenseNumber, row.url, now, row.specification, row.evidence, licenseHash]);
       }
       await client.query("UPDATE retail_crawl_queue SET status=$3,last_attempt_at=clock_timestamp(),attempts=attempts+1,last_error=$4 WHERE source_id=$1 AND product_url=$2", [source.id, url, status, lastError]);
       // Price and checkpoint commit together, so a crash cannot skip an unsaved price.
       await client.query("COMMIT");
+      attemptedUrls.add(url);
       result.attempted += 1;
       if (status === "succeeded") result.observations += 1;
       else if (status === "unavailable") result.unavailable += 1;
+      else if (status === "excluded") result.excluded += 1;
       else result.failed += 1;
     } catch (error) {
       await client.query("ROLLBACK");
@@ -175,7 +156,7 @@ export async function crawlBatch(client, { roundId, sources = SOURCES, limit = 1
 }
 
 export async function progress(client) {
-  return (await client.query("SELECT q.round_id,s.name,s.crawl_not_before,count(*)::int AS total,count(*) FILTER (WHERE q.status='pending')::int AS pending,count(*) FILTER (WHERE q.status='succeeded')::int AS succeeded,count(*) FILTER (WHERE q.status='unavailable')::int AS unavailable FROM retail_crawl_queue q JOIN medicine_price_sources s USING(source_id) GROUP BY q.round_id,s.name,s.crawl_not_before ORDER BY s.name")).rows;
+  return (await client.query("SELECT q.round_id,s.name,s.crawl_not_before,count(*)::int AS total,count(*) FILTER (WHERE q.status='pending')::int AS pending,count(*) FILTER (WHERE q.status='succeeded')::int AS succeeded,count(*) FILTER (WHERE q.status='unavailable')::int AS unavailable,count(*) FILTER (WHERE q.status='excluded')::int AS excluded FROM retail_crawl_queue q JOIN medicine_price_sources s USING(source_id) WHERE s.active GROUP BY q.round_id,s.name,s.crawl_not_before ORDER BY s.name")).rows;
 }
 
 async function main() {
@@ -190,7 +171,7 @@ async function main() {
     for (let i = 0; attempted < limit && urls.some((products) => products.length); i += 1) {
       const url = urls[i % SOURCES.length].shift();
       if (!url) continue;
-      console.log(JSON.stringify({ url, parsed: Boolean(htmlPrice(await get(url), url)) }));
+      console.log(JSON.stringify({ url, product: parseRetailProduct(await get(url), url, SOURCES[i % SOURCES.length]) }));
       attempted += 1;
     }
     return;
@@ -202,6 +183,7 @@ async function main() {
     const client = await pool.connect();
     try {
       const deadline = Date.now() + 10 * 60_000;
+      await refreshRetailLicenses(client);
       const roundId = await ensureRound(client);
       const result = await crawlBatch(client, { roundId, limit, deadline });
       console.log(JSON.stringify({ roundId, ...result, progress: await progress(client) }));

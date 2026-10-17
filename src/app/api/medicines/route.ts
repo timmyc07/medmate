@@ -13,7 +13,7 @@ export async function GET(request: Request): Promise<Response> {
   }
 
   try {
-    return Response.json(await searchMedicines(params));
+    return Response.json(await searchMedicines(params), { headers: { "Cache-Control": "no-store" } });
   } catch {
     return Response.json({ error: { code: "SERVICE_UNAVAILABLE", message: "查詢服務暫時無法使用，請稍後再試。" } }, { status: 503 });
   }

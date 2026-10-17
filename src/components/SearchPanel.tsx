@@ -225,8 +225,8 @@ export default function SearchPanel({
         )}
         {kind === "medicines" && (
           <details className="symptom-examples">
-            <summary>為什麼藥品沒有標價？</summary>
-            <p>目前僅顯示已精確對應的健保支付參考價，不是藥局自費售價。商城爬蟲價格尚未完成藥品許可證與包裝規格核實，不會直接套用；實際售價請洽藥局。</p>
+            <summary>為什麼有些藥品沒有價格？</summary>
+            <p>自費價格只採已核對 TFDA 完整有效藥證、來源單一 SKU 與明確包裝的乙類成藥公開售價。不同規格分列，超過 7 日未更新、未核實或已下架的報價不顯示。健保支付參考價另外標示，不是售價；沒有報價的品項請洽藥局。</p>
           </details>
         )}
         {kind === "medicines" && showPillFeatureFinder && (

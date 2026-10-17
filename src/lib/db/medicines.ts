@@ -25,6 +25,7 @@ export async function searchMedicines(params: SearchParams): Promise<Page<Medici
     safety_communications: Medicine["safetyCommunications"];
     appearance_shape: string | null; appearance_color: string | null; appearance_imprint: string | null; appearance_image_url: string | null;
     valid_until: string; source_updated_at: string; prices: Medicine["price"];
+    retail_prices: Medicine["retailPrices"];
   }>(`SELECT medicine.license_number AS id, medicine.license_number, medicine.name,
       NULLIF(medicine.indications, '') AS indications, NULLIF(medicine.usage_dosage, '') AS usage_dosage,
       CASE WHEN medicine.cancellation_status = '' THEN '有效' ELSE medicine.cancellation_status END AS license_status,
@@ -55,7 +56,34 @@ export async function searchMedicines(params: SearchParams): Promise<Page<Medici
           AND price.price > 0
           AND price.effective_from <= (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Taipei')::date
           AND (price.effective_until IS NULL OR price.effective_until >= (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Taipei')::date)
-          AND price.change_status = ''), '[]'::json) AS prices
+          AND price.change_status = ''), '[]'::json) AS prices,
+      COALESCE((SELECT json_agg(json_build_object(
+        'amount', observation.sale_price, 'currency', observation.currency, 'productName', observation.product_name,
+        'specification', matched.specification, 'sourceName', source.name,
+        'sourceUrl', observation.product_url, 'capturedAt', observation.captured_at
+      ) ORDER BY matched.specification, source.name)
+      FROM medicine_price_observations AS observation
+      JOIN medicine_price_matches AS matched ON matched.observation_id=observation.observation_id
+      JOIN medicine_price_sources AS source ON source.source_id=observation.source_id
+      JOIN medicine_retail_license_verifications AS verified ON verified.license_number=matched.license_number
+      JOIN retail_crawl_queue AS queue ON queue.source_id=observation.source_id AND queue.product_url=observation.product_url
+      WHERE observation.license_number=medicine.license_number AND matched.license_number=medicine.license_number
+        AND matched.status='approved' AND source.active AND queue.status NOT IN ('unavailable','excluded')
+        AND observation.parser_version='91app-exact-sku-v2' AND observation.currency='TWD' AND observation.sale_price>0
+        AND observation.captured_at > now()-interval '7 days' AND observation.captured_at<=now()
+        AND verified.drug_category='乙類成藥' AND NOT verified.cancelled
+        AND verified.valid_until >= (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Taipei')::date
+        AND verified.verified_at > now()-interval '7 days' AND matched.license_source_sha256=verified.source_sha256
+        AND matched.specification=observation.specification_raw AND matched.specification<>''
+        AND matched.evidence->>'skuId'=observation.sku_id
+        AND matched.evidence->>'licenseNumber'=medicine.license_number
+        AND matched.evidence->>'specification'=matched.specification
+        AND matched.evidence->'price'=to_jsonb(observation.sale_price)
+        AND matched.evidence->>'currency'=observation.currency AND matched.evidence_url=observation.product_url
+        AND matched.reviewed_at IS NOT NULL
+        AND NOT EXISTS (SELECT 1 FROM medicine_price_observations AS newer
+          WHERE newer.source_id=observation.source_id AND newer.product_url=observation.product_url
+            AND newer.captured_at>observation.captured_at)), '[]'::json) AS retail_prices
     FROM medicines AS medicine
     LEFT JOIN medicine_appearances AS appearance ON appearance.license_number = medicine.license_number
     WHERE ${filter}
@@ -77,6 +105,7 @@ export async function searchMedicines(params: SearchParams): Promise<Page<Medici
         shape: row.appearance_shape ?? "", color: row.appearance_color ?? "", imprint: row.appearance_imprint ?? "", imageUrl: row.appearance_image_url ?? "",
       } : null,
       price: row.prices ?? null,
+      retailPrices: row.retail_prices ?? [],
     })),
     page: params.page,
     pageSize: params.pageSize,

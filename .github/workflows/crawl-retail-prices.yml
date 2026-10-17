@@ -1,4 +1,4 @@
-name: 更新線上自費價格
+name: 更新已核實藥品自費價格
 
 on:
   schedule:

@@ -68,13 +68,19 @@
 
 ### `medicine_price_sources` / `medicine_price_observations` / `medicine_price_matches`
 
-自費線上價格來源、商品價格觀測與人工精確配對審核。觀測保存原價、促銷價、規格、來源網址、抓取時間、內容 hash 與 parser 版本；未核准配對不會顯示在藥品卡片。`medicine_price_90d_stats` 提供近 90 日已核准樣本的平均、中位數、最低、最高、樣本數與來源數。
+自費線上價格來源、商品價格觀測及精確配對。觀測保存原價、公開售價、規格、`sku_id`、完整藥證、來源網址、抓取時間、內容 hash 與 parser 版本。配對另存 `specification`、`evidence` jsonb、`license_source_sha256` 與自動核准規則 `reviewed_by`。搜尋只回傳近 7 日、最新且證據一致的核准價格。012 migration 移除會混合包裝的 `medicine_price_90d_stats`；歷史觀測保留。
 
 來源表的 `crawl_not_before` 保存限流、逾時、來源錯誤或連續解析失敗的冷卻期限；所有批次都必須遵守。
 
 ### `retail_crawl_queue` — 自費價格爬取進度
 
-每輪固定保存兩個來源所有 sitemap 的唯一商品網址，包含 `round_id`、`product_index`、`status`、`attempts`、`last_attempt_at` 與 `last_error`。主鍵為來源及商品網址。商品價格與完成狀態逐筆在同一交易提交；待重試商品保持 `pending`，404/410 記為 `unavailable`。僅當整輪沒有 pending 商品時，下一批才重新讀取所有 sitemap 建立新一輪。010 migration 取代舊分頁 offset；既有價格觀測不刪除。
+每輪固定保存限定藥品清單的唯一商品網址，包含 `round_id`、`product_index`、`status`、`attempts`、`last_attempt_at` 與 `last_error`。主鍵為來源及商品網址。商品價格、核准證據與完成狀態同一交易提交；待重試為 `pending`，404/410 為 `unavailable`，非藥品或無法核實為 `excluded` 並保存原因。整輪無 pending 才建立下一輪；舊全商城來源停用，歷史觀測不刪除。
+
+### `medicine_retail_license_verifications` — TFDA 藥證核實快照
+
+`license_number` text PK/FK · `drug_category` text · `package_description` text · `valid_until` date nullable · `cancelled` boolean · `verified_at` timestamptz · `source_sha256` text
+
+來源為 TFDA `36/csv`，只存既有 medicines 可精確關聯的藥證，`source_imports` 的 dataset key 為 `tfda_retail_license_verification`。包裝描述只代表官方提供的容器材質，不能當作零售容量。商品核准證據須引用相同快照 hash，快照超過 7 日時價格不展示。
 
 ## Schema 定義來源
 
@@ -89,5 +95,6 @@
 - `db/migrations/009_retail_crawl_state.sql`
 - `db/migrations/010_retail_crawl_queue.sql`
 - `db/migrations/011_retail_crawl_backoff.sql`
+- `db/migrations/012_verified_retail_prices.sql`
 
 官方文件：[PostgreSQL 18 — Table Basics](https://www.postgresql.org/docs/current/ddl-basics.html)。
