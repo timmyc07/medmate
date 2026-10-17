@@ -1,11 +1,21 @@
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { renderToString } from "react-dom/server";
 import SearchPanel from "../../src/components/SearchPanel";
 import { TAIWAN_ADMINISTRATIVE_AREAS, TAIWAN_CITIES } from "../../src/lib/taiwan-administrative-areas";
 
 describe("搜尋面板", () => {
   beforeEach(() => vi.restoreAllMocks());
   afterEach(() => cleanup());
+
+  it("伺服器輸出先停用查詢控制項，水合完成後才接受選擇", () => {
+    const html = renderToString(<SearchPanel kind="pharmacies" enabled />);
+    const document = new DOMParser().parseFromString(html, "text/html");
+    expect(document.querySelector(".search-controls")?.hasAttribute("disabled")).toBe(true);
+    render(<SearchPanel kind="pharmacies" enabled />);
+    expect(screen.getByRole("combobox", { name: "縣市" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "搜尋" })).toBeEnabled();
+  });
 
   it("資料尚未啟用時停用搜尋並說明原因", () => {
     const fetchMock = vi.spyOn(globalThis, "fetch");

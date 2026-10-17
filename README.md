@@ -11,7 +11,7 @@ MediMate 是以手機瀏覽為優先的繁體中文藥局與藥品公開查詢�
 - Render 部署設定位於 `render.yaml`，使用 Free Node Web Service。Free 方案閒置 15 分鐘會休眠，下一次請求約一分鐘喚醒；此方案是網站預覽，不是即時可用承諾。
 - `.github/workflows/keep-alive.yml` 每 10 分鐘以 GitHub Actions 請求 `/api/health`，降低 Render Free 服務因閒置而休眠的機率；可在 Repository Variables 設定 `KEEP_ALIVE_URL` 覆寫預設網址。本機可用 `KEEP_ALIVE_URL=https://你的網址/api/health npm run keep-alive` 持續執行，單次檢查使用 `npm run keep-alive:once`。
 - 首頁提供兩個主要查詢路由：`/pharmacies` 藥局位置與營業資訊、`/medicines` 藥品資訊；各目錄頁提供對應搜尋欄位。藥局查詢在結果卡先呈現地址、電話、資料狀態與距離，再顯示可定位資料的地圖；沒有座標的資料仍保留在卡片清單。使用定位時依距離排序且不設固定半徑，確保最近資料即使相距很遠也會顯示。
-- 藥局清單每列顯示一張資訊卡，依序呈現藥局資料與操作、依台灣時間判讀的目前上午／下午／晚上看診安排和一週週曆；頁面停留期間會定期更新，週曆保留水平捲動。藥局頁桌面以清單搭配地圖，手機則先顯示地圖再顯示清單。
+- 藥局清單以分隔線列表呈現資料與操作、依台灣時間判讀的目前上午／下午／晚上看診安排和一週週曆，不疊加卡片容器；頁面停留期間會定期更新，週曆保留水平捲動。藥局頁桌面以清單搭配地圖，手機則先顯示地圖再顯示清單。
 - TGOS 批次地址比對可供維運人員離線補齊藥局座標；匯出缺少座標的藥局機構代碼與地址，依每日額度分批，再將完成 CSV 精確回匯。匯入器提供 `--dry-run` 預檢，單一座標直接寫入，多候選地址與座標逐組保存；附近排序取每家藥局距離使用者最近的候選點，區域地圖會標示所有候選位置。操作流程與批次狀態見[維運文件](docs/operations.md)。
 - 首頁、藥局與藥品頁的站內路由使用 Next.js client-side navigation；共用頁面 template 以 React `ViewTransition` 與 CSS 淡入效果處理頁面轉場，並支援 `prefers-reduced-motion` 降級。
 - 全站操作圖示使用 `lucide-react` SVG，品牌與頁尾使用 `public/health-insurance-emblem.svg` 真實全民健康保險標誌，避免 Material Symbols 字型缺失造成圖示顯示為文字；來源清單、搜尋視窗、結果卡、藥品排行卡與外觀快搜卡會在進入 viewport 時以共用 `IntersectionObserver` 淡入，並支援 `prefers-reduced-motion`。
@@ -42,3 +42,9 @@ MediMate 是以手機瀏覽為優先的繁體中文藥局與藥品公開查詢�
 ### Responsive layout
 
 全站版面採用流體寬度、`clamp()` 字級與自適應 grid，頁首工具列會依視窗寬度收縮為圖示，藥品卡片、來源清單、地圖與營業時間表會在桌面、平板與手機解析度自動重排，避免文字直排與水平溢出。藥局頁的桌面／平板結果區讓地圖保持可見、左側資訊清單獨立捲動；手機則先顯示彈性高度地圖，清單在剩餘視高內獨立捲動，底部導覽與安全區不遮擋操作。
+
+### Firefox / WebKit 回歸檢查
+
+執行 `npm ci`、`npx playwright install firefox webkit`，再以 `npm run build` 和 `npm start` 啟動本機正式建置。另一個終端執行 `npm run test:browsers -- http://127.0.0.1:3000 <截圖輸出目錄> --headed`。檢查首頁、藥局、藥品頁在 1440 / 390 / 320px 的日夜模式、搜尋欄、底部導覽、實際藥品 API、分頁、地圖、模擬定位、清單／週曆捲動及滾動欄樣式。此檢查使用現有資料庫與 Google Maps，沒有寫入資料庫，需網路與已設定的開發連線。
+
+不加 `--headed` 可無頭執行，但 Firefox 無頭模式會隱藏原生滾動欄，因此會明確跳過其寬度檢查；原生寬度與高對比檢查須開視窗驗證。Windows WebKit 是 Safari 引擎的相容性代測，不能視為 macOS／iOS Safari 實機測試。

@@ -78,6 +78,8 @@ Render 必須設定 `DATABASE_URL` 為 Neon pooled URL。direct `DATABASE_URL_UN
 
 ### 線上自費價格觀測
 
+目前爬蟲只保存商城商品觀測，尚未完成藥品許可證／包裝規格配對及審核；`searchMedicines` 只讀取 `medicine_prices` 的精確健保支付價，沒有讀取商城觀測或 90 日統計 view。因此「抓到商品價格」不等於「藥品已有可展示售價」。2026-10-17 唯讀核對時，觀測共 561 筆、approved 配對 0 筆、健保價格 0 筆；商城樣本包含書籍與營養品，不能以商品名稱模糊比對後直接當藥品售價。真正接入自費標價前，需核實藥品身分、包裝規格、來源與可售狀態，再完成 API／畫面串接；不能用健保支付點數冒充自費價格。
+
 `npm run db:crawl-retail-prices -- --dry-run --limit 2` 會讀取康是美及杏一的全部 sitemap、列出各來源商品數，再各試抓一筆價格，不寫入資料庫。HTTP 請求至少間隔 2.5 秒，每次請求最多 15 秒；整個工作只逐筆發送請求，不提高並行數。正式批次預設最多嘗試 150 個商品、10 分鐘；手動小量驗證可用 `node --env-file=.env scripts/crawl-retail-prices.mjs --limit 2`。不以成功價格筆數計算上限，避免錯誤頁讓工作超時。資料寫入 `medicine_price_observations`，只有在 `medicine_price_matches` 標記 `approved` 且同規格、可售、近 90 日的樣本才會計算平均/中位數。畫面應稱「目前蒐集來源的近 90 日自費售價平均」，不可宣稱所有藥品或全台平均。
 
 GitHub Actions `更新線上自費價格` 在每小時第 7、27、47 分執行一批（每 20 分鐘），進度保存在 `retail_crawl_queue`。工作 concurrency group 不允許重疊；兩個來源輪流取一筆，來源沒有可處理商品或正在冷卻時由另一來源用完剩餘額度。在專案 Settings → Secrets and variables → Actions → New repository secret 設定 `DATABASE_URL_UNPOOLED`（direct connection），或設定 `DATABASE_URL`（pooled connection）；爬蟲優先使用非空的 direct URL。Render 的環境變數不會自動提供給 GitHub Actions。兩個 Secret 都未設定時，工作會在安裝依賴前明確報錯。連線字串不能放入前端或 Git；direct URL 不放入 Render runtime。

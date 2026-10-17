@@ -39,6 +39,7 @@ describe("藥品卡片官方資訊", () => {
     }} />);
 
     fireEvent.click(screen.getByText("查看官方用藥與安全資料"));
+    expect(screen.getByText("尚無可核實的價格；實際售價請洽藥局。")).toBeInTheDocument();
     expect(screen.getByText("官方資料未提供此藥品的用法用量。", { exact: false })).toBeInTheDocument();
     expect(screen.getByText("目前沒有可用完整許可證字號精確配對的安全公告。", { exact: false })).toBeInTheDocument();
     expect(screen.getByText("副作用、禁忌與交互作用資料未由目前來源提供；請洽藥師或醫療人員。", { exact: false })).toBeInTheDocument();

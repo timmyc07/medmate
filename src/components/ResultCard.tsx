@@ -110,7 +110,7 @@ export function MedicineResult({ item }: { item: Medicine }) {
                 </p>)}
                 <a href={item.price[0].sourceUrl} target="_blank" rel="noreferrer">查看健保署官方資料</a>
               </div>
-            ) : <p className="medicine-card-price">健保支付價：目前查不到精確對應的官方價格</p>}
+            ) : <p className="medicine-card-price">尚無可核實的價格；實際售價請洽藥局。</p>}
           </div>
         </div>
         {item.indications ? (

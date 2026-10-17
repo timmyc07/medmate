@@ -21,7 +21,7 @@ export default async function PharmaciesPage({ searchParams }: PageProps) {
           <div>
             <p className="eyebrow">讓日常照護，離你更近</p>
             <h1 id="pharmacy-page-title">身邊的藥局，<span>一查就清楚。</span></h1>
-            <p>選定縣市、區域或允許定位後，先查看藥局資訊卡，再檢視地圖分布。</p>
+            <p>選定縣市、區域或允許定位後，查看藥局資訊與地圖分布。</p>
           </div>
           <span className="page-hero-icon" aria-hidden="true"><MapPinned /></span>
         </div>

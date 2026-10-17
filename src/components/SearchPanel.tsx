@@ -27,6 +27,7 @@ export default function SearchPanel({
   showPillFeatureFinder?: boolean;
 }) {
   const [keyword, setKeyword] = useState(initialQuery);
+  const [hydrated, setHydrated] = useState(false);
   const [medicineSearchMode, setMedicineSearchMode] = useState<MedicineSearchMode>("symptom");
   const [city, setCity] = useState("");
   const [district, setDistrict] = useState("");
@@ -110,6 +111,7 @@ export default function SearchPanel({
   }, [city, district, kind, keyword, location]);
 
   useEffect(() => {
+    setHydrated(true);
     const query = initialQuery.trim();
     if (initialSearchRef.current === query) return;
     initialSearchRef.current = query;
@@ -196,7 +198,8 @@ export default function SearchPanel({
       id={kind}
       aria-labelledby={`${kind}-title`}
     >
-      <div className="search-controls">
+      <fieldset className="search-controls" disabled={!hydrated}>
+        <legend className="sr-only">{label}查詢功能</legend>
         <div className="section-heading">
           <h2 id={`${kind}-title`}>{kind === "medicines" ? "藥品查詢" : `${label}查詢`}</h2>
         </div>
@@ -219,6 +222,12 @@ export default function SearchPanel({
               </details>
             )}
           </>
+        )}
+        {kind === "medicines" && (
+          <details className="symptom-examples">
+            <summary>為什麼藥品沒有標價？</summary>
+            <p>目前僅顯示已精確對應的健保支付參考價，不是藥局自費售價。商城爬蟲價格尚未完成藥品許可證與包裝規格核實，不會直接套用；實際售價請洽藥局。</p>
+          </details>
         )}
         {kind === "medicines" && showPillFeatureFinder && (
           <PillFeatureFinder onCompare={compareAppearance} />
@@ -338,7 +347,7 @@ export default function SearchPanel({
             ))}
           </fieldset>
         )}
-      </div>
+      </fieldset>
       {!enabled && (
         <p className="state-message" role="status">
           資料查詢目前暫停，請稍後再試。
